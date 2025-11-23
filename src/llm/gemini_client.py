@@ -659,24 +659,6 @@ EXAMPLES:
         )
         item_names_at_location = [item.get("name") for item in items] if items else []
 
-        # Get last referenced items/NPCs for pronoun resolution
-        last_item_id = context.get("last_item")
-        last_npc_id = context.get("last_npc")
-        last_item_name = None
-        last_npc_name = None
-
-        if last_item_id:
-            for item in items + inventory_items:
-                if item.get("id") == last_item_id:
-                    last_item_name = item.get("name")
-                    break
-
-        if last_npc_id:
-            for npc in npcs:
-                if npc.get("id") == last_npc_id:
-                    last_npc_name = npc.get("name")
-                    break
-
         # Extract all valid IDs
         all_locations = context.get("all_locations", {})
         exit_destinations = context.get("exit_destinations", {})
@@ -685,13 +667,45 @@ EXAMPLES:
         item_ids_in_inventory = [item.get("id") for item in inventory_items]
         npc_ids_at_location = [npc.get("id") for npc in npcs]
 
-        prompt = f"""You are a Dungeon Master interpreting a player's action in a fantasy game.
+        # Format conversation history for pronoun resolution
+        conversation_history = context.get("conversation_history", [])
+        history_text = ""
+        if conversation_history:
+            history_text = "\n📜 RECENT CONVERSATION (for pronoun resolution):\n"
+            for i, turn in enumerate(conversation_history, 1):
+                history_text += f"\nTurn -{len(conversation_history) - i + 1}:\n"
+                history_text += f"  Player: {turn.get('player_input', '')}\n"
+                history_text += f"  You (DM): {turn.get('narrative', '')[:150]}...\n"
+            history_text += "\n⚠️  PRONOUN RESOLUTION:\n"
+            history_text += "When the player uses pronouns (it, them, they, he, she, etc.), use the conversation history above to understand what they're referring to. Consider the full context of what was just discussed.\n"
+        else:
+            # Fallback: use tracked references if no history available
+            last_item_id = context.get("last_item")
+            last_npc_id = context.get("last_npc")
+            last_item_name = None
+            last_npc_name = None
 
-⚠️  PRONOUN RESOLUTION - READ FIRST ⚠️
-If the player uses "it", "them", "him", or "her" in their action:
-- "it"/"them" (object) → MUST refer to: {last_item_name or "none"} (ID: {last_item_id or "none"})
-- "him"/"her"/"them" (person) → MUST refer to: {last_npc_name or "none"} (ID: {last_npc_id or "none"})
-This is MANDATORY. Do not substitute other items/NPCs even if they seem more logical.
+            if last_item_id:
+                for item in items + inventory_items:
+                    if item.get("id") == last_item_id:
+                        last_item_name = item.get("name")
+                        break
+
+            if last_npc_id:
+                for npc in npcs:
+                    if npc.get("id") == last_npc_id:
+                        last_npc_name = npc.get("name")
+                        break
+
+            if last_item_name or last_npc_name:
+                history_text = "\n⚠️  PRONOUN RESOLUTION (fallback):\n"
+                if last_item_name:
+                    history_text += f"- Last referenced object: {last_item_name} (ID: {last_item_id})\n"
+                if last_npc_name:
+                    history_text += f"- Last referenced person: {last_npc_name} (ID: {last_npc_id})\n"
+
+        prompt = f"""You are a Dungeon Master interpreting a player's action in a fantasy game.
+{history_text}
 
 CURRENT LOCATION: {location.get('id', 'unknown')}
 

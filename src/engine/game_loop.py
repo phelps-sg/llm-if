@@ -458,6 +458,15 @@ You can also type natural language commands and the AI will interpret them.
                 "location": npc_location,
             }
 
+        # Build recent conversation history for pronoun resolution
+        recent_turns = []
+        for entry in self.game_state.get_recent_history(count=3):
+            interpretation = entry.get("interpretation", {})
+            recent_turns.append({
+                "player_input": entry.get("input", ""),
+                "narrative": interpretation.get("narrative_response", ""),
+            })
+
         # Build detailed context
         context = {
             "location": location.model_dump() if location else None,
@@ -479,6 +488,7 @@ You can also type natural language commands and the AI will interpret them.
             },
             "all_locations": all_locations,  # Complete map of location IDs
             "all_npcs": all_npcs,  # All NPCs with locations (for plot management)
+            "conversation_history": recent_turns,  # For natural pronoun resolution
         }
 
         # Add plot information if present
