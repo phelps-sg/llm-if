@@ -51,13 +51,17 @@ class GameLoop:
     def process_turn(self, player_input: str) -> tuple[str, Dict[str, Any]]:
         """Process a single turn and return results (for testing).
 
+        Uses two-step approach:
+        1. Interpret action and get state updates
+        2. Apply updates, then generate narrative from actual state
+
         Args:
             player_input: Player's input string
 
         Returns:
             Tuple of (narrative_response, interpretation)
         """
-        # Build context
+        # Step 1: Build context and interpret action
         context = self._build_context()
 
         # Add pronoun resolution hints to context
@@ -66,19 +70,27 @@ class GameLoop:
         if self.last_referenced_npc:
             context["last_npc"] = self.last_referenced_npc
 
-        # Interpret action using LLM
+        # Interpret action using LLM (gets state updates only)
         interpretation = self.gemini.interpret_action(player_input, context)
 
         # Track what was referenced for pronoun resolution
         self._update_reference_tracking(interpretation, player_input, context)
 
-        # Apply state updates
+        # Step 2: Apply state updates
         state_updates = interpretation.get("state_updates", [])
         if state_updates:
             self.action_processor.apply_state_updates(state_updates, self.game_state)
 
-        # Get narrative response
-        narrative = interpretation.get("narrative_response", "...")
+        # Step 3: Generate narrative based on CURRENT state (after updates)
+        updated_context = self._build_context()
+        narrative = self.gemini.generate_narrative(
+            player_input,
+            interpretation.get("intent", ""),
+            updated_context
+        )
+
+        # Store narrative in interpretation for history
+        interpretation["narrative_response"] = narrative
 
         # Increment turn
         self.game_state.add_history_entry(
@@ -120,7 +132,7 @@ class GameLoop:
             self._show_inventory()
             return
 
-        # Interpret action using LLM
+        # Step 1: Interpret action using LLM
         print("[DM interprets your action...]")
         context = self._build_context()
 
@@ -133,15 +145,14 @@ class GameLoop:
         interpretation = self.gemini.interpret_action(player_input, context)
 
         # DEBUG: Log what LLM returned
-        print(f"\n[DEBUG] LLM Response:")
+        print(f"\n[DEBUG] Interpretation:")
         print(f"  Intent: {interpretation.get('intent', 'N/A')}")
         print(f"  State Updates: {interpretation.get('state_updates', [])}")
-        print(f"  Narrative: {interpretation.get('narrative_response', 'N/A')[:80]}...")
 
         # Track what was referenced for pronoun resolution
         self._update_reference_tracking(interpretation, player_input, context)
 
-        # Apply state updates
+        # Step 2: Apply state updates
         state_updates = interpretation.get("state_updates", [])
         if state_updates:
             self.action_processor.apply_state_updates(state_updates, self.game_state)
@@ -153,8 +164,19 @@ class GameLoop:
             )
             print(f"  Item locations: {self.game_state.item_locations}")
 
+        # Step 3: Generate narrative based on current state
+        print("[DM narrates what happened...]")
+        updated_context = self._build_context()
+        narrative = self.gemini.generate_narrative(
+            player_input,
+            interpretation.get("intent", ""),
+            updated_context
+        )
+
+        # Store narrative in interpretation for history
+        interpretation["narrative_response"] = narrative
+
         # Show narrative response
-        narrative = interpretation.get("narrative_response", "...")
         print(f"\n{narrative}")
 
         # Show combat results if combat occurred

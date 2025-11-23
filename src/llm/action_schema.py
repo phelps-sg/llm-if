@@ -11,11 +11,14 @@ class StateUpdate(BaseModel):
         "move_player",
         "move_item",
         "move_npc",
+        "remove_npc",
         "modify_attribute",
         "add_to_inventory",
         "remove_from_inventory",
+        "consume_item",
         "set_flag",
         "trigger_combat",
+        "update_dm_state",
         "no_change",
     ] = Field(..., description="Type of state update")
 
@@ -38,8 +41,8 @@ class ActionInterpretation(BaseModel):
         default_factory=list, description="List of state updates to apply"
     )
 
-    narrative_response: str = Field(
-        ..., description="DM's narrative response to the action"
+    narrative_response: Optional[str] = Field(
+        None, description="DM's narrative response to the action (optional - may be generated separately)"
     )
 
     requires_dice_roll: bool = Field(

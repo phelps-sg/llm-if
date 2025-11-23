@@ -134,6 +134,28 @@ class GeminiClient:
         )
         return self.generate(prompt)
 
+    def generate_narrative(
+        self,
+        player_input: str,
+        intent: str,
+        context: Dict[str, Any],
+    ) -> str:
+        """Generate narrative response based on current game state after updates.
+
+        This is called AFTER state updates have been applied, so the LLM
+        generates narrative based on the actual current state of the world.
+
+        Args:
+            player_input: What the player said/did
+            intent: Interpreted intent from LLM
+            context: Current game context (after state updates)
+
+        Returns:
+            Narrative description of what happened
+        """
+        prompt = self._build_narrative_prompt(player_input, intent, context)
+        return self.generate(prompt)
+
     def describe_action_result(
         self, action: str, result: Dict[str, Any], game_context: Dict[str, Any]
     ) -> str:
@@ -248,14 +270,13 @@ class GeminiClient:
                             "required": ["type", "params"],
                         },
                     },
-                    "narrative_response": {"type": "STRING"},
+                    "narrative_response": {"type": "STRING", "nullable": True},
                     "requires_dice_roll": {"type": "BOOLEAN"},
                 },
                 "required": [
                     "intent",
                     "is_valid",
                     "state_updates",
-                    "narrative_response",
                     "requires_dice_roll",
                 ],
             }
@@ -306,7 +327,6 @@ class GeminiClient:
             "intent": f"Player says: {player_input}",
             "is_valid": True,
             "state_updates": [],
-            "narrative_response": f"You {player_input}. Nothing particularly noteworthy happens, but you feel satisfied having tried.",
             "requires_dice_roll": False,
             "dice_check": None,
         }
@@ -329,10 +349,10 @@ class GeminiClient:
 
             # Fix move_player with missing destination
             if update_type == "move_player" and not params.get("destination"):
-                # Try to infer from narrative which direction they're going
-                narrative = interpretation.get("narrative_response", "").lower()
+                # Try to infer from intent which direction they're going
+                intent = interpretation.get("intent", "").lower()
                 for direction, dest_id in exit_destinations.items():
-                    if direction in narrative:
+                    if direction in intent:
                         params["destination"] = dest_id
                         update["params"] = params
                         print(
@@ -488,6 +508,63 @@ CRITICAL RULES:
 Write in second person (you see..., you notice..., you feel..., you hear...).
 Be concise but evocative.
 """
+
+        return prompt
+
+    def _build_narrative_prompt(
+        self, player_input: str, intent: str, context: Dict[str, Any]
+    ) -> str:
+        """Build prompt for generating narrative based on current state.
+
+        This is called AFTER state updates, so context reflects actual current state.
+        """
+        location = context.get("location", {})
+        items = context.get("items", [])
+        npcs = context.get("npcs", [])
+        player = context.get("player", {})
+        inventory_items = player.get("inventory", [])
+
+        prompt = f"""You are a Dungeon Master narrating the outcome of a player's action.
+
+WHAT THE PLAYER DID: "{player_input}"
+INTERPRETED INTENT: {intent}
+
+CURRENT GAME STATE (after action was processed):
+
+Location: {location.get('name', 'Unknown')}
+Location details: {location.get('attributes', {})}
+
+Items at this location (on the ground): {[item.get('name') for item in items] if items else 'none'}
+Item details: {items if items else 'none'}
+
+NPCs at this location: {[npc.get('name') for npc in npcs] if npcs else 'none'}
+NPC details: {npcs if npcs else 'none'}
+
+Player inventory (what they are carrying): {[item.get('name') for item in inventory_items] if inventory_items else 'nothing'}
+Inventory details: {inventory_items if inventory_items else 'empty'}
+
+🎯 YOUR TASK:
+Generate a vivid, engaging narrative (2-4 sentences) describing what just happened.
+- Narrate the outcome of the player's action based on the CURRENT STATE above
+- The action has already been processed, describe the result
+- Write in second person (you do..., you see..., you notice...)
+- Be dramatic and immersive
+
+⚠️  CRITICAL RULES - DESCRIBE ONLY WHAT EXISTS IN CURRENT STATE:
+1. Items: Only mention items that appear in "Items at this location" or "Player inventory"
+2. NPCs: Only mention NPCs that appear in "NPCs at this location"
+3. Light sources: Only mention torches/lanterns if they appear in the lists above
+4. Inventory: Only say player is carrying/holding items if they are in "Player inventory"
+5. DO NOT invent items, NPCs, or details that aren't in the current state
+6. If an item/NPC was just picked up/dropped, it should be in the correct list now
+
+Examples of CORRECT narration:
+- If item moved to inventory: "You reach down and pick up the sword. It now rests securely in your belt."
+- If item dropped: "You toss the sword aside. It clatters to the ground at your feet."
+- If NPC present: "The guard watches you warily as you approach."
+- If NPC not present: "You look around the empty chamber."
+
+Return ONLY the narrative text (2-4 sentences), nothing else."""
 
         return prompt
 
@@ -782,6 +859,9 @@ For example:
 - "go north" -> Move player to new location
 - "attack skeleton" -> Initiate combat (requires dice roll)
 
+Your task: Interpret the player's action and return state updates.
+DO NOT generate narrative - that will be done separately after state updates are applied.
+
 Return ONLY valid JSON in this exact format:
 {{
   "intent": "Clear description of what player wants to do",
@@ -795,7 +875,6 @@ Return ONLY valid JSON in this exact format:
       }}
     }}
   ],
-  "narrative_response": "Your vivid, engaging response as DM (2-4 sentences)",
   "requires_dice_roll": false,
   "dice_check": null
 }}

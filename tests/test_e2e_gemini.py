@@ -67,12 +67,10 @@ def test_go_north_e2e(skip_if_no_gcp, game_setup):
 
     print(f"Intent: {interpretation.get('intent')}")
     print(f"State Updates: {interpretation.get('state_updates')}")
-    print(f"Narrative: {interpretation.get('narrative_response', '')[:100]}...")
 
-    # Verify we got valid structured output
+    # Verify we got valid structured output (narrative generated separately now)
     assert "intent" in interpretation
     assert "state_updates" in interpretation
-    assert "narrative_response" in interpretation
     assert "is_valid" in interpretation
 
     # Apply state updates
