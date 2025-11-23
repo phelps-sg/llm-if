@@ -81,13 +81,20 @@ class GameLoop:
         if state_updates:
             self.action_processor.apply_state_updates(state_updates, self.game_state)
 
-        # Step 3: Generate narrative based on CURRENT state (after updates)
-        updated_context = self._build_context()
-        narrative = self.gemini.generate_narrative(
-            player_input,
-            interpretation.get("intent", ""),
-            updated_context
-        )
+        # Step 3: Generate narrative (skip for movement - location description handles that)
+        is_movement = any(update.get("type") == "move_player" for update in state_updates)
+
+        if is_movement:
+            # For movement, skip narrative - location description will show new state
+            narrative = ""
+        else:
+            # For non-movement actions, generate narrative from current state
+            updated_context = self._build_context()
+            narrative = self.gemini.generate_narrative(
+                player_input,
+                interpretation.get("intent", ""),
+                updated_context
+            )
 
         # Store narrative in interpretation for history
         interpretation["narrative_response"] = narrative
@@ -164,20 +171,28 @@ class GameLoop:
             )
             print(f"  Item locations: {self.game_state.item_locations}")
 
-        # Step 3: Generate narrative based on current state
-        print("[DM narrates what happened...]")
-        updated_context = self._build_context()
-        narrative = self.gemini.generate_narrative(
-            player_input,
-            interpretation.get("intent", ""),
-            updated_context
-        )
+        # Step 3: Generate narrative (skip for movement - location description handles that)
+        is_movement = any(update.get("type") == "move_player" for update in state_updates)
+
+        if is_movement:
+            # For movement, skip narrative - location description will show new state
+            narrative = ""
+        else:
+            # For non-movement actions, generate narrative from current state
+            print("[DM narrates what happened...]")
+            updated_context = self._build_context()
+            narrative = self.gemini.generate_narrative(
+                player_input,
+                interpretation.get("intent", ""),
+                updated_context
+            )
 
         # Store narrative in interpretation for history
         interpretation["narrative_response"] = narrative
 
-        # Show narrative response
-        print(f"\n{narrative}")
+        # Show narrative response (if any)
+        if narrative:
+            print(f"\n{narrative}")
 
         # Show combat results if combat occurred
         if "last_combat_result" in self.game_state.flags:

@@ -557,12 +557,19 @@ Generate a vivid, engaging narrative (2-4 sentences) describing what just happen
 4. Inventory: Only say player is carrying/holding items if they are in "Player inventory"
 5. DO NOT invent items, NPCs, or details that aren't in the current state
 6. If an item/NPC was just picked up/dropped, it should be in the correct list now
+7. **MOVEMENT ACTIONS**: If player moved locations, describe ARRIVING at the current location.
+   DO NOT describe what was at the previous location. The NPCs/items listed are at the NEW location.
 
 Examples of CORRECT narration:
-- If item moved to inventory: "You reach down and pick up the sword. It now rests securely in your belt."
-- If item dropped: "You toss the sword aside. It clatters to the ground at your feet."
-- If NPC present: "The guard watches you warily as you approach."
-- If NPC not present: "You look around the empty chamber."
+- Movement: "You head south through the forest. As you enter the clearing, you notice a white deer grazing peacefully."
+- Item pickup: "You reach down and pick up the sword. It now rests securely in your belt."
+- Item drop: "You toss the sword aside. It clatters to the ground at your feet."
+- NPC at location: "The guard watches you warily as you approach."
+- NPC not present: "You look around the empty chamber."
+
+Examples of WRONG narration for movement:
+- ❌ "You leave the chamber. The guard watches you go." (guard is at NEW location, not old one)
+- ❌ "The deer observes as you depart." (deer is at destination, can't watch you leave origin)
 
 Return ONLY the narrative text (2-4 sentences), nothing else."""
 
