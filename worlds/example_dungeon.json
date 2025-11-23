@@ -1,0 +1,236 @@
+{
+  "locations": {
+    "entrance": {
+      "id": "entrance",
+      "name": "Dungeon Entrance",
+      "attributes": {
+        "description_hints": "moss-covered stone walls, ancient archway, cold damp air",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "temperature": "cold",
+        "atmosphere": "foreboding"
+      },
+      "connections": {
+        "north": "hall",
+        "south": "forest_clearing"
+      }
+    },
+    "hall": {
+      "id": "hall",
+      "name": "Grand Hall",
+      "attributes": {
+        "description_hints": "vaulted ceiling, crumbling pillars, ancient banners",
+        "lighting": "pitch_black",
+        "is_outdoors": false,
+        "has_windows": false,
+        "size": "large",
+        "atmosphere": "ominous"
+      },
+      "connections": {
+        "south": "entrance",
+        "north": "chamber",
+        "east": "armory"
+      }
+    },
+    "armory": {
+      "id": "armory",
+      "name": "Old Armory",
+      "attributes": {
+        "description_hints": "rusted weapon racks, scattered armor pieces, dusty",
+        "lighting": "pitch_black",
+        "is_outdoors": false,
+        "has_windows": false,
+        "atmosphere": "abandoned"
+      },
+      "connections": {
+        "west": "hall"
+      }
+    },
+    "chamber": {
+      "id": "chamber",
+      "name": "Throne Chamber",
+      "attributes": {
+        "description_hints": "ornate throne, tattered tapestries, scattered bones, eerie glow from throne",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "size": "large",
+        "atmosphere": "sinister"
+      },
+      "connections": {
+        "south": "hall"
+      }
+    },
+    "forest_clearing": {
+      "id": "forest_clearing",
+      "name": "Forest Clearing",
+      "attributes": {
+        "description_hints": "tall ancient trees, dappled sunlight, soft grass, birdsong, weathered stone markers",
+        "lighting": "bright",
+        "is_outdoors": true,
+        "has_windows": false,
+        "size": "medium",
+        "atmosphere": "peaceful",
+        "temperature": "mild"
+      },
+      "connections": {
+        "north": "entrance"
+      }
+    }
+  },
+  "npcs": {
+    "skeleton_guard": {
+      "id": "skeleton_guard",
+      "name": "Skeletal Guard",
+      "attributes": {
+        "description_hints": "rusted chainmail, glowing green eyes, ancient bones",
+        "creature_type": "undead",
+        "hp": 13,
+        "hp_max": 13,
+        "armor_class": 13,
+        "attack_bonus": 4,
+        "hostility": "aggressive",
+        "str": 10,
+        "dex": 14,
+        "con": 15
+      }
+    },
+    "rat": {
+      "id": "rat",
+      "name": "Giant Rat",
+      "attributes": {
+        "description_hints": "mangy fur, beady red eyes, sharp teeth",
+        "creature_type": "beast",
+        "hp": 7,
+        "hp_max": 7,
+        "armor_class": 12,
+        "attack_bonus": 3,
+        "hostility": "defensive",
+        "str": 7,
+        "dex": 15,
+        "con": 11
+      }
+    },
+    "deer": {
+      "id": "deer",
+      "name": "White Deer",
+      "attributes": {
+        "description_hints": "pristine white coat, gentle eyes, delicate antlers",
+        "creature_type": "beast",
+        "hp": 4,
+        "hp_max": 4,
+        "armor_class": 13,
+        "attack_bonus": 2,
+        "hostility": "passive",
+        "str": 6,
+        "dex": 16,
+        "con": 10
+      }
+    }
+  },
+  "items": {
+    "rusty_sword": {
+      "id": "rusty_sword",
+      "name": "Rusty Sword",
+      "attributes": {
+        "description_hints": "pitted blade, worn grip, barely functional",
+        "type": "weapon",
+        "damage": "1d6",
+        "damage_type": "slashing",
+        "weight": 3,
+        "condition": "poor"
+      }
+    },
+    "torch": {
+      "id": "torch",
+      "name": "Torch",
+      "attributes": {
+        "description_hints": "burning brightly, crackling flames, warm glow",
+        "type": "light_source",
+        "weight": 1,
+        "burning": true,
+        "provides_light": true,
+        "light_level": "dim"
+      }
+    },
+    "health_potion": {
+      "id": "health_potion",
+      "name": "Health Potion",
+      "attributes": {
+        "description_hints": "red liquid in glass vial, glowing faintly",
+        "type": "consumable",
+        "effect": "heal",
+        "heal_amount": "2d4+2",
+        "weight": 0.5
+      }
+    },
+    "ancient_key": {
+      "id": "ancient_key",
+      "name": "Ancient Key",
+      "attributes": {
+        "description_hints": "tarnished bronze, ornate design",
+        "type": "key",
+        "weight": 0.1
+      }
+    },
+    "oak_staff": {
+      "id": "oak_staff",
+      "name": "Oak Staff",
+      "attributes": {
+        "description_hints": "sturdy oak wood, smooth from use, brass fittings",
+        "type": "weapon",
+        "damage": "1d6",
+        "damage_type": "bludgeoning",
+        "weight": 4,
+        "condition": "good"
+      }
+    },
+    "wild_berries": {
+      "id": "wild_berries",
+      "name": "Wild Berries",
+      "attributes": {
+        "description_hints": "cluster of dark purple berries, fresh and plump",
+        "type": "consumable",
+        "effect": "heal",
+        "heal_amount": "1d4",
+        "weight": 0.2
+      }
+    }
+  },
+  "player": {
+    "name": "Adventurer",
+    "attributes": {
+      "class": "fighter",
+      "level": 1,
+      "hp": 12,
+      "hp_max": 12,
+      "armor_class": 14,
+      "attack_bonus": 5,
+      "str": 16,
+      "dex": 12,
+      "con": 14,
+      "int": 10,
+      "wis": 11,
+      "cha": 9
+    },
+    "inventory": []
+  },
+  "npc_locations": {
+    "skeleton_guard": "hall",
+    "rat": "armory",
+    "deer": "forest_clearing"
+  },
+  "item_locations": {
+    "rusty_sword": "entrance",
+    "torch": "entrance",
+    "health_potion": "armory",
+    "ancient_key": "chamber",
+    "oak_staff": "forest_clearing",
+    "wild_berries": "forest_clearing"
+  },
+  "player_location": "entrance",
+  "turn_count": 0,
+  "history": [],
+  "flags": {}
+}

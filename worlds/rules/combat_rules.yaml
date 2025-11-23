@@ -1,0 +1,99 @@
+# D&D 5e Combat Rules
+# These rules govern combat mechanics in the game
+
+rules:
+  - id: melee_attack
+    name: Melee Attack
+    description: Standard melee weapon attack using D&D 5e rules
+    trigger: action
+    trigger_filter:
+      action_type: attack
+      attack_range: melee
+    conditions:
+      - "actor.hp > 0"
+      - "target.hp > 0"
+    effects:
+      - type: d20_check
+        params:
+          modifier: actor.attack_bonus
+          dc: target.armor_class
+          on_success:
+            type: damage
+            damage_dice: weapon.damage
+            damage_type: weapon.damage_type
+    priority: 100
+    can_override: false
+
+  - id: ranged_attack
+    name: Ranged Attack
+    description: Standard ranged weapon attack using D&D 5e rules
+    trigger: action
+    trigger_filter:
+      action_type: attack
+      attack_range: ranged
+    conditions:
+      - "actor.hp > 0"
+      - "target.hp > 0"
+    effects:
+      - type: d20_check
+        params:
+          modifier: actor.attack_bonus
+          dc: target.armor_class
+          on_success:
+            type: damage
+            damage_dice: weapon.damage
+            damage_type: weapon.damage_type
+    priority: 100
+    can_override: false
+
+  - id: unarmed_attack
+    name: Unarmed Strike
+    description: Unarmed melee attack (1 + STR modifier)
+    trigger: action
+    trigger_filter:
+      action_type: attack
+      attack_range: unarmed
+    conditions:
+      - "actor.hp > 0"
+      - "target.hp > 0"
+    effects:
+      - type: d20_check
+        params:
+          modifier: actor.attack_bonus
+          dc: target.armor_class
+          on_success:
+            type: damage
+            damage_dice: "1"  # 1 + STR modifier
+            damage_type: bludgeoning
+    priority: 100
+    can_override: false
+
+  - id: death_at_zero_hp
+    name: Death at Zero HP
+    description: Entity dies when HP reaches 0
+    trigger: damage_taken
+    conditions:
+      - "target.hp <= 0"
+    effects:
+      - type: set_flag
+        params:
+          flag: entity.is_dead
+          value: true
+    priority: 200
+    can_override: false
+
+  - id: critical_hit_double_damage
+    name: Critical Hit
+    description: Natural 20 doubles damage
+    trigger: action
+    trigger_filter:
+      action_type: attack
+    conditions:
+      - "d20_roll == 20"
+    effects:
+      - type: modify_attribute
+        params:
+          attribute: damage_multiplier
+          value: 2
+    priority: 150
+    can_override: false

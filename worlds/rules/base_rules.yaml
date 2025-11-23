@@ -1,0 +1,81 @@
+# Base Game Rules
+# These rules govern basic game mechanics
+
+rules:
+  - id: pick_up_item
+    name: Pick Up Item
+    description: Player picks up an item from current location
+    trigger: action
+    trigger_filter:
+      action_type: pick_up
+    conditions:
+      - "item.location == player.location"
+    effects:
+      - type: modify_attribute
+        params:
+          target: item
+          attribute: location
+          value: null
+      - type: modify_attribute
+        params:
+          target: item
+          attribute: owner
+          value: player
+    priority: 10
+    can_override: false
+
+  - id: drop_item
+    name: Drop Item
+    description: Player drops an item at current location
+    trigger: action
+    trigger_filter:
+      action_type: drop
+    conditions:
+      - "item.owner == player"
+    effects:
+      - type: modify_attribute
+        params:
+          target: item
+          attribute: location
+          value: player.location
+      - type: modify_attribute
+        params:
+          target: item
+          attribute: owner
+          value: null
+    priority: 10
+    can_override: false
+
+  - id: move_to_location
+    name: Move to Location
+    description: Player moves to a connected location
+    trigger: action
+    trigger_filter:
+      action_type: move
+    conditions:
+      - "destination in current_location.connections"
+      - "current_location.connections.destination != null"
+    effects:
+      - type: modify_attribute
+        params:
+          target: player
+          attribute: location
+          value: destination
+    priority: 10
+    can_override: false
+
+  - id: blocked_movement
+    name: Blocked Movement
+    description: Prevent movement to blocked or non-existent locations
+    trigger: action
+    trigger_filter:
+      action_type: move
+    conditions:
+      - "destination not in current_location.connections"
+    effects:
+      - type: set_flag
+        params:
+          flag: action_blocked
+          value: true
+    priority: 20
+    can_override: true
