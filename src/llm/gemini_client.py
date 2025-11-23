@@ -597,6 +597,53 @@ Write your narration (3-4 sentences):
 
         return prompt
 
+    def _build_plot_instructions(self, context: Dict[str, Any]) -> str:
+        """Build plot management instructions if a plot is active."""
+        plot_info = context.get("plot")
+        if not plot_info:
+            return ""
+
+        plot_config = plot_info.get("config", {})
+        dm_state = plot_info.get("dm_state", {})
+        all_npcs = context.get("all_npcs", {})
+
+        plot_desc = plot_config.get("description", "")
+        plot_title = plot_config.get("title", "Unnamed Plot")
+
+        # Build list of all NPCs with locations
+        npc_summary = []
+        for npc_id, npc_data in all_npcs.items():
+            npc_summary.append(
+                f"  - {npc_data['name']} (ID: {npc_id}) at {npc_data['location']}"
+            )
+        npc_list = "\n".join(npc_summary) if npc_summary else "  (none)"
+
+        return f"""
+🎭 PLOT ORCHESTRATION - "{plot_title}"
+
+PLOT DESCRIPTION (Your secret instructions as DM):
+{plot_desc}
+
+ALL NPCs IN THE WORLD (for plot management):
+{npc_list}
+
+CURRENT DM STATE (your hidden plot tracking):
+{json.dumps(dm_state, indent=2) if dm_state else "{{}}"}
+
+PLOT MANAGEMENT INSTRUCTIONS:
+- You are orchestrating this plot alongside the player's immediate actions
+- Use update_dm_state to track plot-relevant information (hidden from player)
+- You can modify NPCs anywhere in the world, not just at player's location
+- Use modify_attribute to transform NPCs when the plot demands it
+- The player NEVER sees dm_state - this is YOUR private notebook
+- Follow the plot description's guidance, but adapt creatively to player actions
+
+EXAMPLES:
+- Track infection: {{"type": "update_dm_state", "params": {{"path": "npc_states.wolf.infected", "value": true}}}}
+- Track plot progress: {{"type": "update_dm_state", "params": {{"path": "days_until_event", "value": 5}}}}
+- Transform NPC: {{"type": "modify_attribute", "target": "deer", "params": {{"attribute_path": "attributes.creature_type", "value": "undead"}}}}
+"""
+
     def _build_action_interpretation_prompt(
         self, player_input: str, context: Dict[str, Any]
     ) -> str:
@@ -690,6 +737,8 @@ Examples:
 - Player attacks aggressive skeleton → Trigger combat
 - Player shouts at defensive rat → Rat gets nervous but doesn't attack
 
+{self._build_plot_instructions(context)}
+
 PLAYER ACTION: "{player_input}"
 
 CRITICAL RULES - YOUR NARRATIVE MUST MATCH YOUR STATE UPDATES:
@@ -725,7 +774,7 @@ Return ONLY valid JSON in this exact format:
   "is_valid": true,
   "state_updates": [
     {{
-      "type": "move_player|move_item|move_npc|remove_npc|modify_attribute|add_to_inventory|remove_from_inventory|consume_item|set_flag|trigger_combat|no_change",
+      "type": "move_player|move_item|move_npc|remove_npc|modify_attribute|add_to_inventory|remove_from_inventory|consume_item|set_flag|trigger_combat|update_dm_state|no_change",
       "target": "entity_id or null",
       "params": {{
         "key": "value"
@@ -748,6 +797,7 @@ STATE UPDATE TYPES AND REQUIRED PARAMS:
 - "modify_attribute": {{"entity_id": "id", "attribute_path": "path.to.attr", "value": "new_value"}}
 - "set_flag": {{"flag_name": "name", "value": true}}
 - "trigger_combat": {{"target_npc_id": "id", "attack_type": "melee"}}
+- "update_dm_state": {{"path": "dot.separated.path", "value": any}} - Update hidden DM state for plot tracking
 - "no_change": {{}} (for actions that are just narrative)
 
 EXAMPLES OF CORRECT STATE UPDATE + NARRATIVE MATCHING:

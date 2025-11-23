@@ -48,6 +48,49 @@ class GameLoop:
 
                 traceback.print_exc()
 
+    def process_turn(self, player_input: str) -> tuple[str, Dict[str, Any]]:
+        """Process a single turn and return results (for testing).
+
+        Args:
+            player_input: Player's input string
+
+        Returns:
+            Tuple of (narrative_response, interpretation)
+        """
+        # Build context
+        context = self._build_context()
+
+        # Add pronoun resolution hints to context
+        if self.last_referenced_item:
+            context["last_item"] = self.last_referenced_item
+        if self.last_referenced_npc:
+            context["last_npc"] = self.last_referenced_npc
+
+        # Interpret action using LLM
+        interpretation = self.gemini.interpret_action(player_input, context)
+
+        # Track what was referenced for pronoun resolution
+        self._update_reference_tracking(interpretation, player_input, context)
+
+        # Apply state updates
+        state_updates = interpretation.get("state_updates", [])
+        if state_updates:
+            self.action_processor.apply_state_updates(state_updates, self.game_state)
+
+        # Get narrative response
+        narrative = interpretation.get("narrative_response", "...")
+
+        # Increment turn
+        self.game_state.add_history_entry(
+            {
+                "turn": self.game_state.turn_count,
+                "input": player_input,
+                "interpretation": interpretation,
+            }
+        )
+
+        return narrative, interpretation
+
     def _game_turn(self) -> None:
         """Execute one turn of the game."""
         # Get player input
@@ -404,8 +447,19 @@ You can also type natural language commands and the AI will interpret them.
                 if dest_id:
                     exit_destinations[direction] = dest_id
 
+        # Build map of ALL NPCs with their locations (for plot management)
+        all_npcs = {}
+        for npc_id, npc in self.game_state.npcs.items():
+            npc_location = self.game_state.npc_locations.get(npc_id, "unknown")
+            all_npcs[npc_id] = {
+                "id": npc.id,
+                "name": npc.name,
+                "attributes": npc.attributes,
+                "location": npc_location,
+            }
+
         # Build detailed context
-        return {
+        context = {
             "location": location.model_dump() if location else None,
             "exits": location.get_available_exits() if location else [],
             "exit_destinations": exit_destinations,  # direction -> location_id map
@@ -424,4 +478,14 @@ You can also type natural language commands and the AI will interpret them.
                 "attributes": self.game_state.player.attributes,
             },
             "all_locations": all_locations,  # Complete map of location IDs
+            "all_npcs": all_npcs,  # All NPCs with locations (for plot management)
         }
+
+        # Add plot information if present
+        if self.game_state.plot_config:
+            context["plot"] = {
+                "config": self.game_state.plot_config,
+                "dm_state": self.game_state.dm_state,
+            }
+
+        return context

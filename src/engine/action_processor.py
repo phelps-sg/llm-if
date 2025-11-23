@@ -139,6 +139,13 @@ class ActionProcessor:
                     if location_id:
                         game_state.move_npc_to_location(npc_id, location_id)
 
+            elif update_type == "update_dm_state":
+                # Update hidden DM state for plot tracking
+                path = params.get("path")
+                value = params.get("value")
+                if path:
+                    self._set_nested_dm_state(game_state, path, value)
+
             elif update_type == "no_change":
                 # Narrative-only action, no state change
                 pass
@@ -311,6 +318,29 @@ class ActionProcessor:
         current: Dict[str, Any] = entity.attributes
 
         # Navigate to parent of final key
+        for part in parts[:-1]:
+            if part not in current:
+                current[part] = {}
+            current = current[part]
+
+        # Set the final value
+        if len(parts) > 0:
+            current[parts[-1]] = value
+
+    def _set_nested_dm_state(
+        self, game_state: GameState, path: str, value: Any
+    ) -> None:
+        """Set a nested value in dm_state.
+
+        Args:
+            game_state: Game state containing dm_state
+            path: Dot-separated path like "npc_states.wolf.status"
+            value: Value to set
+        """
+        parts = path.split(".")
+        current: Dict[str, Any] = game_state.dm_state
+
+        # Navigate to parent of final key, creating dicts as needed
         for part in parts[:-1]:
             if part not in current:
                 current[part] = {}

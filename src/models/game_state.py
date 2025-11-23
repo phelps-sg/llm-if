@@ -49,6 +49,16 @@ class GameState(BaseModel):
         default_factory=dict, description="Global game flags and state"
     )
 
+    # Plot system (optional - for DM-controlled plots)
+    plot_config: Optional[Dict[str, Any]] = Field(
+        default=None,
+        description="Plot configuration with natural language description for LLM"
+    )
+    dm_state: Dict[str, Any] = Field(
+        default_factory=dict,
+        description="Hidden DM state for plot tracking (not shown to player)"
+    )
+
     # Query methods for locations
 
     def get_items_at_location(self, location_id: str) -> List[Item]:
