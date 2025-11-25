@@ -768,8 +768,18 @@ EXAMPLES:
                 history_text += f"\nTurn -{len(conversation_history) - i + 1}:\n"
                 history_text += f"  Player: {turn.get('player_input', '')}\n"
                 history_text += f"  You (DM): {turn.get('narrative', '')[:150]}...\n"
-            history_text += "\n⚠️  PRONOUN RESOLUTION:\n"
-            history_text += "When the player uses pronouns (it, them, they, he, she, etc.), use the conversation history above to understand what they're referring to. Consider the full context of what was just discussed.\n"
+            history_text += "\n⚠️  PRONOUN RESOLUTION - INTERACTIVE FICTION CONVENTION:\n"
+            history_text += "Pronouns (it, them, they, he, she, etc.) refer to entities mentioned in PLAYER INPUT, NOT in your (DM) narrative.\n\n"
+            history_text += "Priority for resolving pronouns:\n"
+            history_text += "1. Most recent PLAYER INPUT (what the player typed)\n"
+            history_text += "2. Previous PLAYER INPUTS (earlier player commands)\n"
+            history_text += "3. Only if no clear match in player input, consider narrative context\n\n"
+            history_text += "Example:\n"
+            history_text += "  Player: 'take antlers'\n"
+            history_text += "  DM: 'You pick up the antlers. You also see berries nearby.'\n"
+            history_text += "  Player: 'examine them'\n"
+            history_text += "  → 'them' = antlers (from player input), NOT berries (from DM narrative)\n\n"
+            history_text += "Focus on what the PLAYER mentioned, not what you mentioned in your response.\n"
         else:
             # Fallback: use tracked references if no history available
             last_item_id = context.get("last_item")
