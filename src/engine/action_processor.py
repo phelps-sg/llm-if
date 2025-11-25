@@ -139,6 +139,58 @@ class ActionProcessor:
                     if location_id:
                         game_state.move_npc_to_location(npc_id, location_id)
 
+            elif update_type == "create_item":
+                # Dynamically create a new item in the game world
+                item_id = params.get("item_id")
+                name = params.get("name")
+                attributes = params.get("attributes", {})
+                location = params.get("location")  # None means add to player inventory
+
+                if item_id and name:
+                    # Validate item doesn't already exist
+                    if item_id in game_state.items:
+                        print(f"[WARNING] Item '{item_id}' already exists, skipping create_item")
+                        continue
+
+                    # Create new Item object
+                    new_item = Item(
+                        id=item_id,
+                        name=name,
+                        attributes=attributes
+                    )
+
+                    # Add to game state
+                    game_state.items[item_id] = new_item
+
+                    # Set location or add to inventory
+                    if location is None:
+                        # Add to player inventory
+                        game_state.player.add_item(item_id)
+                    else:
+                        # Resolve location name to ID and place item there
+                        location_id = self._resolve_location_id(location, game_state)
+                        if location_id:
+                            game_state.item_locations[item_id] = location_id
+                        else:
+                            # Default to player's current location if invalid
+                            game_state.item_locations[item_id] = game_state.player_location
+
+            elif update_type == "destroy_item":
+                # Permanently remove an item from the game world
+                item_id = params.get("item_id") or target
+                if item_id:
+                    # Remove from player inventory if present
+                    if item_id in game_state.player.inventory:
+                        game_state.player.remove_item(item_id)
+
+                    # Remove from item_locations
+                    if item_id in game_state.item_locations:
+                        del game_state.item_locations[item_id]
+
+                    # Remove from items dict (permanent deletion)
+                    if item_id in game_state.items:
+                        del game_state.items[item_id]
+
             elif update_type == "update_dm_state":
                 # Update hidden DM state for plot tracking
                 path = params.get("path")

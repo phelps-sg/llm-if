@@ -238,6 +238,9 @@ class GeminiClient:
                                             "nullable": True,
                                         },
                                         "item_id": {"type": "STRING", "nullable": True},
+                                        "name": {"type": "STRING", "nullable": True},
+                                        "attributes": {"type": "OBJECT", "nullable": True},
+                                        "location": {"type": "STRING", "nullable": True},
                                         "npc_id": {"type": "STRING", "nullable": True},
                                         "target_npc_id": {
                                             "type": "STRING",
@@ -504,6 +507,11 @@ CRITICAL RULES:
 5. LIGHT SOURCES: Only say "your torch" or "your lantern" if it appears under "Light sources CARRIED by player".
    If it appears under "Light sources AT THIS LOCATION (on ground)", describe it as being at the location, not possessed.
    Example: "A torch on the ground casts flickering light" NOT "By the light of your torch"
+6. **NPC DESCRIPTIONS - CHECK ATTRIBUTES**: When describing NPCs, check their "attributes" field in "NPC details" above.
+   - If an NPC has "has_antlers: false", do NOT describe them as having antlers
+   - If an NPC has "wounded: true", describe them as wounded
+   - Always use the CURRENT attribute values, not default/expected ones
+   - Example: A deer with "has_antlers: false" should be "an antlerless white deer", not "a deer with delicate antlers"
 
 Write in second person (you see..., you notice..., you feel..., you hear...).
 Be concise but evocative.
@@ -875,7 +883,7 @@ Return ONLY valid JSON in this exact format:
   "is_valid": true,
   "state_updates": [
     {{
-      "type": "move_player|move_item|move_npc|remove_npc|modify_attribute|add_to_inventory|remove_from_inventory|consume_item|set_flag|trigger_combat|update_dm_state|no_change",
+      "type": "move_player|move_item|move_npc|remove_npc|modify_attribute|add_to_inventory|remove_from_inventory|consume_item|create_item|destroy_item|set_flag|trigger_combat|update_dm_state|no_change",
       "target": "entity_id or null",
       "params": {{
         "key": "value"
@@ -891,6 +899,13 @@ STATE UPDATE TYPES AND REQUIRED PARAMS:
 - "add_to_inventory": {{"item_id": "item_id"}} - Pick up item from location
 - "remove_from_inventory": {{"item_id": "item_id"}} - Drop item at current location
 - "consume_item": {{"item_id": "item_id"}} - Eat/drink/destroy item (removes from game entirely)
+- "create_item": {{"item_id": "unique_id", "name": "Item Name", "attributes": {{}}, "location": "location_id or null"}} - Dynamically create a new item
+  * Use when player action naturally creates a new item (breaking antlers off, splitting item, crafting, etc.)
+  * item_id must be unique (e.g., "severed_antlers", "broken_branch_1")
+  * attributes can include: {{"type": "weapon/consumable/misc", "damage": "1d4", "sharp": true, etc.}}
+  * location: null means add to player inventory, otherwise use location_id for ground
+  * Example: Player knocks antlers off deer -> create_item with item_id="severed_antlers", location="current_location"
+- "destroy_item": {{"item_id": "item_id"}} - Permanently remove item from game (different from consume_item)
 - "move_item": {{"item_id": "id", "to_location": "location_id"}} - MUST include both!
 - "move_npc": {{"npc_id": "id", "to_location": "location_id"}} - Move NPC to different location
 - "remove_npc": {{"npc_id": "id"}} - Remove NPC from current location (teleport, banish, etc.)

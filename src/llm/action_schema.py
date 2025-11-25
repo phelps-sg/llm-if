@@ -16,6 +16,8 @@ class StateUpdate(BaseModel):
         "add_to_inventory",
         "remove_from_inventory",
         "consume_item",
+        "create_item",
+        "destroy_item",
         "set_flag",
         "trigger_combat",
         "update_dm_state",
