@@ -59,6 +59,12 @@ class GameState(BaseModel):
         description="Hidden DM state for plot tracking (not shown to player)"
     )
 
+    # Rogue-like mode configuration
+    rogue_config: Optional[Dict[str, Any]] = Field(
+        default=None,
+        description="Configuration for rogue-like procedural generation mode"
+    )
+
     # Description caching for consistency
     description_cache: Dict[str, Dict[str, Any]] = Field(
         default_factory=dict,

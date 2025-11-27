@@ -212,6 +212,241 @@ class GeminiClient:
         prompt = self._build_npc_actions_prompt(npc_actions, context)
         return self.generate(prompt)
 
+    def generate_dungeon_level(
+        self,
+        level_number: int,
+        genre: str,
+        plot: Optional[str] = None,
+        specifics: Optional[str] = None,
+        difficulty_modifier: float = 1.0
+    ) -> Dict[str, Any]:
+        """Generate complete dungeon level using incremental LLM calls.
+
+        Uses 3-step generation:
+        1. Structure (locations, connections, theme)
+        2. NPCs (entities with stats)
+        3. Items (objects with attributes)
+
+        Descriptions generated on-demand when player visits locations.
+
+        Args:
+            level_number: Level depth (1, 2, 3, etc.)
+            genre: Genre/theme for the level
+            plot: Optional plot guidance
+            specifics: Optional specific requests
+            difficulty_modifier: Multiplier for difficulty scaling
+
+        Returns:
+            Dict containing complete level data
+        """
+        print(f"  [1/3] Generating level structure...")
+        structure = self._generate_level_structure(
+            level_number, genre, plot, specifics
+        )
+
+        print(f"  [2/3] Generating NPCs...")
+        npcs_data = self._generate_level_npcs(
+            level_number, genre, structure["theme"],
+            structure["location_ids"], difficulty_modifier
+        )
+
+        print(f"  [3/3] Generating items...")
+        items_data = self._generate_level_items(
+            level_number, genre, structure["theme"],
+            structure["location_ids"]
+        )
+
+        # Combine all parts
+        return {
+            "locations": structure["locations"],
+            "npcs": npcs_data["npcs"],
+            "items": items_data["items"],
+            "npc_locations": npcs_data["npc_locations"],
+            "item_locations": items_data["item_locations"],
+            "entry_location_id": structure["entry_location_id"],
+            "exit_location_id": structure["exit_location_id"],
+            "theme": structure["theme"]
+        }
+
+    def _generate_level_structure(
+        self,
+        level_number: int,
+        genre: str,
+        plot: Optional[str],
+        specifics: Optional[str]
+    ) -> Dict[str, Any]:
+        """Generate level structure (locations, connections, theme).
+
+        Returns:
+            locations: List of location dicts (minimal - just ID, name, connections, attributes)
+            entry_location_id: Entry location ID
+            exit_location_id: Exit location ID
+            theme: Theme string
+            location_ids: List of all location IDs (for NPC/item placement)
+        """
+        from vertexai.generative_models import GenerationConfig
+        import json
+
+        plot_text = f"\nPlot: {plot}" if plot else ""
+        specifics_text = f"\nSpecifics: {specifics}" if specifics else ""
+
+        prompt = f"""Generate the STRUCTURE for Level {level_number} of a {genre} dungeon.{plot_text}{specifics_text}
+
+Create 3-4 interconnected locations with connections. DO NOT generate descriptions - those will be created dynamically based on game state.
+
+Requirements:
+1. Generate 3-4 locations (keep it small and manageable)
+2. Each location: ID, name, connections, minimal attributes
+3. One must be ENTRY (where player arrives)
+4. One must be EXIT (leads to next level, has is_dungeon_exit: true)
+5. Create cohesive theme for the level
+6. Use ID pattern: "l{level_number}_<name>" (e.g., "l{level_number}_crypt")
+
+Return JSON with:
+- locations: Array of {{"id": string, "name": string, "connections": {{}}, "attributes": {{}} }}
+- entry_location_id: ID string
+- exit_location_id: ID string
+- theme: Theme description string
+
+EXIT location MUST have: attributes.is_dungeon_exit = true, attributes.leads_to_level = {level_number + 1}"""
+
+        schema = {
+            "type": "OBJECT",
+            "properties": {
+                "locations": {"type": "ARRAY"},
+                "entry_location_id": {"type": "STRING"},
+                "exit_location_id": {"type": "STRING"},
+                "theme": {"type": "STRING"}
+            },
+            "required": ["locations", "entry_location_id", "exit_location_id", "theme"]
+        }
+
+        config = GenerationConfig(
+            response_mime_type="application/json",
+            response_schema=schema,
+            temperature=0.9
+        )
+
+        response = self.model.generate_content(prompt, generation_config=config)
+        data = json.loads(response.text)
+
+        # Add location_ids for convenience
+        data["location_ids"] = [loc["id"] for loc in data["locations"]]
+
+        return data
+
+    def _generate_level_npcs(
+        self,
+        level_number: int,
+        genre: str,
+        theme: str,
+        location_ids: List[str],
+        difficulty_modifier: float
+    ) -> Dict[str, Any]:
+        """Generate NPCs for the level.
+
+        Returns:
+            npcs: List of NPC dicts
+            npc_locations: Dict mapping NPC IDs to location IDs
+        """
+        from vertexai.generative_models import GenerationConfig
+        import json
+
+        # Calculate difficulty
+        base_hp = 10 + (level_number - 1) * 5
+        base_ac = 12 + (level_number - 1)
+        hp = int(base_hp * difficulty_modifier)
+        ac = int(base_ac * difficulty_modifier)
+
+        prompt = f"""Generate 1-2 NPCs for Level {level_number} ({genre} theme: {theme}).
+
+NPC Stats (scale to level {level_number}):
+- HP: {hp - 5} to {hp + 5}
+- AC: {ac - 1} to {ac + 1}
+- Attack bonus: +{max(2, level_number + 1)}
+
+Each NPC must have:
+- id: "npc{level_number}_<name>_1" (e.g., "npc{level_number}_skeleton_1")
+- name: Thematic to {genre}
+- attributes: hp, hp_max, armor_class, attack_bonus, hostility, creature_type, description_hints
+
+Hostility: "aggressive" (60% chance), "neutral" (30%), or "passive" (10%)
+
+Place NPCs at these locations: {location_ids}
+
+Return JSON:
+- npcs: Array of NPC objects
+- npc_locations: Object mapping NPC IDs to location IDs"""
+
+        schema = {
+            "type": "OBJECT",
+            "properties": {
+                "npcs": {"type": "ARRAY"},
+                "npc_locations": {"type": "OBJECT"}
+            },
+            "required": ["npcs", "npc_locations"]
+        }
+
+        config = GenerationConfig(
+            response_mime_type="application/json",
+            response_schema=schema,
+            temperature=0.8
+        )
+
+        response = self.model.generate_content(prompt, generation_config=config)
+        return json.loads(response.text)
+
+    def _generate_level_items(
+        self,
+        level_number: int,
+        genre: str,
+        theme: str,
+        location_ids: List[str]
+    ) -> Dict[str, Any]:
+        """Generate items for the level.
+
+        Returns:
+            items: List of item dicts
+            item_locations: Dict mapping item IDs to location IDs
+        """
+        from vertexai.generative_models import GenerationConfig
+        import json
+
+        prompt = f"""Generate 2-3 items for Level {level_number} ({genre} theme: {theme}).
+
+Mix of:
+- 1 weapon (damage appropriate to level {level_number})
+- 1-2 consumables or treasure
+
+Each item must have:
+- id: "item{level_number}_<name>" (e.g., "item{level_number}_sword")
+- name: Thematic to {genre}
+- attributes: type, damage (if weapon), description_hints, etc.
+
+Place items at these locations: {location_ids}
+
+Return JSON:
+- items: Array of item objects
+- item_locations: Object mapping item IDs to location IDs"""
+
+        schema = {
+            "type": "OBJECT",
+            "properties": {
+                "items": {"type": "ARRAY"},
+                "item_locations": {"type": "OBJECT"}
+            },
+            "required": ["items", "item_locations"]
+        }
+
+        config = GenerationConfig(
+            response_mime_type="application/json",
+            response_schema=schema,
+            temperature=0.8
+        )
+
+        response = self.model.generate_content(prompt, generation_config=config)
+        return json.loads(response.text)
+
     def interpret_action(
         self, player_input: str, context: Dict[str, Any]
     ) -> Dict[str, Any]:
