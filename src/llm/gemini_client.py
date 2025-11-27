@@ -982,6 +982,13 @@ Return ONLY valid JSON in this exact format:
 
 STATE UPDATE TYPES AND REQUIRED PARAMS:
 - "move_player": {{"destination": "location_id"}} - MUST include destination as location ID!
+  ⚠️  INVALID MOVES: If player tries to move in a direction with NO EXIT:
+  * Set is_valid: false
+  * Use no_change state update
+  * Narrative should explain WHY blocked (thick foliage, solid wall, cliff edge, etc.)
+  * DO NOT describe movement as succeeding
+  * Example: Player goes south (no south exit) → "Thick foliage blocks your path south."
+  * DO NOT say: "You move south into the clearing" (implies success)
 - "add_to_inventory": {{"item_id": "item_id"}} - Pick up item from location
 - "remove_from_inventory": {{"item_id": "item_id"}} - Drop item at current location
 - "consume_item": {{"item_id": "item_id"}} - Eat/drink/destroy item (removes from game entirely)
