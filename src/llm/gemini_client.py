@@ -520,6 +520,11 @@ Be concise but evocative.
         player = context.get("player", {})
         inventory_items = player.get("inventory", [])
 
+        # Check if this is a dialogue/conversation action
+        player_input_lower = player_input.lower()
+        dialogue_keywords = ['talk to', 'speak to', 'speak with', 'ask', 'greet', 'tell', 'say to', 'chat with', 'converse', 'question']
+        is_dialogue_action = any(keyword in player_input_lower for keyword in dialogue_keywords)
+
         prompt = f"""You are a Dungeon Master narrating the outcome of a player's action.
 
 WHAT THE PLAYER DID: "{player_input}"
@@ -538,6 +543,54 @@ NPC details: {npcs if npcs else 'none'}
 
 Player inventory (what they are carrying): {[item.get('name') for item in inventory_items] if inventory_items else 'nothing'}
 Inventory details: {inventory_items if inventory_items else 'empty'}"""
+
+        # Add NPC dialogue instructions if this is a conversation action
+        if is_dialogue_action and npcs:
+            prompt += """
+
+🗣️ NPC DIALOGUE GENERATION - CRITICAL INSTRUCTIONS:
+
+The player is trying to communicate with an NPC. You MUST generate actual spoken dialogue from the NPC!
+
+DIALOGUE REQUIREMENTS:
+1. **Include quoted speech** from the NPC using quotation marks
+   Example: The genie's eyes twinkle. "Greetings, mortal," it intones...
+
+2. **NPC explains their role/purpose/mechanics** based on their attributes
+   - Check NPC attributes for: personality, wishes_remaining, special_powers, role, etc.
+   - Genies should explain wish rules and limitations
+   - Guards might warn or threaten
+   - Merchants might offer trades
+   - Quest-givers might explain tasks
+
+3. **Use NPC personality** from attributes to determine speech style
+   - "mischievous" → playful, teasing language
+   - "hostile" → threatening, aggressive language
+   - "wise" → sage-like, thoughtful speech
+   - "timid" → nervous, uncertain speech
+
+4. **Make dialogue informative AND atmospheric**
+   - Reveal game mechanics through character voice
+   - Provide hints about how to interact with this NPC
+   - Stay in character - let personality shine through
+
+EXAMPLES OF GOOD NPC DIALOGUE:
+
+Example 1 - Genie (from attributes: wishes_remaining=3, personality=mischievous):
+"The Ancient Genie's form solidifies before you, its blue ethereal body shimmering in the dappled sunlight. 'Ah, another visitor!' the genie exclaims, its voice resonating like distant thunder. 'I am bound by ancient law to grant thee three wishes. But choose thy words carefully, mortal—I grant exactly what is asked, no more, no less.' The genie grins mischievously. 'The cosmic balance must be maintained.'"
+
+Example 2 - Skeleton Guard (from attributes: hostility=aggressive):
+"The Skeletal Guard's glowing green eyes fix upon you. 'Foolish trespasser,' it rasps, its voice like grinding bones. 'None may pass while I stand guard. Turn back now, or face my blade!'"
+
+Example 3 - Merchant (from attributes: personality=greedy):
+"The merchant eyes you shrewdly. 'Well met, traveler! Looking to lighten your purse, eh?' He gestures at his wares. 'I've got the finest goods in the realm—for the right price, of course.'"
+
+❌ BAD (No dialogue): "The genie appears before you, shimmering and ready to assist."
+✅ GOOD (With dialogue): "The genie materializes with a flourish. 'Three wishes I grant, but heed this well: I fulfill thy request precisely as spoken!'"
+
+Remember: NPCs are characters, not furniture. Give them a VOICE!
+"""
+
 
         # Add action context if available
         if action_metadata:
