@@ -24,6 +24,54 @@ class GameLoop:
         self.last_referenced_item: Optional[str] = None  # For pronoun resolution
         self.last_referenced_npc: Optional[str] = None
 
+    def execute_single_step(self, command: str) -> dict:
+        """Execute a single command and return full result.
+
+        This method is designed for testing and single-step execution mode.
+        It executes one turn, gathers the result, and returns all relevant
+        information without entering the interactive loop.
+
+        Args:
+            command: Player command to execute
+
+        Returns:
+            dict containing:
+            - command: The command executed
+            - narrative: Generated narrative response
+            - interpretation: Full LLM interpretation
+            - location: Current location info (id, name)
+            - player_location: Location ID
+            - exits: Available exits list
+            - inventory: Player inventory items (names)
+            - turn_count: Current turn number
+        """
+        # Execute the turn
+        narrative, interpretation = self.process_turn(command)
+
+        # Gather current state
+        location = self.game_state.get_player_location()
+        exits = location.get_available_exits() if location else []
+
+        inventory_items = [
+            self.game_state.items[item_id].name
+            for item_id in self.game_state.player.inventory
+            if item_id in self.game_state.items
+        ]
+
+        return {
+            "command": command,
+            "narrative": narrative,
+            "interpretation": interpretation,
+            "location": {
+                "id": location.id if location else "unknown",
+                "name": location.name if location else "Unknown",
+            },
+            "player_location": self.game_state.player_location,
+            "exits": exits,
+            "inventory": inventory_items,
+            "turn_count": self.game_state.turn_count,
+        }
+
     def start(self) -> None:
         """Start the game loop."""
         self.running = True
@@ -143,6 +191,59 @@ class GameLoop:
         # Handle "inventory" specially - just show what player has
         if player_input.lower() in ["inventory", "inv", "i"]:
             self._show_inventory()
+            return
+
+        # Handle save command
+        if player_input.lower().startswith("save"):
+            parts = player_input.split()
+            if len(parts) == 1:
+                # Default save file
+                save_path = "saves/quicksave.json"
+            else:
+                # Custom save file
+                filename = parts[1]
+                if not filename.endswith('.json'):
+                    filename += '.json'
+                save_path = f"saves/{filename}"
+
+            # Create saves directory if needed
+            import os
+            os.makedirs("saves", exist_ok=True)
+
+            # Save game
+            self.game_state.to_file(save_path)
+            print(f"\nGame saved to {save_path}")
+            return
+
+        # Handle load command
+        if player_input.lower().startswith("load"):
+            parts = player_input.split()
+            if len(parts) == 1:
+                # Default save file
+                load_path = "saves/quicksave.json"
+            else:
+                # Custom save file
+                filename = parts[1]
+                if not filename.endswith('.json'):
+                    filename += '.json'
+                load_path = f"saves/{filename}"
+
+            # Check if file exists
+            import os
+            if not os.path.exists(load_path):
+                print(f"\nError: Save file not found: {load_path}")
+                return
+
+            # Load game
+            try:
+                loaded_state = GameState.from_file(load_path)
+                # Replace current game state
+                self.game_state = loaded_state
+                print(f"\nGame loaded from {load_path}")
+                print()
+                self._show_location()
+            except Exception as e:
+                print(f"\nError loading save file: {e}")
             return
 
         # Step 1: Interpret action using LLM
@@ -288,6 +389,8 @@ Available commands:
   - go <direction>: Move in a direction (north, south, east, west)
   - take <item>: Pick up an item
   - attack <target>: Attack an NPC
+  - save [filename]: Save game (default: quicksave.json)
+  - load [filename]: Load game (default: quicksave.json)
   - help (?): Show this help
   - quit (q): Exit the game
 

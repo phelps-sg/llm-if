@@ -59,3 +59,6 @@ dmypy.json
 # Temporary files
 *.tmp
 .cache/
+
+# Save files (single-step mode)
+saves/
