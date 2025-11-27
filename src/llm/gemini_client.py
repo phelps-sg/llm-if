@@ -191,7 +191,7 @@ class GeminiClient:
         prompt = self._build_combat_narration_prompt(combat_result)
         return self.generate(prompt)
 
-    def narrate_npc_actions(self, npc_actions: Dict[str, Any]) -> str:
+    def narrate_npc_actions(self, npc_actions: Dict[str, Any], context: Dict[str, Any]) -> str:
         """Narrate NPC actions (unprovoked attacks, chases).
 
         This is different from narrate_combat_result() because:
@@ -204,11 +204,12 @@ class GeminiClient:
             npc_actions: Dict containing:
                 - npc_attacks: List of attack results with combat details
                 - npc_chases: List of chase events
+            context: Current game state context (location, NPCs, items, etc.)
 
         Returns:
             Narrative describing all NPC actions and prompting player
         """
-        prompt = self._build_npc_actions_prompt(npc_actions)
+        prompt = self._build_npc_actions_prompt(npc_actions, context)
         return self.generate(prompt)
 
     def interpret_action(
@@ -880,19 +881,27 @@ Write your narration (3-4 sentences):
 
         return prompt
 
-    def _build_npc_actions_prompt(self, npc_actions: Dict[str, Any]) -> str:
-        """Build prompt for narrating NPC actions."""
+    def _build_npc_actions_prompt(self, npc_actions: Dict[str, Any], context: Dict[str, Any]) -> str:
+        """Build prompt for narrating NPC actions with game state context."""
         attacks = npc_actions.get("npc_attacks", [])
         chases = npc_actions.get("npc_chases", [])
+
+        # Extract location information
+        location = context.get("location", {})
+        location_name = location.get("name", "unknown location")
+        location_desc_hints = location.get("attributes", {}).get("description_hints", "")
 
         # Determine the scenario type
         is_chase_attack = bool(chases and attacks)
         is_unprovoked_attack = bool(attacks and not chases)
 
         if is_chase_attack:
-            prompt = """You are the Dungeon Master in a fantasy RPG. An NPC is CHASING the player and attacking.
+            prompt = f"""You are the Dungeon Master in a fantasy RPG. An NPC is CHASING the player and attacking.
 
 IMPORTANT CONTEXT: This NPC was already engaged in combat with the player. The player fled, and the NPC pursued them to their new location and is continuing the fight.
+
+CURRENT LOCATION: {location_name}
+Location description hints: {location_desc_hints}
 
 Your task:
 1. Narrate the PURSUIT and continued attack in vivid, dramatic combat language (3-5 sentences)
@@ -906,11 +915,16 @@ Tone Guidelines:
 - The NPC is PURSUING a fleeing opponent
 - Use language like "pursues", "catches up", "doesn't let you escape", "continues the assault"
 - DO NOT use language suggesting this is a first encounter ("suddenly appears", "awakens", "animates for the first time")
+- CRITICAL: Set the scene in the CURRENT LOCATION provided above - do not invent other locations
+- Use the location description hints to inform environmental details
 - Make it feel desperate and relentless
 - Keep it concise but impactful (3-5 sentences max)
 """
         elif is_unprovoked_attack:
-            prompt = """You are the Dungeon Master in a fantasy RPG. NPCs have just acted unprovoked.
+            prompt = f"""You are the Dungeon Master in a fantasy RPG. NPCs have just acted unprovoked.
+
+CURRENT LOCATION: {location_name}
+Location description hints: {location_desc_hints}
 
 Your task:
 1. Narrate the NPC actions in vivid, dramatic combat language (3-5 sentences)
@@ -923,12 +937,17 @@ Tone Guidelines:
 - This is likely the FIRST encounter with this NPC
 - Use dramatic, visceral language for attacks
 - Emphasize surprise and danger
+- CRITICAL: Set the scene in the CURRENT LOCATION provided above - do not invent other locations
+- Use the location description hints to inform environmental details
 - Make it feel dangerous and exciting
 - Keep it concise but impactful (3-5 sentences max)
 """
         else:
             # Just chases, no attacks (rare but possible if attacks missed)
-            prompt = """You are the Dungeon Master in a fantasy RPG. An NPC is chasing the player.
+            prompt = f"""You are the Dungeon Master in a fantasy RPG. An NPC is chasing the player.
+
+CURRENT LOCATION: {location_name}
+Location description hints: {location_desc_hints}
 
 Your task:
 1. Narrate the pursuit in dramatic language (2-3 sentences)

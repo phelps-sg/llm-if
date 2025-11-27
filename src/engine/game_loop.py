@@ -427,9 +427,10 @@ class GameLoop:
 
             print("=" * 50)
 
-            # Generate LLM narration for all NPC actions
+            # Generate LLM narration for all NPC actions with current game context
             print("\n[DM narrates the chaos...]")
-            npc_narrative = self.gemini.narrate_npc_actions(npc_actions)
+            context = self._build_context()
+            npc_narrative = self.gemini.narrate_npc_actions(npc_actions, context)
             print(f"\n{npc_narrative}")
 
         # Increment turn
