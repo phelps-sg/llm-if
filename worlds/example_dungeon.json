@@ -127,6 +127,22 @@
         "dex": 16,
         "con": 10
       }
+    },
+    "genie": {
+      "id": "genie",
+      "name": "Ancient Genie",
+      "attributes": {
+        "description_hints": "shimmering blue ethereal form, swirling mist around lower body, ancient eyes full of wisdom and mischief, golden armlets and earrings",
+        "creature_type": "elemental",
+        "hp": 100,
+        "hp_max": 100,
+        "armor_class": 17,
+        "hostility": "passive",
+        "wishes_remaining": 3,
+        "personality": "mischievous but bound by ancient laws",
+        "powers": "reality manipulation within wish constraints",
+        "weakness": "must grant exactly what is asked, no more, no less"
+      }
     }
   },
   "items": {
@@ -219,7 +235,8 @@
   "npc_locations": {
     "skeleton_guard": "hall",
     "rat": "armory",
-    "deer": "forest_clearing"
+    "deer": "forest_clearing",
+    "genie": "forest_clearing"
   },
   "item_locations": {
     "rusty_sword": "entrance",
