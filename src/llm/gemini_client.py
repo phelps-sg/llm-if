@@ -885,21 +885,55 @@ Write your narration (3-4 sentences):
         attacks = npc_actions.get("npc_attacks", [])
         chases = npc_actions.get("npc_chases", [])
 
-        prompt = """You are the Dungeon Master in a fantasy RPG. NPCs have just acted unprovoked.
+        # Determine the scenario type
+        is_chase_attack = bool(chases and attacks)
+        is_unprovoked_attack = bool(attacks and not chases)
+
+        if is_chase_attack:
+            prompt = """You are the Dungeon Master in a fantasy RPG. An NPC is CHASING the player and attacking.
+
+IMPORTANT CONTEXT: This NPC was already engaged in combat with the player. The player fled, and the NPC pursued them to their new location and is continuing the fight.
 
 Your task:
-1. Narrate the NPC actions in vivid, dramatic combat language (3-5 sentences)
-2. If NPCs chase: Describe pursuit and catching up
-3. If NPCs attack: Describe the attacks viscerally and their impact
-4. Convey urgency, danger, and the SURPRISE of unprovoked aggression
+1. Narrate the PURSUIT and continued attack in vivid, dramatic combat language (3-5 sentences)
+2. Emphasize that the NPC FOLLOWED the player (don't say it "suddenly animates" or "awakens")
+3. Describe the NPC catching up and pressing the attack
+4. Convey relentless pursuit, danger, and the desperation of being hunted
 5. End with "What do you do?" to prompt the player
 
 Tone Guidelines:
+- This is a CONTINUATION of combat, not a first encounter
+- The NPC is PURSUING a fleeing opponent
+- Use language like "pursues", "catches up", "doesn't let you escape", "continues the assault"
+- DO NOT use language suggesting this is a first encounter ("suddenly appears", "awakens", "animates for the first time")
+- Make it feel desperate and relentless
+- Keep it concise but impactful (3-5 sentences max)
+"""
+        elif is_unprovoked_attack:
+            prompt = """You are the Dungeon Master in a fantasy RPG. NPCs have just acted unprovoked.
+
+Your task:
+1. Narrate the NPC actions in vivid, dramatic combat language (3-5 sentences)
+2. Describe the attacks viscerally and their impact
+3. Convey urgency, danger, and the SURPRISE of unprovoked aggression
+4. End with "What do you do?" to prompt the player
+
+Tone Guidelines:
 - This is UNPROVOKED - player didn't attack first, NPCs are the aggressors
+- This is likely the FIRST encounter with this NPC
 - Use dramatic, visceral language for attacks
 - Emphasize surprise and danger
 - Make it feel dangerous and exciting
 - Keep it concise but impactful (3-5 sentences max)
+"""
+        else:
+            # Just chases, no attacks (rare but possible if attacks missed)
+            prompt = """You are the Dungeon Master in a fantasy RPG. An NPC is chasing the player.
+
+Your task:
+1. Narrate the pursuit in dramatic language (2-3 sentences)
+2. Emphasize the relentless pursuit
+3. End with "What do you do?" to prompt the player
 """
 
         # Add chase events
