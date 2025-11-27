@@ -243,6 +243,7 @@ class GameLoop:
                 for item_id in self.game_state.player.inventory
                 if item_id in self.game_state.items
             ],
+            "attributes": self.game_state.player.attributes,
         }
 
         description = self.gemini.describe_location(

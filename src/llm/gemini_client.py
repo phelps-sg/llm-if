@@ -431,6 +431,22 @@ Attributes: {location.get('attributes', {})}
             else:
                 prompt += f"🎒 PLAYER INVENTORY: Empty (carrying nothing)\n\n"
 
+            # Add player attributes/conditions
+            player_attributes = player_context.get("attributes", {})
+            if player_attributes:
+                prompt += f"👤 PLAYER ATTRIBUTES (current conditions affecting perception):\n"
+                prompt += f"{player_attributes}\n\n"
+                prompt += f"⚠️  CRITICAL - ADJUST DESCRIPTION BASED ON PLAYER ATTRIBUTES:\n"
+                prompt += f"Check the attributes above and adjust your description accordingly.\n"
+                prompt += f"Examples (be creative with any attributes present):\n"
+                prompt += f"- If 'blind: true' → Describe ONLY sounds, smells, touch, temperature. NO visual details!\n"
+                prompt += f"- If 'deaf: true' → Describe visuals, smells, touch. NO sounds!\n"
+                prompt += f"- If 'wounded: severe' → Mention pain, difficulty moving, blood loss\n"
+                prompt += f"- If 'poisoned: X' → Mention nausea, weakness, blurred vision\n"
+                prompt += f"- If 'terrified_of: darkness' → Emphasize fear when dark\n"
+                prompt += f"- If 'covered_in: mud' → Mention how it affects vision/movement\n"
+                prompt += f"Be creative! Any attribute that would affect perception should change your description.\n\n"
+
         # Add lighting information
         if lighting_info:
             lighting_level = lighting_info.get("level", "dark")
@@ -852,6 +868,23 @@ Examples:
 - Player charges at passive deer → Deer flees (remove_npc or move_npc), NO combat
 - Player attacks aggressive skeleton → Trigger combat
 - Player shouts at defensive rat → Rat gets nervous but doesn't attack
+
+⚠️  PLAYER CONDITION TRACKING - USE modify_attribute ON PLAYER:
+When player actions affect their abilities or state, track it with modify_attribute (entity_id: "player").
+Be creative! Track ANY condition that would affect future perception, actions, or story.
+
+Examples (not exhaustive - invent your own as needed):
+- Blinding (eye injury, magic, etc.) → modify_attribute: player.attributes.blind = true
+- Deafening (loud explosion, curse) → modify_attribute: player.attributes.deaf = true
+- Injuries → modify_attribute: player.attributes.wounded = "severe" or "leg_injury"
+- Poison → modify_attribute: player.attributes.poisoned = "rattlesnake_venom"
+- Blessings → modify_attribute: player.attributes.blessed_by = "forest_spirit"
+- Curses → modify_attribute: player.attributes.cursed = "cannot_speak"
+- Fear/Trauma → modify_attribute: player.attributes.terrified_of = "darkness"
+- Physical changes → modify_attribute: player.attributes.covered_in = "mud"
+- Mental states → modify_attribute: player.attributes.knows_secret = "hidden_passage_location"
+
+If narrative says player is blinded/injured/changed, MUST include modify_attribute on player!
 
 {self._build_plot_instructions(context)}
 
