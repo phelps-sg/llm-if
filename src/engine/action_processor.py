@@ -428,6 +428,94 @@ class ActionProcessor:
         """
         return self._execute_single_attack(game_state, npc, player, "melee")
 
+    def process_npc_turns(
+        self, game_state: GameState, player_moved: bool = False,
+        previous_location: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """Process NPC turns after player action.
+
+        This handles:
+        1. Aggressive NPCs attacking unprovoked
+        2. NPCs chasing fleeing players (if HP is sufficient)
+
+        Args:
+            game_state: Current game state
+            player_moved: Whether player just moved locations
+            previous_location: Location ID player moved from (if moved)
+
+        Returns:
+            Dict with NPC actions taken (attacks, chases, etc.)
+        """
+        result = {
+            "npc_attacks": [],
+            "npc_chases": [],
+        }
+
+        # Handle chase mechanics if player fled
+        if player_moved and previous_location:
+            chase_results = self._handle_npc_chase(
+                game_state, previous_location, game_state.player_location
+            )
+            result["npc_chases"] = chase_results
+
+        # Check for aggressive NPCs at current location
+        npcs_here = game_state.get_npcs_at_location(game_state.player_location)
+
+        for npc in npcs_here:
+            # Check if NPC is aggressive and alive
+            hostility = npc.attributes.get("hostility", "passive")
+            hp = npc.attributes.get("hp", 0)
+
+            if hostility == "aggressive" and hp > 0:
+                # Aggressive NPC attacks unprovoked
+                attack_result = self._execute_single_attack(
+                    game_state, npc, game_state.player, "melee"
+                )
+                result["npc_attacks"].append({
+                    "npc_id": npc.id,
+                    "npc_name": npc.name,
+                    "attack": attack_result,
+                })
+
+        return result
+
+    def _handle_npc_chase(
+        self, game_state: GameState, from_location: str, to_location: str
+    ) -> List[Dict[str, Any]]:
+        """Handle NPCs chasing player who fled.
+
+        Aggressive NPCs will chase if their HP is above 30% of max.
+
+        Args:
+            game_state: Current game state
+            from_location: Location player fled from
+            to_location: Location player fled to
+
+        Returns:
+            List of NPCs that chased and their info
+        """
+        chases = []
+        npcs_at_old_location = game_state.get_npcs_at_location(from_location)
+
+        for npc in npcs_at_old_location:
+            hostility = npc.attributes.get("hostility", "passive")
+            hp = npc.attributes.get("hp", 0)
+            hp_max = npc.attributes.get("hp_max", 1)
+
+            # Chase if aggressive and HP > 30%
+            hp_percent = (hp / hp_max) if hp_max > 0 else 0
+
+            if hostility == "aggressive" and hp > 0 and hp_percent > 0.3:
+                # NPC chases player to new location
+                game_state.move_npc_to_location(npc.id, to_location)
+                chases.append({
+                    "npc_id": npc.id,
+                    "npc_name": npc.name,
+                    "hp_percent": hp_percent,
+                })
+
+        return chases
+
     def _set_nested_attribute(
         self, game_state: GameState, entity_id: str, path: str, value: Any
     ) -> None:

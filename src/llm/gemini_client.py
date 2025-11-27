@@ -191,6 +191,26 @@ class GeminiClient:
         prompt = self._build_combat_narration_prompt(combat_result)
         return self.generate(prompt)
 
+    def narrate_npc_actions(self, npc_actions: Dict[str, Any]) -> str:
+        """Narrate NPC actions (unprovoked attacks, chases).
+
+        This is different from narrate_combat_result() because:
+        - These are UNPROVOKED NPC actions (not counterattacks)
+        - May include multiple NPCs acting in one turn
+        - Includes both attacks AND chase events
+        - Requires different tone (surprise/threat)
+
+        Args:
+            npc_actions: Dict containing:
+                - npc_attacks: List of attack results with combat details
+                - npc_chases: List of chase events
+
+        Returns:
+            Narrative describing all NPC actions and prompting player
+        """
+        prompt = self._build_npc_actions_prompt(npc_actions)
+        return self.generate(prompt)
+
     def interpret_action(
         self, player_input: str, context: Dict[str, Any]
     ) -> Dict[str, Any]:
@@ -857,6 +877,74 @@ IMPORTANT: Always end with a clear prompt for the player's next action (unless e
 
 Write your narration (3-4 sentences):
 """
+
+        return prompt
+
+    def _build_npc_actions_prompt(self, npc_actions: Dict[str, Any]) -> str:
+        """Build prompt for narrating NPC actions."""
+        attacks = npc_actions.get("npc_attacks", [])
+        chases = npc_actions.get("npc_chases", [])
+
+        prompt = """You are the Dungeon Master in a fantasy RPG. NPCs have just acted unprovoked.
+
+Your task:
+1. Narrate the NPC actions in vivid, dramatic combat language (3-5 sentences)
+2. If NPCs chase: Describe pursuit and catching up
+3. If NPCs attack: Describe the attacks viscerally and their impact
+4. Convey urgency, danger, and the SURPRISE of unprovoked aggression
+5. End with "What do you do?" to prompt the player
+
+Tone Guidelines:
+- This is UNPROVOKED - player didn't attack first, NPCs are the aggressors
+- Use dramatic, visceral language for attacks
+- Emphasize surprise and danger
+- Make it feel dangerous and exciting
+- Keep it concise but impactful (3-5 sentences max)
+"""
+
+        # Add chase events
+        if chases:
+            prompt += "\nCHASE EVENTS:\n"
+            for chase in chases:
+                npc_name = chase.get("npc_name", "NPC")
+                hp_percent = chase.get("hp_percent", 1.0) * 100
+                prompt += f"- {npc_name} (HP: {hp_percent:.0f}%) pursues the player to new location\n"
+
+        # Add attack events
+        if attacks:
+            prompt += "\nATTACKS:\n"
+            for attack_info in attacks:
+                npc_name = attack_info.get("npc_name", "NPC")
+                attack = attack_info.get("attack", {})
+
+                hit = attack.get("hit", False)
+                damage = attack.get("damage_total", 0)
+                target_hp = attack.get("target_hp", 0)
+                target_max_hp = attack.get("target_max_hp", 1)
+                target_dead = attack.get("target_dead", False)
+
+                if hit:
+                    prompt += f"\n{npc_name}:\n"
+                    prompt += f"  - Attack: HIT\n"
+                    prompt += f"  - Damage dealt: {damage}\n"
+                    prompt += f"  - Player HP now: {target_hp}/{target_max_hp}\n"
+                    if target_dead:
+                        prompt += f"  - Player is DEAD\n"
+                else:
+                    prompt += f"\n{npc_name}:\n"
+                    prompt += f"  - Attack: MISS\n"
+
+        prompt += """
+
+CRITICAL INSTRUCTIONS:
+- Describe ALL the events above in a single cohesive narrative
+- If multiple NPCs, weave their actions together naturally
+- Use second person ("You see...", "The wolf lunges at you...")
+- Be vivid and dramatic but concise (3-5 sentences)
+- If player died, make it dramatic and final
+- ALWAYS end with "What do you do?" (unless player is dead)
+
+Generate the narrative now:"""
 
         return prompt
 

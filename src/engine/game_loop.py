@@ -183,6 +183,9 @@ class GameLoop:
         state_updates = interpretation.get("state_updates", [])
         action_metadata = self._extract_action_metadata(state_updates, context)
 
+        # Track previous location for chase mechanics
+        previous_location = self.game_state.player_location
+
         # Step 3: Apply state updates
         if state_updates:
             self.action_processor.apply_state_updates(state_updates, self.game_state)
@@ -207,6 +210,20 @@ class GameLoop:
 
         # Store narrative in interpretation for history
         interpretation["narrative_response"] = narrative
+
+        # Process NPC turns (aggressive NPCs attack, chase fleeing player)
+        npc_actions = self.action_processor.process_npc_turns(
+            self.game_state,
+            player_moved=is_movement,
+            previous_location=previous_location if is_movement else None
+        )
+
+        # Store NPC actions in interpretation for testing
+        interpretation["npc_actions"] = npc_actions
+
+        # Store NPC actions for narrative generation (same pattern as player combat)
+        if npc_actions["npc_attacks"] or npc_actions["npc_chases"]:
+            self.game_state.flags["npc_actions_result"] = npc_actions
 
         # Increment turn
         self.game_state.add_history_entry(
@@ -325,6 +342,9 @@ class GameLoop:
         state_updates = interpretation.get("state_updates", [])
         action_metadata = self._extract_action_metadata(state_updates, context)
 
+        # Track previous location for chase mechanics
+        previous_location = self.game_state.player_location
+
         # Step 3: Apply state updates
         if state_updates:
             self.action_processor.apply_state_updates(state_updates, self.game_state)
@@ -377,10 +397,50 @@ class GameLoop:
             combat_narration = self.gemini.narrate_combat_result(combat_result)
             print(f"\n{combat_narration}")
 
+        # Show NPC actions (chases, attacks) with LLM narration
+        if "npc_actions_result" in self.game_state.flags:
+            npc_actions = self.game_state.flags.pop("npc_actions_result")
+
+            # Show mechanical details first (dice rolls for transparency)
+            print("\n" + "=" * 50)
+
+            # Chase messages
+            for chase in npc_actions.get("npc_chases", []):
+                npc_name = chase.get("npc_name", "NPC")
+                hp_percent = chase.get("hp_percent", 0) * 100
+                print(f"⚠️  {npc_name} chases after you! (HP: {hp_percent:.0f}%)")
+
+            # Attack mechanics
+            for attack_info in npc_actions.get("npc_attacks", []):
+                npc_name = attack_info.get("npc_name", "NPC")
+                attack = attack_info.get("attack", {})
+
+                print(f"\n⚔️  {npc_name.upper()} ATTACKS!")
+                self._show_single_attack(attack)
+
+            print("=" * 50)
+
+            # Generate LLM narration for all NPC actions
+            print("\n[DM narrates the chaos...]")
+            npc_narrative = self.gemini.narrate_npc_actions(npc_actions)
+            print(f"\n{npc_narrative}")
+
         # If player moved, show new location
         if any(update.get("type") == "move_player" for update in state_updates):
             print()
             self._show_location()
+
+        # Process NPC turns (aggressive NPCs attack, chase fleeing player)
+        player_moved = any(update.get("type") == "move_player" for update in state_updates)
+        npc_actions = self.action_processor.process_npc_turns(
+            self.game_state,
+            player_moved=player_moved,
+            previous_location=previous_location if player_moved else None
+        )
+
+        # Store NPC actions for narrative generation (same pattern as player combat)
+        if npc_actions["npc_attacks"] or npc_actions["npc_chases"]:
+            self.game_state.flags["npc_actions_result"] = npc_actions
 
         # Increment turn
         self.game_state.add_history_entry(
