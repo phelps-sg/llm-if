@@ -76,13 +76,17 @@ class GameLoop:
         # Track what was referenced for pronoun resolution
         self._update_reference_tracking(interpretation, player_input, context)
 
-        # Step 2: Apply state updates
+        # Step 2: Extract metadata about current state BEFORE applying updates
         state_updates = interpretation.get("state_updates", [])
+        action_metadata = self._extract_action_metadata(state_updates, context)
+
+        # Step 3: Apply state updates
         if state_updates:
             self.action_processor.apply_state_updates(state_updates, self.game_state)
 
-        # Step 3: Generate narrative (skip for movement - location description handles that)
+        # Step 4: Generate narrative (skip for movement - location description handles that)
         is_movement = any(update.get("type") == "move_player" for update in state_updates)
+        is_valid = interpretation.get("is_valid", True)
 
         if is_movement:
             # For movement, skip narrative - location description will show new state
@@ -93,7 +97,9 @@ class GameLoop:
             narrative = self.gemini.generate_narrative(
                 player_input,
                 interpretation.get("intent", ""),
-                updated_context
+                updated_context,
+                action_metadata=action_metadata,
+                is_valid=is_valid
             )
 
         # Store narrative in interpretation for history
@@ -159,8 +165,11 @@ class GameLoop:
         # Track what was referenced for pronoun resolution
         self._update_reference_tracking(interpretation, player_input, context)
 
-        # Step 2: Apply state updates
+        # Step 2: Extract metadata about current state BEFORE applying updates
         state_updates = interpretation.get("state_updates", [])
+        action_metadata = self._extract_action_metadata(state_updates, context)
+
+        # Step 3: Apply state updates
         if state_updates:
             self.action_processor.apply_state_updates(state_updates, self.game_state)
             # DEBUG: Log state after updates
@@ -176,8 +185,9 @@ class GameLoop:
             )
             print(f"  NPC locations: {self.game_state.npc_locations}")
 
-        # Step 3: Generate narrative (skip for movement - location description handles that)
+        # Step 4: Generate narrative (skip for movement - location description handles that)
         is_movement = any(update.get("type") == "move_player" for update in state_updates)
+        is_valid = interpretation.get("is_valid", True)
 
         if is_movement:
             # For movement, skip narrative - location description will show new state
@@ -189,7 +199,9 @@ class GameLoop:
             narrative = self.gemini.generate_narrative(
                 player_input,
                 interpretation.get("intent", ""),
-                updated_context
+                updated_context,
+                action_metadata=action_metadata,
+                is_valid=is_valid
             )
 
         # Store narrative in interpretation for history
@@ -453,6 +465,36 @@ You can also type natural language commands and the AI will interpret them.
                 npc_id = params.get("npc_id")
                 if npc_id:
                     self.last_referenced_npc = npc_id
+
+    def _extract_action_metadata(self, state_updates: list, context: Dict) -> Dict[str, Any]:
+        """Extract metadata about where items/NPCs were before state updates.
+
+        This helps narrative generation understand what changed.
+        """
+        metadata = {}
+
+        for update in state_updates:
+            update_type = update.get("type")
+            params = update.get("params", {})
+
+            if update_type == "add_to_inventory":
+                item_id = params.get("item_id")
+                # Check if item is currently at player location (on ground)
+                if item_id in self.game_state.item_locations:
+                    loc = self.game_state.item_locations[item_id]
+                    if loc == self.game_state.player_location:
+                        metadata["item_picked_from_ground"] = item_id
+                        metadata["item_was_at_location"] = True
+                    else:
+                        metadata["item_was_at_location"] = False
+
+            elif update_type == "remove_from_inventory":
+                item_id = params.get("item_id")
+                if item_id in self.game_state.player.inventory:
+                    metadata["item_dropped_from_inventory"] = item_id
+                    metadata["item_was_in_inventory"] = True
+
+        return metadata
 
     def _build_context(self) -> dict:
         """Build context for LLM with detailed state information."""

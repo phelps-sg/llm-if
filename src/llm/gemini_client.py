@@ -139,6 +139,8 @@ class GeminiClient:
         player_input: str,
         intent: str,
         context: Dict[str, Any],
+        action_metadata: Optional[Dict[str, Any]] = None,
+        is_valid: bool = True,
     ) -> str:
         """Generate narrative response based on current game state after updates.
 
@@ -149,11 +151,13 @@ class GeminiClient:
             player_input: What the player said/did
             intent: Interpreted intent from LLM
             context: Current game context (after state updates)
+            action_metadata: Metadata about what changed (extracted before updates)
+            is_valid: Whether the action was valid (False means action failed)
 
         Returns:
             Narrative description of what happened
         """
-        prompt = self._build_narrative_prompt(player_input, intent, context)
+        prompt = self._build_narrative_prompt(player_input, intent, context, action_metadata, is_valid)
         return self.generate(prompt)
 
     def describe_action_result(
@@ -502,7 +506,9 @@ Be concise but evocative.
         return prompt
 
     def _build_narrative_prompt(
-        self, player_input: str, intent: str, context: Dict[str, Any]
+        self, player_input: str, intent: str, context: Dict[str, Any],
+        action_metadata: Optional[Dict[str, Any]] = None,
+        is_valid: bool = True
     ) -> str:
         """Build prompt for generating narrative based on current state.
 
@@ -531,14 +537,55 @@ NPCs at this location: {[npc.get('name') for npc in npcs] if npcs else 'none'}
 NPC details: {npcs if npcs else 'none'}
 
 Player inventory (what they are carrying): {[item.get('name') for item in inventory_items] if inventory_items else 'nothing'}
-Inventory details: {inventory_items if inventory_items else 'empty'}
+Inventory details: {inventory_items if inventory_items else 'empty'}"""
+
+        # Add action context if available
+        if action_metadata:
+            prompt += "\n\n📋 ACTION CONTEXT (what changed):\n"
+
+            if action_metadata.get("item_was_at_location"):
+                item_id = action_metadata.get("item_picked_from_ground")
+                prompt += f"- Item '{item_id}' was PICKED UP FROM THE GROUND (not from pack/inventory)\n"
+                prompt += f"- CRITICAL: Say 'you pick it up', 'you grab it', 'you take it', etc.\n"
+                prompt += f"- NEVER say: 'you take it from your pack' or 'from your belt'\n"
+
+            if action_metadata.get("item_was_in_inventory"):
+                item_id = action_metadata.get("item_dropped_from_inventory")
+                prompt += f"- Item '{item_id}' was DROPPED FROM INVENTORY (not picked up)\n"
+                prompt += f"- Say: 'you drop it on the ground', 'you place it down', 'you set it aside', etc.\n"
+                prompt += f"- NEVER say: 'you pick up' or 'you grab'\n"
+
+        # Add failed action guidance if action was invalid
+        if not is_valid:
+            prompt += """
+
+🚨 ACTION FAILED - NARRATE THE FAILURE:
+The action was marked as INVALID (is_valid: false).
+DO NOT describe the action succeeding!
+
+Instead, explain WHY the action failed:
+- If trying to regurgitate something not swallowed: "You gag and cough, but nothing comes up. You haven't swallowed any [item]."
+- If trying to take non-existent item: "You look around, but don't see any [item] here."
+- If trying impossible physics: "That's physically impossible / doesn't make sense."
+- If blocked by game rules: Explain the constraint (locked door, too heavy, etc.)
+
+The state didn't change because the action failed - narrate the FAILURE, not success.
+"""
+
+        prompt += """
+
 
 🎯 YOUR TASK:
 Generate a vivid, engaging narrative (2-4 sentences) describing what just happened.
 - Narrate the outcome of the player's action based on the CURRENT STATE above
 - The action has already been processed, describe the result
 - Write in second person (you do..., you see..., you notice...)
-- Be dramatic and immersive
+- Be dramatic and immersive"""
+
+        if not is_valid:
+            prompt += "\n- ACTION FAILED: Explain WHY it failed, don't describe it succeeding"
+
+        prompt += """
 
 ⚠️  CRITICAL RULES - DESCRIBE ONLY WHAT EXISTS IN CURRENT STATE:
 1. Items: Only mention items that appear in "Items at this location" or "Player inventory"
@@ -601,8 +648,8 @@ LOCATION: {location.get('name')}
 
 Common action patterns:
 - "take X" / "get X" → {{"type": "add_to_inventory", "params": {{"item_id": "item_id"}}}}
-- "drop X" → {{"type": "remove_from_inventory", "params": {{"item_id": "item_id"}}}}
-- "eat X" / "drink X" → {{"type": "consume_item", "params": {{"item_id": "item_id"}}}}
+- "drop X" / "place X down" → {{"type": "remove_from_inventory", "params": {{"item_id": "item_id"}}}}
+- "eat X" / "drink X" / "swallow X" → {{"type": "consume_item", "params": {{"item_id": "item_id"}}}}
 - "go north/south/east/west" → {{"type": "move_player", "params": {{"destination": "location_id"}}}}
 - "attack X" → {{"type": "trigger_combat", "params": {{"target_npc_id": "npc_id"}}}}
 
@@ -793,10 +840,15 @@ EXAMPLES:
 
 CURRENT LOCATION: {location.get('id', 'unknown')}
 
-EXITS FROM CURRENT LOCATION:
+🚨 EXITS FROM CURRENT LOCATION (THE ONLY VALID MOVES):
 {json.dumps(exit_destinations, indent=2)}
-IMPORTANT: If player wants to move (go/walk/move north/south/east/west), use "move_player" with destination from above!
-Example: If player says "go north" and exits show {{"north": "hall"}}, use {{"type": "move_player", "params": {{"destination": "hall"}}}}
+
+⛔ CRITICAL MOVEMENT RULE - READ THIS:
+- ONLY these directions are valid: {list(exit_destinations.keys())}
+- Player CANNOT move in directions NOT listed above
+- If player tries to move in unlisted direction → SET is_valid=false
+- Example: Player says "go north" but exits = {{"south": "hall"}} → is_valid=false, explain no north exit
+- Example: Player says "go north" and exits = {{"north": "hall"}} → is_valid=true, move to hall
 
 VALID IDs YOU MUST USE IN STATE UPDATES:
 - Location IDs: {json.dumps(all_locations, indent=2)}
@@ -820,6 +872,9 @@ Full item details at location: {items}
 
 Player inventory (carrying): {inventory_names}
 Full inventory details: {inventory_items}
+
+Player attributes (conditions, tracked state): {player.get('attributes', {})}
+⚠️  CHECK PLAYER ATTRIBUTES for validation (e.g., swallowed_items, blind, cursed, etc.)
 
 NPCs at this location: {[npc.get('name') for npc in npcs] if npcs else []}
 Full NPC details: {npcs}
@@ -974,18 +1029,94 @@ When player wishes for a horse, you MUST generate this exact structure:
 This creates a REAL, RIDEABLE horse that follows the player!
 NOT a toy, NOT a miniature, NOT an item - a living NPC horse!
 
+🎯 BE A REALISTIC DM - NOT A "YES BOT":
+
+You are creative and flexible, but ALSO apply realistic world constraints.
+Like a real DM, balance creativity with appropriate challenge.
+
+VALIDATE ACTIONS AGAINST GAME STATE:
+- Check current state before allowing actions (what's in inventory, location, NPC attributes, etc.)
+- Track important state changes in player/NPC attributes for later validation
+- Reject physically impossible or exploitative actions
+- Set is_valid=false when action can't work, with clear explanation
+
+BALANCE THESE PRINCIPLES:
+✅ CREATIVE: Allow wishes, dynamic locations, clever solutions, unexpected approaches
+❌ REALISTIC: No loopholes, no duplication exploits, validate prerequisites, apply physics
+
+📚 FEW-SHOT EXAMPLES (illustrating the general principle - NOT exhaustive rules):
+
+Example 1 - Validate Prerequisites:
+  Player: "regurgitate the emerald"
+  Current State: player.attributes.swallowed_items = []
+  ❌ WRONG: Allow it, create emerald (exploitation loophole!)
+  ✅ RIGHT: Set is_valid=false, explain "You haven't swallowed any emerald. You gag and cough, but nothing comes up."
+  Principle: Check state before allowing actions that depend on prior state
+
+Example 2 - Track State for Future Validation:
+  Player: "swallow the key"
+  ✅ Use consume_item to remove key from inventory/game
+  ✅ Use modify_attribute to track: {{"entity_id": "player", "attribute_path": "swallowed_items", "value": ["ancient_key"]}}
+  Principle: Track important state changes so future actions can be validated
+
+Example 3 - Reject Impossible Physics:
+  Player: "fly to the moon"
+  ❌ WRONG: Allow flight, create moon location
+  ✅ RIGHT: Set is_valid=false, explain "You flap your arms vigorously, but remain firmly grounded. You'd need magic or a vehicle to fly."
+  Principle: Apply realistic physics unless magic/items make it possible
+
+Example 4 - Block Loopholes:
+  Player: "duplicate the treasure by wishing for an exact copy"
+  ❌ WRONG: Use create_item to make copy (unlimited wealth exploit!)
+  ✅ RIGHT: Set is_valid=false, explain "The genie frowns. 'I can create NEW things, but not duplicate existing treasures. That would upset the cosmic balance.'"
+  Principle: Reject actions that would break game balance
+
+Example 5 - Check Available Exits BEFORE Allowing Movement:
+  Player: "go north"
+  Current State: exit_destinations = {{"south": "hall", "east": "armory"}} (no "north" key!)
+  ❌ WRONG: Allow movement north even though "north" is NOT in exit_destinations
+  ❌ WRONG: Use world knowledge that hall is north of current location
+  ✅ RIGHT: Check exit_destinations keys ["south", "east"], see "north" is NOT present
+  ✅ RIGHT: Set is_valid=false, use no_change, explain "Solid stone walls block your path to the north. You can only go south or east."
+  Principle: ONLY use directions that appear as KEYS in exit_destinations dict
+
+Example 6 - Validate Locked Doors:
+  Player: "go north" (north exit exists but door is locked)
+  Current State: exits = ["north", "south"], location.attributes.north_door_locked = true, player.inventory = []
+  ❌ WRONG: Allow movement through locked door
+  ✅ RIGHT: Set is_valid=false, explain "The heavy wooden door to the north is locked. You'd need a key to open it."
+  Principle: Respect world constraints (locked doors, blocked paths, etc.)
+
+🔑 WHEN TO SET is_valid=false:
+- Movement to non-existent exit (ALWAYS check exits list first!)
+- Action requires item/NPC/state that doesn't exist
+- Physics violation (flying without magic, lifting castle, etc.)
+- Game-breaking exploit/loophole (duplication, reality warping)
+- Blocked by world state (locked door without key, too heavy to lift)
+- Prerequisite not met (can't regurgitate what wasn't swallowed)
+
 STATE UPDATE TYPES AND REQUIRED PARAMS:
-- "move_player": {{"destination": "location_id"}} - MUST include destination as location ID!
-  ⚠️  INVALID MOVES: If player tries to move in a direction with NO EXIT:
-  * Set is_valid: false
-  * Use no_change state update
-  * Narrative should explain WHY blocked (thick foliage, solid wall, cliff edge, etc.)
-  * DO NOT describe movement as succeeding
-  * Example: Player goes south (no south exit) → "Thick foliage blocks your path south."
+- "move_player": {{"destination": "location_id"}} - Move player to connected location
+  ⚠️  BEFORE ALLOWING MOVEMENT - CHECK THE EXITS LIST AT TOP OF PROMPT:
+  * ONLY allow movement in directions shown in "EXITS FROM CURRENT LOCATION"
+  * If direction NOT in exits list → MUST set is_valid=false
+  * Example: Exits = {{"south": "hall"}} and player says "go north" → is_valid=false
+  * Example: Exits = {{"north": "chamber", "south": "entrance"}} and player says "go north" → is_valid=true, destination="chamber"
+  * Set is_valid: false for ANY direction not in the exits list
+  * Use no_change state update when is_valid=false
+  * Narrative should explain WHY blocked (thick stone wall, no path, cliff edge, etc.)
+  * DO NOT describe movement as succeeding when is_valid=false
+  * Example: Player goes south (no south exit) → is_valid=false, "Thick foliage blocks your path south."
   * DO NOT say: "You move south into the clearing" (implies success)
 - "add_to_inventory": {{"item_id": "item_id"}} - Pick up item from location
-- "remove_from_inventory": {{"item_id": "item_id"}} - Drop item at current location
-- "consume_item": {{"item_id": "item_id"}} - Eat/drink/destroy item (removes from game entirely)
+- "remove_from_inventory": {{"item_id": "item_id"}} - Drop item at current location (item stays in game on ground)
+  * ⚠️  ONLY for dropping/placing items - item will appear at player's current location
+  * ❌ DO NOT use for eating, drinking, swallowing, destroying - use consume_item instead!
+- "consume_item": {{"item_id": "item_id"}} - Eat/drink/swallow/destroy item (removes from game entirely)
+  * ✅ Use for: eating food, drinking potions, swallowing objects, burning items, dissolving items
+  * Item is PERMANENTLY removed from game (not placed on ground)
+  * 💡 TIP: For recoverable consumption (swallowing vs eating), track state in player attributes for future validation
+  * See "BE A REALISTIC DM" examples above for validation patterns
 - "create_item": {{"item_id": "unique_id", "name": "Item Name", "attributes": {{}}, "location": "location_id or null"}} - Dynamically create a new item
   * ⚠️  IMPORTANT: Use create_item for INANIMATE objects only (swords, potions, furniture, rocks)
   * ❌ DO NOT use for living creatures (animals, people, monsters) - use create_npc instead!
