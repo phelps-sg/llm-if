@@ -165,11 +165,16 @@ class GameLoop:
             self.action_processor.apply_state_updates(state_updates, self.game_state)
             # DEBUG: Log state after updates
             print(f"\n[DEBUG] State After Updates:")
+            print(f"  Player location: {self.game_state.player_location}")
             print(f"  Player inventory: {self.game_state.player.inventory}")
             print(
                 f"  Items at location: {[item.name for item in self.game_state.get_items_at_location(self.game_state.player_location)]}"
             )
             print(f"  Item locations: {self.game_state.item_locations}")
+            print(
+                f"  NPCs at location: {[npc.name for npc in self.game_state.get_npcs_at_location(self.game_state.player_location)]}"
+            )
+            print(f"  NPC locations: {self.game_state.npc_locations}")
 
         # Step 3: Generate narrative (skip for movement - location description handles that)
         is_movement = any(update.get("type") == "move_player" for update in state_updates)
