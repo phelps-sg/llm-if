@@ -57,31 +57,79 @@ python -m src.main
 
 ## Playing the Game
 
+### Interactive Mode
+
 Try these commands:
 - `look` - Examine your surroundings
 - `go north` - Move north (or south, east, west)
 - `take sword` - Pick up an item
 - `inventory` - Check your inventory
 - `attack skeleton` - Attack an enemy
+- `talk to genie` - Speak with NPCs (they'll respond with dialogue!)
+- `greet deer` - Interact with creatures
+- `save` - Save your game (default: saves/quicksave.json)
+- `load` - Load your saved game
 - `help` - Show help
 - `quit` - Exit
 
 You can also use natural language - the AI will interpret it!
 
+### Single-Step Mode (Testing & Automation)
+
+Run the game one command at a time with state persistence:
+
+```bash
+# Initialize a new game
+python -m src.main --single-step --init worlds/example_dungeon.json --command "look"
+
+# Execute subsequent commands (loads from saves/game_state.json)
+python -m src.main --single-step --command "go north"
+python -m src.main --single-step --command "take sword"
+
+# Use custom save file
+python -m src.main --single-step --state-file saves/test1.json --command "inventory"
+
+# Run without state persistence (fresh game each time)
+python -m src.main --single-step --no-state --init worlds/example_dungeon.json --command "look"
+
+# Debug mode (show full state)
+python -m src.main --single-step --command "look" --debug
+```
+
+Perfect for:
+- Automated testing and CI/CD
+- Systematic bug reproduction
+- Scripted game sequences
+- State inspection between commands
+
 ## Example Session
 
 ```
 > look
-You find yourself at the entrance to an ancient dungeon...
+You peer into the gloom of the dungeon entrance. Moss-covered stone walls rise
+around you, meeting in an ancient, arched doorway. A rusty sword and a burning
+torch lie discarded on the cold, damp ground nearby.
 
-> take sword
-You pick up the rusty sword...
+> take torch
+You reach down and grab the torch. The warmth radiates through your hand, a
+stark contrast to the dungeon's chill.
 
-> go north
-You move north into the grand hall...
+> go south
+You step out into a peaceful forest clearing. Dappled sunlight filters through
+tall ancient trees. A pristine white deer grazes nearby, and an Ancient Genie
+shimmers in the air, its blue ethereal form adorned with golden armlets.
 
-> attack skeleton
-You swing your rusty sword at the skeletal guard...
+> talk to genie
+As you approach the Ancient Genie, its shimmering blue form solidifies.
+"Greetings, mortal," the genie booms, its voice echoing through the forest
+clearing. "I am bound by ancient law to grant three wishes to those who find
+me, but heed my words: I grant exactly what is asked, no more, no less.
+Choose wisely!"
+
+> wish for a magic sword
+The air crackles with arcane energy as the Ancient Genie gestures towards you.
+A gleaming blade materializes in your hand, its hilt wrapped in dragonhide,
+pulsing with arcane light.
 ```
 
 ## Troubleshooting

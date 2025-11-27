@@ -6,6 +6,43 @@ An interactive fiction/text adventure game engine powered by Google Gemini LLM, 
 
 **Declarative World, Dynamic Narrative**: The game world is defined as structured JSON with attributes and relationships. The LLM acts as a Dungeon Master, rendering all descriptions dynamically from this state. Nothing is hard-coded—everything is generated based on current game state.
 
+## Key Features
+
+### 🎭 Personality-Driven NPC Dialogue
+NPCs speak with quoted dialogue that reflects their personality, role, and attributes:
+- **Genie**: Mystical, formal dialogue explaining wish mechanics
+- **Guards**: Threatening, hostile warnings
+- **Creatures**: Behavior-based responses (passive animals, defensive beasts)
+- Dialogue teaches game mechanics through character voice
+
+### 🎮 Single-Step Execution Mode
+Test and automate gameplay with command-line interface:
+- Execute one command at a time with state persistence
+- Custom save file locations for parallel test scenarios
+- Debug mode for full state inspection
+- Perfect for systematic testing and CI/CD integration
+
+### ⚔️ D&D 5e Combat System
+Full tactical combat with dice rolls and rule validation:
+- Attack rolls, damage calculation, armor class
+- Real-time combat narration
+- NPC counterattacks based on hostility
+- Complete combat logging
+
+### 🧞 Dynamic Wish System
+Reality-bending genie mechanics:
+- Create items, NPCs, or locations dynamically
+- Wish tracking with decremented counter
+- Precise fulfillment (grants exactly what is asked)
+- State validation to prevent exploits
+
+### 💡 Intelligent Lighting
+Context-aware descriptions based on light levels:
+- Pitch black: Only sounds, smells, sensations
+- Dark: Vague shapes and outlines
+- Dim: Limited visibility with shadows
+- Bright: Full detailed descriptions
+
 ## Architecture Overview
 
 ```
@@ -319,11 +356,15 @@ if/
 - [ ] Skill check system
 
 ### Phase 4: Advanced Features
-- [ ] NPC dialogue system
-- [ ] Combat narration
-- [ ] Magic system
-- [ ] Inventory management
-- [ ] Save/load game state
+- [x] NPC dialogue system ✅ *Implemented 2025-11-27*
+  - Personality-driven dialogue generation
+  - NPCs explain game mechanics through character voice
+  - Dialogue reflects NPC attributes (hostile, passive, mischievous, etc.)
+  - Comprehensive e2e test coverage
+- [x] Combat narration ✅
+- [x] Magic system (Genie wishes) ✅
+- [x] Inventory management ✅
+- [x] Save/load game state ✅
 
 ### Phase 5: World Building
 - [ ] World definition format
@@ -400,6 +441,23 @@ This is a living document. As the design evolves, update this README to reflect:
 
 ---
 
-**Version**: 0.1.0 (Initial Design)
-**Last Updated**: 2025-11-22
-**Status**: Architecture & Planning Phase
+## Recent Updates
+
+### 2025-11-27: NPC Dialogue System
+- ✅ Implemented personality-driven NPC dialogue
+- ✅ NPCs speak with quoted dialogue reflecting their attributes
+- ✅ Game mechanics explained through character voice (genie explains wishes, guards threaten)
+- ✅ Comprehensive e2e test suite (5 tests, 100% passing)
+- ✅ Single-step mode enhanced with auto-room descriptions
+
+### 2025-11-27: Single-Step Execution Mode
+- ✅ Command-line mode for testing and automation
+- ✅ State persistence between commands
+- ✅ Custom save file locations
+- ✅ Debug mode for full state inspection
+
+---
+
+**Version**: 0.2.0 (Playable Alpha)
+**Last Updated**: 2025-11-27
+**Status**: Feature Complete - Core Experience Polished
