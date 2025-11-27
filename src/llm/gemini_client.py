@@ -410,7 +410,7 @@ class GeminiClient:
         cached_descriptions: Optional[Dict[str, Any]] = None,
     ) -> str:
         """Build prompt for location description."""
-        prompt = f"""You are a Dungeon Master describing a location in a fantasy adventure game.
+        prompt = f"""You are a Dungeon Master describing a location.
 
 Location: {location.get('name', 'Unknown')}
 Attributes: {location.get('attributes', {})}
@@ -834,7 +834,7 @@ CRITICAL: Ensure JSON is valid. Use correct IDs from lists above."""
         player_attack = combat_result.get("player_attack", {})
         npc_attack = combat_result.get("npc_attack")
 
-        prompt = f"""You are a Dungeon Master narrating the outcome of a combat round in D&D 5e.
+        prompt = f"""You are a Dungeon Master narrating the outcome of a combat round.
 
 FULL COMBAT ROUND RESULTS (JSON):
 {json.dumps(combat_result, indent=2)}
@@ -896,7 +896,7 @@ Write your narration (3-4 sentences):
         is_unprovoked_attack = bool(attacks and not chases)
 
         if is_chase_attack:
-            prompt = f"""You are the Dungeon Master in a fantasy RPG. An NPC is CHASING the player and attacking.
+            prompt = f"""You are the Dungeon Master in an adventure game. An NPC is CHASING the player and attacking.
 
 IMPORTANT CONTEXT: This NPC was already engaged in combat with the player. The player fled, and the NPC pursued them to their new location and is continuing the fight.
 
@@ -921,7 +921,7 @@ Tone Guidelines:
 - Keep it concise but impactful (3-5 sentences max)
 """
         elif is_unprovoked_attack:
-            prompt = f"""You are the Dungeon Master in a fantasy RPG. NPCs have just acted unprovoked.
+            prompt = f"""You are the Dungeon Master in an adventure game. NPCs have just acted unprovoked.
 
 CURRENT LOCATION: {location_name}
 Location description hints: {location_desc_hints}
@@ -944,7 +944,7 @@ Tone Guidelines:
 """
         else:
             # Just chases, no attacks (rare but possible if attacks missed)
-            prompt = f"""You are the Dungeon Master in a fantasy RPG. An NPC is chasing the player.
+            prompt = f"""You are the Dungeon Master in an adventure game. An NPC is chasing the player.
 
 CURRENT LOCATION: {location_name}
 Location description hints: {location_desc_hints}
@@ -1118,7 +1118,7 @@ EXAMPLES:
                 if last_npc_name:
                     history_text += f"- Last referenced person: {last_npc_name} (ID: {last_npc_id})\n"
 
-        prompt = f"""You are a Dungeon Master interpreting a player's action in a fantasy game.
+        prompt = f"""You are a Dungeon Master interpreting a player's action in an adventure game.
 {history_text}
 
 CURRENT LOCATION: {location.get('id', 'unknown')}
