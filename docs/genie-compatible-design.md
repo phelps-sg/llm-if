@@ -49,12 +49,6 @@ Genies are the ultimate stress test for a creative system because:
 | Pet mechanics | NPC `is_pet` attribute | Pets follow player when moving |
 | Vehicle mechanics | NPC `is_vehicle` attribute | NPCs can be mounted/ridden |
 
-### ⚠️ Partially Implemented
-
-| Capability | Status | Notes |
-|------------|--------|-------|
-| Create NPCs via LLM | Handler works, JSON schema issues | `create_npc` handler implemented, but Gemini JSON schema limitations cause malformed params. Workaround: manually create NPCs in world files. |
-
 ### ❌ Not Yet Implemented
 
 | Capability | State Update | Example Wish |

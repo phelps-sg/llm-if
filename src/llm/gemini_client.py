@@ -232,47 +232,8 @@ class GeminiClient:
                                 "target": {"type": "STRING", "nullable": True},
                                 "params": {
                                     "type": "OBJECT",
-                                    "properties": {
-                                        "destination": {
-                                            "type": "STRING",
-                                            "nullable": True,
-                                        },
-                                        "item_id": {"type": "STRING", "nullable": True},
-                                        "location_id": {"type": "STRING", "nullable": True},
-                                        "name": {"type": "STRING", "nullable": True},
-                                        "attributes": {"type": "OBJECT", "nullable": True},
-                                        "connections": {"type": "OBJECT", "nullable": True},
-                                        "location": {"type": "STRING", "nullable": True},
-                                        "from_location": {"type": "STRING", "nullable": True},
-                                        "direction": {"type": "STRING", "nullable": True},
-                                        "reverse_direction": {"type": "STRING", "nullable": True},
-                                        "npc_id": {"type": "STRING", "nullable": True},
-                                        "target_npc_id": {
-                                            "type": "STRING",
-                                            "nullable": True,
-                                        },
-                                        "to_location": {
-                                            "type": "STRING",
-                                            "nullable": True,
-                                        },
-                                        "entity_id": {
-                                            "type": "STRING",
-                                            "nullable": True,
-                                        },
-                                        "attribute_path": {
-                                            "type": "STRING",
-                                            "nullable": True,
-                                        },
-                                        "value": {"type": "STRING", "nullable": True},
-                                        "flag_name": {
-                                            "type": "STRING",
-                                            "nullable": True,
-                                        },
-                                        "attack_type": {
-                                            "type": "STRING",
-                                            "nullable": True,
-                                        },
-                                    },
+                                    "properties": {},
+                                    "additionalProperties": True,
                                 },
                             },
                             "required": ["type", "params"],
@@ -987,6 +948,31 @@ Return ONLY valid JSON in this exact format:
   "requires_dice_roll": false,
   "dice_check": null
 }}
+
+🔥 CRITICAL EXAMPLE - CREATING A HORSE NPC:
+When player wishes for a horse, you MUST generate this exact structure:
+{{
+  "type": "create_npc",
+  "target": null,
+  "params": {{
+    "npc_id": "magical_horse",
+    "name": "Magnificent Horse",
+    "attributes": {{
+      "creature_type": "beast",
+      "is_pet": true,
+      "is_vehicle": true,
+      "vehicle_speed": 2,
+      "hp": 30,
+      "hp_max": 30,
+      "hostility": "passive",
+      "description_hints": "strong brown mare, intelligent eyes, ready to ride"
+    }},
+    "location": null
+  }}
+}}
+
+This creates a REAL, RIDEABLE horse that follows the player!
+NOT a toy, NOT a miniature, NOT an item - a living NPC horse!
 
 STATE UPDATE TYPES AND REQUIRED PARAMS:
 - "move_player": {{"destination": "location_id"}} - MUST include destination as location ID!
