@@ -44,12 +44,12 @@ Genies are the ultimate stress test for a creative system because:
 | Modify NPCs | `modify_attribute` (npc) | "I wish the deer was friendly" |
 | Destroy items | `destroy_item` | "I wish to erase this cursed ring" |
 | Move entities | `move_item`, `move_npc` | "I wish the treasure was here" |
+| Create locations | `create_location` | "I wish for a path south" |
 
 ### ❌ Not Yet Implemented
 
 | Capability | State Update | Example Wish |
 |------------|-------------|--------------|
-| Create locations | `create_location` | "I wish for a path south" |
 | Modify location attributes | `modify_attribute` (location) | "I wish this room was brighter" |
 | Create NPCs | `create_npc` | "I wish for a companion" |
 | Modify game rules | `modify_rule` | "I wish gravity didn't exist" |
@@ -75,6 +75,12 @@ Genies are the ultimate stress test for a creative system because:
 **Decision:** Strengthened rule that narrative MUST match state updates
 **Rationale:** If genie creates ice cream in narrative, it must exist in game
 **Benefit:** Prevents hallucinations where wishes seem to work but don't
+
+### 5. Dynamic Location Creation
+**Decision:** Added `create_location` state update with auto-connection
+**Rationale:** Genies must be able to create paths, portals, and new areas
+**Benefit:** DM can handle "I wish for a path south" → creates new location and connects it
+**Implementation:** Supports attributes, bidirectional connections, and creative descriptions
 
 ## Testing with Genie-Compatible Scenarios
 
@@ -103,7 +109,7 @@ Expected:
   - create_location ("hidden_grove")
   - connect forest_clearing → hidden_grove (south)
   - modify_attribute (genie.wishes_remaining -= 1)
-Status: ❌ BLOCKED (no create_location state update yet)
+Status: ✅ WORKS
 ```
 
 ### Test Case 4: Complex Transformation
@@ -143,11 +149,11 @@ Both approaches coexist. The system supports:
 
 ## Future Directions
 
-### 1. Dynamic Location Creation
-Add `create_location` state update for truly dynamic world building.
-
-### 2. NPC Creation
+### 1. NPC Creation
 Add `create_npc` to allow wishes like "I wish for a friendly guard".
+
+### 2. Location Attribute Modification
+While locations can be created, modifying existing location attributes (lighting, temperature, etc.) would enable wishes like "I wish this room was brighter".
 
 ### 3. Rule Modification
 Add capability to modify game physics/rules for wishes like "I wish I could breathe underwater".

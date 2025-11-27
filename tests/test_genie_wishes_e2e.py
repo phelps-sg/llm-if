@@ -210,6 +210,120 @@ def test_ask_genie_without_saying_wish(skip_if_no_gcp, genie_setup):
     print(f"\n✅ Test passed: Natural language wish works correctly")
 
 
+def test_wish_for_new_location(skip_if_no_gcp, genie_setup):
+    """Test wishing for a new path/location creates location and connection.
+
+    This tests the genie-compatible design principle:
+    - Genie should be able to grant wish for "a path south"
+    - Should create new location
+    - Should connect current location to new location
+    - Should decrement wishes_remaining
+    """
+    game_loop, game_state, gemini_client = genie_setup
+
+    print("\n=== TESTING LOCATION CREATION VIA WISH ===")
+
+    # Verify starting location
+    assert game_state.player_location == "forest_clearing"
+    initial_location_count = len(game_state.locations)
+    print(f"Initial locations: {list(game_state.locations.keys())}")
+    print(f"Location count: {initial_location_count}")
+
+    # Check initial connections from forest_clearing
+    clearing = game_state.locations.get("forest_clearing")
+    assert clearing is not None
+    initial_connections = clearing.connections.copy()
+    print(f"Forest clearing connections before wish: {initial_connections}")
+
+    # Genie wishes
+    genie = game_state.npcs.get("genie")
+    initial_wishes = genie.attributes.get("wishes_remaining", 3)
+    print(f"Initial wishes: {initial_wishes}")
+
+    # Wish for a new path south
+    print("\n--- Wishing: 'genie, I wish for a path south' ---")
+    narrative, interpretation = game_loop.process_turn("genie, I wish for a path south")
+
+    print(f"Narrative: {narrative}")
+    print(f"State updates: {interpretation.get('state_updates')}")
+
+    state_updates = interpretation.get("state_updates", [])
+
+    # Check if location was created
+    location_created = any(
+        update.get("type") == "create_location"
+        for update in state_updates
+    )
+
+    if not location_created:
+        print(f"\n❌ FAILED: No location created")
+        print(f"Narrative says: {narrative}")
+        print(f"State updates: {state_updates}")
+        pytest.fail(
+            "Wishing for a path south should create a new location.\n"
+            "This tests the genie-compatible design principle."
+        )
+
+    print("✅ Location creation state update found")
+
+    # Verify location was actually added to game state
+    new_location_count = len(game_state.locations)
+    print(f"\nLocation count after wish: {new_location_count}")
+
+    assert new_location_count == initial_location_count + 1, (
+        f"Expected {initial_location_count + 1} locations, got {new_location_count}"
+    )
+
+    # Find the new location
+    new_location_id = None
+    for loc_id in game_state.locations:
+        if loc_id not in initial_connections.values() and loc_id != "forest_clearing":
+            new_location_id = loc_id
+            break
+
+    if new_location_id:
+        print(f"✅ New location created: {new_location_id}")
+        new_location = game_state.locations[new_location_id]
+        print(f"   Name: {new_location.name}")
+        print(f"   Attributes: {new_location.attributes}")
+        print(f"   Connections: {new_location.connections}")
+
+    # Check that forest_clearing now has a south exit
+    clearing_after = game_state.locations.get("forest_clearing")
+    south_exit = clearing_after.connections.get("south")
+
+    if south_exit:
+        print(f"\n✅ Forest clearing now has south exit to: {south_exit}")
+    else:
+        print(f"\n⚠️  WARNING: Forest clearing has no south exit")
+        print(f"Connections: {clearing_after.connections}")
+        pytest.fail("Forest clearing should have a south exit after wish")
+
+    # Verify player can move to new location
+    print("\n--- Testing movement to new location ---")
+    move_narrative, move_interp = game_loop.process_turn("go south")
+    print(f"Movement narrative: {move_narrative}")
+    print(f"Player location after move: {game_state.player_location}")
+
+    if game_state.player_location == south_exit:
+        print(f"✅ Successfully moved to new location: {south_exit}")
+    else:
+        print(f"⚠️  Expected to be at {south_exit}, but at {game_state.player_location}")
+
+    # Check wishes decremented
+    genie_after = game_state.npcs.get("genie")
+    wishes_after = genie_after.attributes.get("wishes_remaining", 3)
+    wishes_after_int = int(wishes_after) if isinstance(wishes_after, str) else wishes_after
+
+    print(f"\nWishes after: {wishes_after_int}")
+
+    if wishes_after_int == initial_wishes:
+        print(f"⚠️  WARNING: Wishes not decremented ({initial_wishes} → {wishes_after_int})")
+        pytest.fail("Genie should decrement wishes_remaining when granting a wish")
+
+    print(f"\n✅ Test passed: Location creation via wish works correctly")
+
+
 if __name__ == "__main__":
     # Allow running directly for debugging
     import sys

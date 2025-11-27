@@ -191,6 +191,48 @@ class ActionProcessor:
                     if item_id in game_state.items:
                         del game_state.items[item_id]
 
+            elif update_type == "create_location":
+                # Dynamically create a new location in the game world
+                from ..models.location import Location
+
+                location_id = params.get("location_id")
+                name = params.get("name")
+                attributes = params.get("attributes", {})
+                connections = params.get("connections", {})
+
+                # Optional: auto-connect to a location (e.g., "create path south from current location")
+                from_location = params.get("from_location")  # Location ID to connect from
+                direction = params.get("direction")  # Direction from that location
+                reverse_direction = params.get("reverse_direction")  # Optional reverse direction
+
+                if location_id and name:
+                    # Validate location doesn't already exist
+                    if location_id in game_state.locations:
+                        print(f"[WARNING] Location '{location_id}' already exists, skipping create_location")
+                        continue
+
+                    # Create new Location object
+                    new_location = Location(
+                        id=location_id,
+                        name=name,
+                        attributes=attributes,
+                        connections=connections
+                    )
+
+                    # Add to game state
+                    game_state.locations[location_id] = new_location
+
+                    # Auto-connect to existing location if specified
+                    if from_location and direction:
+                        from_loc_id = self._resolve_location_id(from_location, game_state)
+                        if from_loc_id and from_loc_id in game_state.locations:
+                            # Add connection from existing location to new location
+                            game_state.locations[from_loc_id].connections[direction] = location_id
+
+                            # Add reverse connection if specified
+                            if reverse_direction:
+                                new_location.connections[reverse_direction] = from_loc_id
+
             elif update_type == "update_dm_state":
                 # Update hidden DM state for plot tracking
                 path = params.get("path")

@@ -238,9 +238,14 @@ class GeminiClient:
                                             "nullable": True,
                                         },
                                         "item_id": {"type": "STRING", "nullable": True},
+                                        "location_id": {"type": "STRING", "nullable": True},
                                         "name": {"type": "STRING", "nullable": True},
                                         "attributes": {"type": "OBJECT", "nullable": True},
+                                        "connections": {"type": "OBJECT", "nullable": True},
                                         "location": {"type": "STRING", "nullable": True},
+                                        "from_location": {"type": "STRING", "nullable": True},
+                                        "direction": {"type": "STRING", "nullable": True},
+                                        "reverse_direction": {"type": "STRING", "nullable": True},
                                         "npc_id": {"type": "STRING", "nullable": True},
                                         "target_npc_id": {
                                             "type": "STRING",
@@ -933,6 +938,7 @@ If your narrative mentions changes to any entity (player, NPC, item):
 2. Do I have state_updates for EVERYTHING I described?
 3. If narrative says "X appears" - do I have create_item for X?
 4. If narrative says "Y is destroyed" - do I have destroy_item for Y?
+5. If narrative says "path/location opens/appears" - do I have create_location for it?
 
 ❌ NEVER EVER write narrative that describes changes without corresponding state_updates
 ❌ This is the #1 most important rule - violating it breaks the game
@@ -941,6 +947,7 @@ Examples of CORRECT state updates matching narrative:
 - Narrative: "Ice cream appears" → state_updates: [{{"type": "create_item", "params": {{"item_id": "ice_cream", "name": "Ice Cream", "location": "here"}}}}]
 - Narrative: "You pick up the sword" → state_updates: [{{"type": "add_to_inventory", "params": {{"item_id": "sword"}}}}]
 - Narrative: "The genie's eyes glow" → state_updates: [{{"type": "modify_attribute", "target": "genie", "params": {{"attribute_path": "eyes_glowing", "value": true}}}}]
+- Narrative: "A path opens to the south" → state_updates: [{{"type": "create_location", "params": {{"location_id": "hidden_grove", "name": "Hidden Grove", "from_location": "forest_clearing", "direction": "south", "reverse_direction": "north"}}}}]
 
 🚨 ===== END MANDATORY RULE ===== 🚨
 
@@ -999,6 +1006,17 @@ STATE UPDATE TYPES AND REQUIRED PARAMS:
   * location: null means add to player inventory, otherwise use location_id for ground
   * Example: Player knocks antlers off deer -> create_item with item_id="severed_antlers", location="current_location"
 - "destroy_item": {{"item_id": "item_id"}} - Permanently remove item from game (different from consume_item)
+- "create_location": {{"location_id": "unique_id", "name": "Location Name", "attributes": {{}}, "connections": {{}}, "from_location": "current_location_id", "direction": "south", "reverse_direction": "north"}} - Dynamically create a new location
+  * Use for wishes, magical effects, or world-building actions (genie creates path, earthquake reveals cave, etc.)
+  * location_id must be unique (e.g., "hidden_grove", "secret_passage_1")
+  * name: Display name for the location (e.g., "Hidden Grove", "Secret Passage")
+  * attributes: {{"description_hints": "lush vegetation, sparkling stream", "lighting": "bright", "is_outdoors": true, etc.}}
+  * connections: Optional dict of exits from NEW location {{"north": "forest_clearing", "east": "meadow"}}
+  * from_location: Location to connect FROM (usually current location or location_id)
+  * direction: Direction from from_location to new location (e.g., "south", "down", "through_portal")
+  * reverse_direction: Optional direction back (e.g., if direction is "south", reverse is "north")
+  * Example: Genie wish for path south → create_location with from_location="forest_clearing", direction="south", reverse_direction="north"
+  * ⚠️  IMPORTANT: This enables true dynamic world building - use creatively for magical effects, wishes, discoveries
 - "move_item": {{"item_id": "id", "to_location": "location_id"}} - MUST include both!
 - "move_npc": {{"npc_id": "id", "to_location": "location_id"}} - Move NPC to different location
 - "remove_npc": {{"npc_id": "id"}} - Remove NPC from current location (teleport, banish, etc.)
