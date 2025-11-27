@@ -48,6 +48,42 @@ class GameLoop:
         # Execute the turn
         narrative, interpretation = self.process_turn(command)
 
+        # If player moved, generate room description (like interactive mode)
+        state_updates = interpretation.get("state_updates", [])
+        is_movement = any(update.get("type") == "move_player" for update in state_updates)
+
+        if is_movement:
+            # Generate room description for the new location
+            location = self.game_state.get_player_location()
+            if location:
+                items = self.game_state.get_items_at_location(self.game_state.player_location)
+                npcs = self.game_state.get_npcs_at_location(self.game_state.player_location)
+
+                # Get lighting information
+                lighting = self.game_state.get_effective_lighting(
+                    self.game_state.player_location
+                )
+
+                # Build player context for description
+                player_context = {
+                    "inventory_ids": self.game_state.player.inventory,
+                    "inventory_items": [
+                        self.game_state.items[item_id].name
+                        for item_id in self.game_state.player.inventory
+                        if item_id in self.game_state.items
+                    ],
+                    "attributes": self.game_state.player.attributes,
+                }
+
+                # Generate description
+                narrative = self.gemini.describe_location(
+                    location.model_dump(),
+                    [item.model_dump() for item in items],
+                    [npc.model_dump() for npc in npcs],
+                    player_context=player_context,
+                    lighting_info=lighting,
+                )
+
         # Gather current state
         location = self.game_state.get_player_location()
         exits = location.get_available_exits() if location else []
