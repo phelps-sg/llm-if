@@ -869,6 +869,21 @@ Examples:
 - Player attacks aggressive skeleton → Trigger combat
 - Player shouts at defensive rat → Rat gets nervous but doesn't attack
 
+⚠️  NPC DEATH/DESTRUCTION - LEAVE BEHIND REMAINS:
+When NPCs are killed, destroyed, or eliminated, use BOTH remove_npc AND create_item:
+- remove_npc: Removes the living NPC from the location
+- create_item: Creates corpse/remains/evidence at the location
+
+This makes the world feel more realistic and gives players items to interact with.
+
+Examples:
+- Kill deer → remove_npc("deer") + create_item("deer_corpse", name="Deer Corpse", location="current")
+- Shatter skeleton → remove_npc("skeleton") + create_item("bone_fragments", attributes={{"brittle": true}})
+- Destroy golem → remove_npc("golem") + create_item("stone_rubble", name="Pile of Rubble")
+- Banish ghost → remove_npc("ghost") + create_item("ectoplasm_residue") (optional, ghosts may leave nothing)
+
+Corpse attributes to consider: {{"butcherable": true, "lootable": true, "decays": true}}
+
 ⚠️  PLAYER CONDITION TRACKING - USE modify_attribute ON PLAYER:
 When player actions affect their abilities or state, track it with modify_attribute (entity_id: "player").
 Be creative! Track ANY condition that would affect future perception, actions, or story.
