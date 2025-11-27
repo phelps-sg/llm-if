@@ -116,6 +116,7 @@ class GeminiClient:
         npcs: List[Any],
         player_context: Optional[Dict[str, Any]] = None,
         lighting_info: Optional[Dict[str, Any]] = None,
+        cached_descriptions: Optional[Dict[str, Any]] = None,
     ) -> str:
         """Generate a description of a location.
 
@@ -125,12 +126,14 @@ class GeminiClient:
             npcs: NPCs at the location
             player_context: Optional player context
             lighting_info: Lighting and visibility information
+            cached_descriptions: Optional dict with previously generated descriptions
+                Format: {"location": {...}, "items": {...}, "npcs": {...}}
 
         Returns:
             Narrative description
         """
         prompt = self._build_location_prompt(
-            location, items, npcs, player_context, lighting_info
+            location, items, npcs, player_context, lighting_info, cached_descriptions
         )
         return self.generate(prompt)
 
@@ -383,6 +386,7 @@ class GeminiClient:
         npcs: List[Any],
         player_context: Optional[Dict[str, Any]],
         lighting_info: Optional[Dict[str, Any]] = None,
+        cached_descriptions: Optional[Dict[str, Any]] = None,
     ) -> str:
         """Build prompt for location description."""
         prompt = f"""You are a Dungeon Master describing a location in a fantasy adventure game.
@@ -391,6 +395,57 @@ Location: {location.get('name', 'Unknown')}
 Attributes: {location.get('attributes', {})}
 
 """
+
+        # Add cached descriptions if available
+        if cached_descriptions:
+            prompt += "\n📝 PREVIOUSLY GENERATED DESCRIPTIONS (for reference/consistency):\n\n"
+
+            location_cache = cached_descriptions.get("location")
+            if location_cache:
+                cached_desc = location_cache.get("description", "")
+                cached_turn = location_cache.get("turn", "unknown")
+                prompt += f"🏛️ Location Description (from turn {cached_turn}):\n"
+                prompt += f'"{cached_desc}"\n\n'
+
+            items_cache = cached_descriptions.get("items", {})
+            if items_cache:
+                prompt += "📦 Item Descriptions (previously seen):\n"
+                for item_id, item_cache in items_cache.items():
+                    item_name = item_cache.get("name", item_id)
+                    cached_desc = item_cache.get("description", "")
+                    cached_turn = item_cache.get("turn", "unknown")
+                    prompt += f"  - {item_name} (turn {cached_turn}): \"{cached_desc}\"\n"
+                prompt += "\n"
+
+            npcs_cache = cached_descriptions.get("npcs", {})
+            if npcs_cache:
+                prompt += "👤 NPC Descriptions (previously seen):\n"
+                for npc_id, npc_cache in npcs_cache.items():
+                    npc_name = npc_cache.get("name", npc_id)
+                    cached_desc = npc_cache.get("description", "")
+                    cached_turn = npc_cache.get("turn", "unknown")
+                    prompt += f"  - {npc_name} (turn {cached_turn}): \"{cached_desc}\"\n"
+                prompt += "\n"
+
+            prompt += """⚠️  CRITICAL INSTRUCTIONS FOR USING CACHED DESCRIPTIONS:
+
+1. **These are HINTS for consistency** - They show how you described things before
+2. **Check CURRENT STATE first** - Things may have changed since the cached description!
+   - If attributes have changed, the description MUST reflect the new state
+   - Example: If deer previously had antlers but now has_antlers=false, describe it WITHOUT antlers
+3. **You can abbreviate for return visits** - If player has seen this location before:
+   - Brief descriptions are fine: "You're back in the Grand Hall. The skeleton guard is still here."
+   - No need to repeat full atmospheric descriptions unless something changed
+4. **Maintain consistency** - If you described something a certain way before, keep that detail
+   - Example: If you said the genie has "golden armlets", keep mentioning golden armlets
+5. **Highlight changes** - If state changed, explicitly note it:
+   - "The deer looks different now - its antlers are gone!"
+   - "The torch that was here before has been taken"
+
+Use cached descriptions for CONSISTENCY and BREVITY, but always prioritize CURRENT STATE.
+
+"""
+
 
         # Add player inventory context
         if player_context:

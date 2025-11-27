@@ -48,11 +48,16 @@ class GameLoop:
         # Execute the turn
         narrative, interpretation = self.process_turn(command)
 
-        # If player moved, generate room description (like interactive mode)
+        # Check if this was a location-describing action (movement or look)
         state_updates = interpretation.get("state_updates", [])
         is_movement = any(update.get("type") == "move_player" for update in state_updates)
 
-        if is_movement:
+        # Detect "look" or "examine" commands by checking if there are no state updates
+        # and the command is about examining the location
+        is_look = (len(state_updates) == 0 and
+                  any(word in command.lower() for word in ["look", "examine", "l "]))
+
+        if is_movement or is_look:
             # Generate room description for the new location
             location = self.game_state.get_player_location()
             if location:
@@ -75,6 +80,11 @@ class GameLoop:
                     "attributes": self.game_state.player.attributes,
                 }
 
+                # Gather cached descriptions for consistency
+                cached_descriptions = self._get_cached_descriptions_for_location(
+                    location.id, items, npcs
+                )
+
                 # Generate description
                 narrative = self.gemini.describe_location(
                     location.model_dump(),
@@ -82,6 +92,15 @@ class GameLoop:
                     [npc.model_dump() for npc in npcs],
                     player_context=player_context,
                     lighting_info=lighting,
+                    cached_descriptions=cached_descriptions,
+                )
+
+                # Cache the generated description
+                self.game_state.cache_description(
+                    "location",
+                    location.id,
+                    narrative,
+                    state_snapshot={"lighting": lighting.get("level"), "turn": self.game_state.turn_count}
                 )
 
         # Gather current state
@@ -400,20 +419,82 @@ class GameLoop:
             "attributes": self.game_state.player.attributes,
         }
 
+        # Gather cached descriptions for consistency
+        cached_descriptions = self._get_cached_descriptions_for_location(
+            location.id, items, npcs
+        )
+
         description = self.gemini.describe_location(
             location.model_dump(),
             [item.model_dump() for item in items],
             [npc.model_dump() for npc in npcs],
             player_context=player_context,
             lighting_info=lighting,
+            cached_descriptions=cached_descriptions,
         )
 
         print(f"\n{description}")
+
+        # Cache the generated description
+        self.game_state.cache_description(
+            "location",
+            location.id,
+            description,
+            state_snapshot={"lighting": lighting.get("level"), "turn": self.game_state.turn_count}
+        )
 
         # Show exits
         exits = location.get_available_exits()
         if exits:
             print(f"\nExits: {', '.join(exits)}")
+
+    def _get_cached_descriptions_for_location(
+        self, location_id: str, items: list, npcs: list
+    ) -> dict:
+        """Gather cached descriptions for a location and its contents.
+
+        Args:
+            location_id: ID of the location
+            items: List of Item objects at the location
+            npcs: List of NPC objects at the location
+
+        Returns:
+            Dict with cached descriptions for location, items, and npcs
+        """
+        cached = {}
+
+        # Get cached location description
+        location_cache = self.game_state.get_cached_description("location", location_id)
+        if location_cache:
+            cached["location"] = location_cache
+
+        # Get cached item descriptions
+        items_cache = {}
+        for item in items:
+            item_cache = self.game_state.get_cached_description("item", item.id)
+            if item_cache:
+                items_cache[item.id] = {
+                    "name": item.name,
+                    "description": item_cache["description"],
+                    "turn": item_cache["turn"],
+                }
+        if items_cache:
+            cached["items"] = items_cache
+
+        # Get cached NPC descriptions
+        npcs_cache = {}
+        for npc in npcs:
+            npc_cache = self.game_state.get_cached_description("npc", npc.id)
+            if npc_cache:
+                npcs_cache[npc.id] = {
+                    "name": npc.name,
+                    "description": npc_cache["description"],
+                    "turn": npc_cache["turn"],
+                }
+        if npcs_cache:
+            cached["npcs"] = npcs_cache
+
+        return cached
 
     def _show_help(self) -> None:
         """Show help text."""

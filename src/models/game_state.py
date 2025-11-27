@@ -59,6 +59,12 @@ class GameState(BaseModel):
         description="Hidden DM state for plot tracking (not shown to player)"
     )
 
+    # Description caching for consistency
+    description_cache: Dict[str, Dict[str, Any]] = Field(
+        default_factory=dict,
+        description="Cache of previously generated descriptions for locations, NPCs, and items"
+    )
+
     # Query methods for locations
 
     def get_items_at_location(self, location_id: str) -> List[Item]:
@@ -279,6 +285,47 @@ class GameState(BaseModel):
     def get_recent_history(self, count: int = 5) -> List[Dict[str, Any]]:
         """Get recent history entries."""
         return self.history[-count:] if self.history else []
+
+    # Description caching
+
+    def cache_description(
+        self,
+        entity_type: str,
+        entity_id: str,
+        description: str,
+        state_snapshot: Optional[Dict[str, Any]] = None
+    ) -> None:
+        """Cache a generated description for an entity.
+
+        Args:
+            entity_type: Type of entity ("location", "npc", or "item")
+            entity_id: Unique identifier for the entity
+            description: The generated description text
+            state_snapshot: Optional snapshot of relevant state at time of description
+        """
+        cache_key = f"{entity_type}:{entity_id}"
+        self.description_cache[cache_key] = {
+            "description": description,
+            "turn": self.turn_count,
+            "state_snapshot": state_snapshot or {}
+        }
+
+    def get_cached_description(
+        self,
+        entity_type: str,
+        entity_id: str
+    ) -> Optional[Dict[str, Any]]:
+        """Get cached description for an entity if available.
+
+        Args:
+            entity_type: Type of entity ("location", "npc", or "item")
+            entity_id: Unique identifier for the entity
+
+        Returns:
+            Dict with description, turn, and state_snapshot, or None if not cached
+        """
+        cache_key = f"{entity_type}:{entity_id}"
+        return self.description_cache.get(cache_key)
 
     # Serialization
 
