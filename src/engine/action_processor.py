@@ -60,6 +60,13 @@ class ActionProcessor:
                     if location_id:
                         game_state.move_player_to_location(location_id)
 
+                        # Move all pet NPCs with the player
+                        for npc_id, npc in game_state.npcs.items():
+                            if npc.attributes.get("is_pet", False):
+                                # Pet follows player to new location
+                                if npc_id in game_state.npc_locations:
+                                    game_state.npc_locations[npc_id] = location_id
+
             elif update_type == "add_to_inventory":
                 item_id = params.get("item_id")
                 if item_id and item_id in game_state.items:
@@ -232,6 +239,43 @@ class ActionProcessor:
                             # Add reverse connection if specified
                             if reverse_direction:
                                 new_location.connections[reverse_direction] = from_loc_id
+
+            elif update_type == "create_npc":
+                # Dynamically create a new NPC in the game world
+                from ..models.npc import NPC
+
+                npc_id = params.get("npc_id")
+                name = params.get("name")
+                attributes = params.get("attributes", {})
+                location = params.get("location")  # Location ID where NPC appears
+
+                if npc_id and name:
+                    # Validate NPC doesn't already exist
+                    if npc_id in game_state.npcs:
+                        print(f"[WARNING] NPC '{npc_id}' already exists, skipping create_npc")
+                        continue
+
+                    # Create new NPC object
+                    new_npc = NPC(
+                        id=npc_id,
+                        name=name,
+                        attributes=attributes
+                    )
+
+                    # Add to game state
+                    game_state.npcs[npc_id] = new_npc
+
+                    # Set location (default to player's current location if not specified)
+                    if location:
+                        location_id = self._resolve_location_id(location, game_state)
+                        if location_id:
+                            game_state.npc_locations[npc_id] = location_id
+                        else:
+                            # Default to player's current location if invalid
+                            game_state.npc_locations[npc_id] = game_state.player_location
+                    else:
+                        # No location specified - default to player's current location
+                        game_state.npc_locations[npc_id] = game_state.player_location
 
             elif update_type == "update_dm_state":
                 # Update hidden DM state for plot tracking

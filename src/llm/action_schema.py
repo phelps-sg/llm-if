@@ -19,6 +19,7 @@ class StateUpdate(BaseModel):
         "create_item",
         "destroy_item",
         "create_location",
+        "create_npc",
         "set_flag",
         "trigger_combat",
         "update_dm_state",

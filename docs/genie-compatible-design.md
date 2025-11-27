@@ -45,14 +45,23 @@ Genies are the ultimate stress test for a creative system because:
 | Destroy items | `destroy_item` | "I wish to erase this cursed ring" |
 | Move entities | `move_item`, `move_npc` | "I wish the treasure was here" |
 | Create locations | `create_location` | "I wish for a path south" |
+| Create NPCs | `create_npc` | "I wish for a horse" |
+| Pet mechanics | NPC `is_pet` attribute | Pets follow player when moving |
+| Vehicle mechanics | NPC `is_vehicle` attribute | NPCs can be mounted/ridden |
+
+### ⚠️ Partially Implemented
+
+| Capability | Status | Notes |
+|------------|--------|-------|
+| Create NPCs via LLM | Handler works, JSON schema issues | `create_npc` handler implemented, but Gemini JSON schema limitations cause malformed params. Workaround: manually create NPCs in world files. |
 
 ### ❌ Not Yet Implemented
 
 | Capability | State Update | Example Wish |
 |------------|-------------|--------------|
 | Modify location attributes | `modify_attribute` (location) | "I wish this room was brighter" |
-| Create NPCs | `create_npc` | "I wish for a companion" |
 | Modify game rules | `modify_rule` | "I wish gravity didn't exist" |
+| Fast travel | Vehicle-based navigation | "Take me to the dungeon" |
 
 ## Design Decisions Guided by This Principle
 
@@ -81,6 +90,13 @@ Genies are the ultimate stress test for a creative system because:
 **Rationale:** Genies must be able to create paths, portals, and new areas
 **Benefit:** DM can handle "I wish for a path south" → creates new location and connects it
 **Implementation:** Supports attributes, bidirectional connections, and creative descriptions
+
+### 6. Pet and Vehicle Mechanics
+**Decision:** NPCs with `is_pet=true` automatically follow player on movement; `is_vehicle=true` enables mounting
+**Rationale:** Wish for a horse should create rideable companion that travels with player
+**Benefit:** Natural pet/mount behavior without explicit move commands
+**Implementation:** Pet NPCs auto-move when player moves; vehicles prep for future fast travel system
+**Genie principle:** Non-pet NPCs can be tamed at DM discretion via `modify_attribute`
 
 ## Testing with Genie-Compatible Scenarios
 

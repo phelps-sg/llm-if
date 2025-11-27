@@ -948,6 +948,7 @@ Examples of CORRECT state updates matching narrative:
 - Narrative: "You pick up the sword" → state_updates: [{{"type": "add_to_inventory", "params": {{"item_id": "sword"}}}}]
 - Narrative: "The genie's eyes glow" → state_updates: [{{"type": "modify_attribute", "target": "genie", "params": {{"attribute_path": "eyes_glowing", "value": true}}}}]
 - Narrative: "A path opens to the south" → state_updates: [{{"type": "create_location", "params": {{"location_id": "hidden_grove", "name": "Hidden Grove", "from_location": "forest_clearing", "direction": "south", "reverse_direction": "north"}}}}]
+- Narrative: "A magnificent horse appears" → state_updates: [{{"type": "create_npc", "params": {{"npc_id": "magical_horse", "name": "Magnificent Horse", "attributes": {{"creature_type": "beast", "is_pet": true, "is_vehicle": true, "vehicle_speed": 2}}}}}}, {{"type": "modify_attribute", "target": "genie", "params": {{"entity_id": "genie", "attribute_path": "wishes_remaining", "value": "2"}}}}]
 
 🚨 ===== END MANDATORY RULE ===== 🚨
 
@@ -1000,6 +1001,8 @@ STATE UPDATE TYPES AND REQUIRED PARAMS:
 - "remove_from_inventory": {{"item_id": "item_id"}} - Drop item at current location
 - "consume_item": {{"item_id": "item_id"}} - Eat/drink/destroy item (removes from game entirely)
 - "create_item": {{"item_id": "unique_id", "name": "Item Name", "attributes": {{}}, "location": "location_id or null"}} - Dynamically create a new item
+  * ⚠️  IMPORTANT: Use create_item for INANIMATE objects only (swords, potions, furniture, rocks)
+  * ❌ DO NOT use for living creatures (animals, people, monsters) - use create_npc instead!
   * Use when player action naturally creates a new item (breaking antlers off, splitting item, crafting, etc.)
   * item_id must be unique (e.g., "severed_antlers", "broken_branch_1")
   * attributes can include: {{"type": "weapon/consumable/misc", "damage": "1d4", "sharp": true, etc.}}
@@ -1017,6 +1020,26 @@ STATE UPDATE TYPES AND REQUIRED PARAMS:
   * reverse_direction: Optional direction back (e.g., if direction is "south", reverse is "north")
   * Example: Genie wish for path south → create_location with from_location="forest_clearing", direction="south", reverse_direction="north"
   * ⚠️  IMPORTANT: This enables true dynamic world building - use creatively for magical effects, wishes, discoveries
+- "create_npc": {{"npc_id": "unique_id", "name": "NPC Name", "attributes": {{"is_pet": true, "is_vehicle": true}}, "location": null}} - Dynamically create a new NPC (living creature)
+  * ✅ Use for ALL living creatures: animals, people, monsters, companions, mounts
+  * ❌ DO NOT use create_item for living things - ONLY use create_npc!
+  * REQUIRED FIELDS IN PARAMS:
+    - npc_id: unique ID string (e.g., "magical_horse", "guard_captain")
+    - name: display name string (e.g., "Magical Horse", "Guard Captain")
+    - attributes: dict with creature attributes (see below)
+    - location: null (current location) or location_id string
+  * 🐴 PET MECHANICS - NPCs that follow the player:
+    - Set "is_pet": true in attributes to make NPC follow player when they move locations
+    - Pets automatically move with player (no need for explicit move_npc)
+    - Example: Horse, dog, familiar, tamed wolf
+  * 🚗 VEHICLE MECHANICS - NPCs that can be ridden/driven:
+    - Set "is_vehicle": true in attributes to allow player to ride/mount this NPC
+    - Set "vehicle_speed": number (1=normal, 2=fast, 3=very fast) for future fast travel
+    - Example: Horse (is_pet + is_vehicle), wagon, boat
+  * 🎯 TAMING: Any non-pet NPC can become a pet at DM discretion
+    - If player successfully tames/befriends NPC, use modify_attribute to set "is_pet": true
+  * COMPLETE EXAMPLE for horse wish:
+    {{"type": "create_npc", "params": {{"npc_id": "magical_horse", "name": "Magnificent Horse", "attributes": {{"creature_type": "beast", "is_pet": true, "is_vehicle": true, "vehicle_speed": 2, "hp": 30, "hp_max": 30, "hostility": "passive"}}, "location": null}}}}
 - "move_item": {{"item_id": "id", "to_location": "location_id"}} - MUST include both!
 - "move_npc": {{"npc_id": "id", "to_location": "location_id"}} - Move NPC to different location
 - "remove_npc": {{"npc_id": "id"}} - Remove NPC from current location (teleport, banish, etc.)

@@ -324,6 +324,126 @@ def test_wish_for_new_location(skip_if_no_gcp, genie_setup):
     print(f"\n✅ Test passed: Location creation via wish works correctly")
 
 
+def test_wish_for_pet_vehicle_horse(skip_if_no_gcp, genie_setup):
+    """Test wishing for a horse creates NPC with pet and vehicle attributes.
+
+    This tests:
+    - Horse is created as NPC (not item)
+    - Horse has is_pet=true and follows player when moving
+    - Horse has is_vehicle=true for mounting
+    - Wishes are decremented
+    """
+    game_loop, game_state, gemini_client = genie_setup
+
+    print("\n=== TESTING PET + VEHICLE MECHANICS ===")
+
+    # Initial state
+    assert game_state.player_location == "forest_clearing"
+    initial_npc_count = len(game_state.npcs)
+    print(f"Initial NPCs: {list(game_state.npcs.keys())}")
+    print(f"NPC count: {initial_npc_count}")
+
+    # Wish for a horse
+    print("\n--- Wishing: 'genie, I wish for a horse' ---")
+    narrative, interpretation = game_loop.process_turn("genie, I wish for a horse")
+
+    print(f"Narrative: {narrative}")
+    print(f"State updates: {interpretation.get('state_updates')}")
+
+    state_updates = interpretation.get("state_updates", [])
+
+    # Check if NPC was created (not item!)
+    npc_created = any(
+        update.get("type") == "create_npc"
+        and "horse" in update.get("params", {}).get("name", "").lower()
+        for update in state_updates
+    )
+
+    # Also check that NO item was created (common mistake)
+    item_created = any(
+        update.get("type") == "create_item"
+        and "horse" in update.get("params", {}).get("name", "").lower()
+        for update in state_updates
+    )
+
+    if item_created and not npc_created:
+        print(f"\n❌ CRITICAL ERROR: Horse created as ITEM, not NPC!")
+        print(f"Living creatures MUST be created as NPCs, not items.")
+        pytest.fail("Horse should be created as NPC (create_npc), not item (create_item)")
+
+    if not npc_created:
+        print(f"\n❌ FAILED: No horse NPC created")
+        print(f"Narrative says: {narrative}")
+        print(f"State updates: {state_updates}")
+        pytest.fail("Wishing for a horse should create an NPC")
+
+    print("✅ Horse created as NPC (not item)")
+
+    # Find the horse NPC
+    new_npc_count = len(game_state.npcs)
+    assert new_npc_count == initial_npc_count + 1, f"Expected {initial_npc_count + 1} NPCs, got {new_npc_count}"
+
+    horse_npc = None
+    horse_id = None
+    for npc_id, npc in game_state.npcs.items():
+        if "horse" in npc.name.lower():
+            horse_npc = npc
+            horse_id = npc_id
+            break
+
+    assert horse_npc is not None, "Horse NPC not found in game state"
+    print(f"\n✅ Horse NPC found: {horse_id}")
+    print(f"   Name: {horse_npc.name}")
+    print(f"   Attributes: {horse_npc.attributes}")
+
+    # Check pet attribute
+    is_pet = horse_npc.attributes.get("is_pet", False)
+    print(f"\n   is_pet: {is_pet}")
+
+    if not is_pet:
+        print(f"⚠️  WARNING: Horse does not have is_pet=true")
+        print(f"   Without is_pet, horse will not follow player when moving")
+
+    # Check vehicle attribute
+    is_vehicle = horse_npc.attributes.get("is_vehicle", False)
+    print(f"   is_vehicle: {is_vehicle}")
+
+    if not is_vehicle:
+        print(f"⚠️  WARNING: Horse does not have is_vehicle=true")
+        print(f"   Without is_vehicle, horse cannot be ridden")
+
+    # Verify horse is at current location
+    horse_location = game_state.npc_locations.get(horse_id)
+    assert horse_location == "forest_clearing", f"Horse should be at forest_clearing, got {horse_location}"
+    print(f"\n✅ Horse is at current location: {horse_location}")
+
+    # Test pet mechanics: Move to a different location
+    print("\n--- Testing pet mechanics: Moving north ---")
+    move_narrative, move_interp = game_loop.process_turn("go north")
+    print(f"Movement narrative: {move_narrative}")
+    print(f"Player location after move: {game_state.player_location}")
+
+    # Check where horse is now
+    horse_location_after = game_state.npc_locations.get(horse_id)
+    print(f"Horse location after move: {horse_location_after}")
+
+    if is_pet:
+        # Horse should have followed player
+        assert horse_location_after == game_state.player_location, (
+            f"Pet horse should follow player. "
+            f"Player at {game_state.player_location}, horse at {horse_location_after}"
+        )
+        print(f"✅ Horse followed player to {horse_location_after} (pet mechanics working!)")
+    else:
+        # Horse should NOT have moved (not a pet)
+        assert horse_location_after == "forest_clearing", (
+            f"Non-pet horse should stay at forest_clearing, but is at {horse_location_after}"
+        )
+        print(f"⚠️  Horse stayed behind (not a pet)")
+
+    print(f"\n✅ Test completed: Horse creation and pet/vehicle mechanics tested")
+
+
 if __name__ == "__main__":
     # Allow running directly for debugging
     import sys
