@@ -873,16 +873,20 @@ Examples:
 When player actions affect their abilities or state, track it with modify_attribute (entity_id: "player").
 Be creative! Track ANY condition that would affect future perception, actions, or story.
 
-Examples (not exhaustive - invent your own as needed):
-- Blinding (eye injury, magic, etc.) → modify_attribute: player.attributes.blind = true
-- Deafening (loud explosion, curse) → modify_attribute: player.attributes.deaf = true
-- Injuries → modify_attribute: player.attributes.wounded = "severe" or "leg_injury"
-- Poison → modify_attribute: player.attributes.poisoned = "rattlesnake_venom"
-- Blessings → modify_attribute: player.attributes.blessed_by = "forest_spirit"
-- Curses → modify_attribute: player.attributes.cursed = "cannot_speak"
-- Fear/Trauma → modify_attribute: player.attributes.terrified_of = "darkness"
-- Physical changes → modify_attribute: player.attributes.covered_in = "mud"
-- Mental states → modify_attribute: player.attributes.knows_secret = "hidden_passage_location"
+CRITICAL: attribute_path should be just the attribute name (e.g., "blind"), NOT "attributes.blind"
+The system automatically starts at player.attributes, so you only specify the final key.
+
+Examples in correct JSON format (not exhaustive - invent your own):
+- Blinding: {{"type": "modify_attribute", "target": "player", "params": {{"entity_id": "player", "attribute_path": "blind", "value": true}}}}
+- Deafening: {{"type": "modify_attribute", "target": "player", "params": {{"entity_id": "player", "attribute_path": "deaf", "value": true}}}}
+- Injuries: {{"type": "modify_attribute", "target": "player", "params": {{"entity_id": "player", "attribute_path": "wounded", "value": "severe"}}}}
+- Poison: {{"type": "modify_attribute", "target": "player", "params": {{"entity_id": "player", "attribute_path": "poisoned", "value": "rattlesnake_venom"}}}}
+- Blessings: {{"type": "modify_attribute", "target": "player", "params": {{"entity_id": "player", "attribute_path": "blessed_by", "value": "forest_spirit"}}}}
+- Curses: {{"type": "modify_attribute", "target": "player", "params": {{"entity_id": "player", "attribute_path": "cursed", "value": "cannot_speak"}}}}
+
+Common mistakes to avoid:
+❌ WRONG: "attribute_path": "attributes.blind" (don't include "attributes." prefix!)
+✅ RIGHT: "attribute_path": "blind"
 
 If narrative says player is blinded/injured/changed, MUST include modify_attribute on player!
 
