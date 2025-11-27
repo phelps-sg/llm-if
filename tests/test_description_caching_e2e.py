@@ -183,6 +183,77 @@ def test_cache_reflects_state_changes(skip_if_no_gcp, game_setup):
     print("✅ Description caching handles state changes correctly")
 
 
+def test_cache_does_not_hallucinate_removed_items(skip_if_no_gcp, game_setup):
+    """Test that returning to a location doesn't incorrectly describe removed items.
+
+    This is a regression test for a bug where:
+    1. Player looks at location with items (cached)
+    2. Player picks up an item
+    3. Player moves away and returns
+    4. Bug: Description incorrectly showed item still on ground
+
+    The fix ensures current state takes precedence over cached descriptions.
+    """
+    game_loop, game_state, gemini_client = game_setup
+
+    print("\n=== TESTING CACHE DOESN'T HALLUCINATE REMOVED ITEMS ===")
+
+    # Initial look - cache the description with sword present
+    print("\n--- Initial look (sword present) ---")
+    result1 = game_loop.execute_single_step("look")
+    desc1 = result1["narrative"]
+    print(f"Description: {desc1[:100]}...")
+
+    # Verify sword is mentioned
+    assert "sword" in desc1.lower(), "Initial description should mention sword"
+
+    # Pick up the sword
+    print("\n--- Take sword ---")
+    result2 = game_loop.execute_single_step("take rusty sword")
+    print(f"Pickup: {result2['narrative'][:80]}...")
+    assert "rusty_sword" in game_state.player.inventory, "Sword should be in inventory"
+
+    # Move to another location
+    print("\n--- Move north to hall ---")
+    result3 = game_loop.execute_single_step("go north")
+    print(f"Moved to: {game_state.player_location}")
+    assert game_state.player_location == "hall", "Should be in hall"
+
+    # Return to entrance
+    print("\n--- Return south to entrance ---")
+    result4 = game_loop.execute_single_step("go south")
+    desc_return = result4["narrative"]
+    print(f"Return description: {desc_return[:150]}...")
+
+    # CRITICAL TEST: Verify sword is NOT described as being on the ground
+    # It should either not be mentioned, or mentioned as being in inventory
+    sword_on_ground_phrases = [
+        "sword lies",
+        "sword lying",
+        "sword on the ground",
+        "sword on the floor",
+        "sword nearby",
+        "notice a sword",
+        "notice a rusty sword",
+        "see a sword",
+        "see a rusty sword",
+    ]
+
+    for phrase in sword_on_ground_phrases:
+        assert phrase not in desc_return.lower(), (
+            f"Description incorrectly suggests sword is on ground: '{phrase}' found in description. "
+            f"Sword is in inventory, not at location!"
+        )
+
+    # Verify game state is correct
+    assert "rusty_sword" in game_state.player.inventory, "Sword should still be in inventory"
+    items_at_entrance = game_state.get_items_at_location("entrance")
+    sword_at_entrance = any(item.id == "rusty_sword" for item in items_at_entrance)
+    assert not sword_at_entrance, "Sword should NOT be at entrance location"
+
+    print("✅ Cached description correctly omits removed items")
+
+
 def test_multiple_entity_caching(skip_if_no_gcp, game_setup):
     """Test caching of location, items, and NPCs together.
 

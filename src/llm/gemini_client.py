@@ -521,17 +521,51 @@ Use cached descriptions for CONSISTENCY and BREVITY, but always prioritize CURRE
 
             prompt += "\n"
 
+        # CRITICAL: Make current state very explicit to override cached descriptions
+        prompt += "\n" + "="*80 + "\n"
+        prompt += "⚠️  CURRENT STATE OF THIS LOCATION (THIS IS REALITY - USE THIS, NOT CACHED DESCRIPTIONS)\n"
+        prompt += "="*80 + "\n\n"
+
         if items and lighting_info and lighting_info.get("can_see_clearly", False):
-            prompt += f"Items here: {[item.get('name') for item in items]}\n"
-            prompt += f"Item details: {items}\n"
+            item_names = [item.get('name') for item in items]
+            prompt += f"✅ ITEMS CURRENTLY AT THIS LOCATION: {item_names}\n"
+            prompt += f"Item details: {items}\n\n"
         elif items and lighting_info:
-            prompt += f"Items here (but may not be visible due to darkness): {[item.get('name') for item in items]}\n"
+            item_names = [item.get('name') for item in items]
+            prompt += f"✅ ITEMS CURRENTLY AT THIS LOCATION (but may not be visible due to darkness): {item_names}\n\n"
+        else:
+            prompt += f"✅ ITEMS CURRENTLY AT THIS LOCATION: [] (NONE - location is empty of items)\n\n"
 
         if npcs and lighting_info and lighting_info.get("can_see_clearly", False):
-            prompt += f"NPCs here: {[npc.get('name') for npc in npcs]}\n"
-            prompt += f"NPC details: {npcs}\n"
+            npc_names = [npc.get('name') for npc in npcs]
+            prompt += f"✅ NPCs CURRENTLY AT THIS LOCATION: {npc_names}\n"
+            prompt += f"NPC details: {npcs}\n\n"
         elif npcs and lighting_info:
-            prompt += f"NPCs here (but may not be visible due to darkness): {[npc.get('name') for npc in npcs]}\n"
+            npc_names = [npc.get('name') for npc in npcs]
+            prompt += f"✅ NPCs CURRENTLY AT THIS LOCATION (but may not be visible due to darkness): {npc_names}\n\n"
+        else:
+            prompt += f"✅ NPCs CURRENTLY AT THIS LOCATION: [] (NONE - no NPCs here)\n\n"
+
+        # Add explicit warning about cached descriptions
+        if cached_descriptions and cached_descriptions.get("location"):
+            prompt += """🚨 CRITICAL WARNING ABOUT CACHED DESCRIPTION:
+The cached location description above may mention items or NPCs that are NO LONGER HERE.
+You MUST describe ONLY what is in the "CURRENT STATE" section above.
+
+Examples of what to do:
+- Cached description says "a sword lies on the ground" but CURRENT ITEMS is []
+  → DO NOT mention the sword. It has been taken. Describe the location without it.
+- Cached description mentions "a deer stands nearby" but CURRENT NPCs is []
+  → DO NOT mention the deer. It has left. Describe the location without it.
+- Cached description from turn 2, now it's turn 50
+  → Use cached description for consistency of style, but CHECK CURRENT STATE for what's actually here.
+
+IF AN ITEM OR NPC WAS IN THE CACHED DESCRIPTION BUT IS NOT IN THE CURRENT STATE LISTS ABOVE,
+IT HAS BEEN REMOVED. DO NOT DESCRIBE IT AS BEING PRESENT.
+
+"""
+
+        prompt += "="*80 + "\n\n"
 
         if location.get("connections"):
             exits = [d for d, loc in location["connections"].items() if loc]
