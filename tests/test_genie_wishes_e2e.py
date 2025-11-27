@@ -146,6 +146,70 @@ def test_wishes_remaining_tracked(skip_if_no_gcp, genie_setup):
     print("\n✅ Test passed: Wishes are tracked correctly")
 
 
+def test_ask_genie_without_saying_wish(skip_if_no_gcp, genie_setup):
+    """Test that asking genie (without saying 'wish') still creates state updates.
+
+    This reproduces the real-world bug where players naturally say "ask genie for X"
+    instead of "I wish for X", and the LLM fails to generate state updates.
+
+    Expected behavior:
+    - Should create ice cream item
+    - Should decrement wishes_remaining
+    - Narrative should match state (if narrative says item appears, item must be created)
+    """
+    game_loop, game_state, gemini_client = genie_setup
+
+    print("\n=== TESTING NATURAL LANGUAGE (without 'wish') ===")
+
+    genie = game_state.npcs.get("genie")
+    initial_wishes = genie.attributes.get("wishes_remaining", 3)
+    print(f"Initial wishes: {initial_wishes}")
+
+    # Natural phrasing - user says "ask for" not "I wish for"
+    print("\n--- Asking: 'ask genie for an ice cream' ---")
+    narrative, interpretation = game_loop.process_turn("ask genie for an ice cream")
+
+    print(f"Narrative: {narrative}")
+    print(f"State updates: {interpretation.get('state_updates')}")
+
+    state_updates = interpretation.get("state_updates", [])
+
+    # Critical assertion: Must have state updates if narrative says something was created
+    if "appear" in narrative.lower() or "materialize" in narrative.lower() or "create" in narrative.lower():
+        assert len(state_updates) > 0, (
+            f"CRITICAL BUG: Narrative says something was created/appeared, "
+            f"but state_updates is empty!\n"
+            f"Narrative: {narrative}\n"
+            f"This violates the rule: narrative must match state updates"
+        )
+
+    # Check if item was created
+    ice_cream_created = any(
+        update.get("type") == "create_item"
+        for update in state_updates
+    )
+
+    if not ice_cream_created:
+        print(f"\n❌ FAILED: No ice cream created")
+        print(f"Narrative says: {narrative}")
+        print(f"State updates: {state_updates}")
+        pytest.fail(
+            "Asking genie for ice cream should create item, regardless of exact wording.\n"
+            "The LLM should recognize this as a wish even without saying 'I wish for'."
+        )
+
+    # Check wishes decremented
+    genie_after = game_state.npcs.get("genie")
+    wishes_after = genie_after.attributes.get("wishes_remaining", 3)
+    wishes_after_int = int(wishes_after) if isinstance(wishes_after, str) else wishes_after
+
+    if wishes_after_int == initial_wishes:
+        print(f"\n⚠️  WARNING: Wishes not decremented ({initial_wishes} → {wishes_after_int})")
+        pytest.fail("Genie should decrement wishes_remaining when granting a wish")
+
+    print(f"\n✅ Test passed: Natural language wish works correctly")
+
+
 if __name__ == "__main__":
     # Allow running directly for debugging
     import sys

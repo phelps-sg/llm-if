@@ -909,16 +909,40 @@ If narrative says player is blinded/injured/changed, MUST include modify_attribu
 
 PLAYER ACTION: "{player_input}"
 
-CRITICAL RULES - YOUR NARRATIVE MUST MATCH YOUR STATE UPDATES:
-1. If your narrative says the player picks up an item → MUST include add_to_inventory update
-2. If your narrative says the player throws/drops an item → MUST include remove_from_inventory update
-3. If your narrative says the player eats/drinks/consumes/destroys an item → MUST include consume_item update
-4. If your narrative says the player moves → MUST include move_player update
-5. If your narrative says something changes about an NPC/item → MUST include modify_attribute update
-6. If your narrative says an NPC disappears/vanishes/dies/is removed → MUST include remove_npc update
-7. If your narrative says an NPC moves to another location → MUST include move_npc update
-8. NEVER say something happened in narrative without the corresponding state_update
-9. Check current state: Is item already in inventory? Is it at this location? Is NPC at this location?
+🚨 ===== ABSOLUTE MANDATORY RULE - READ THIS FIRST ===== 🚨
+
+STATE UPDATES MUST MATCH NARRATIVE - NO EXCEPTIONS:
+
+If your narrative mentions ANYTHING appearing, being created, materializing, or coming into existence:
+→ You MUST include create_item in state_updates
+
+If your narrative mentions an item being picked up, taken, grabbed, or obtained:
+→ You MUST include add_to_inventory in state_updates
+
+If your narrative mentions an item being dropped, thrown, discarded, or left:
+→ You MUST include remove_from_inventory in state_updates
+
+If your narrative mentions movement (going, walking, traveling to a location):
+→ You MUST include move_player in state_updates
+
+If your narrative mentions changes to any entity (player, NPC, item):
+→ You MUST include modify_attribute in state_updates
+
+🚨 PRE-CHECK BEFORE RESPONDING:
+1. What does my narrative say happens?
+2. Do I have state_updates for EVERYTHING I described?
+3. If narrative says "X appears" - do I have create_item for X?
+4. If narrative says "Y is destroyed" - do I have destroy_item for Y?
+
+❌ NEVER EVER write narrative that describes changes without corresponding state_updates
+❌ This is the #1 most important rule - violating it breaks the game
+
+Examples of CORRECT state updates matching narrative:
+- Narrative: "Ice cream appears" → state_updates: [{{"type": "create_item", "params": {{"item_id": "ice_cream", "name": "Ice Cream", "location": "here"}}}}]
+- Narrative: "You pick up the sword" → state_updates: [{{"type": "add_to_inventory", "params": {{"item_id": "sword"}}}}]
+- Narrative: "The genie's eyes glow" → state_updates: [{{"type": "modify_attribute", "target": "genie", "params": {{"attribute_path": "eyes_glowing", "value": true}}}}]
+
+🚨 ===== END MANDATORY RULE ===== 🚨
 
 Your task as DM:
 1. Check what's actually in the current game state

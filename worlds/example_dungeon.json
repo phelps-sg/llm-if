@@ -139,6 +139,7 @@
         "armor_class": 17,
         "hostility": "passive",
         "wishes_remaining": 3,
+        "wish_behavior": "When granting a wish (creating items, modifying player attributes, or other effects the player requests), MUST decrement wishes_remaining by 1 using modify_attribute",
         "personality": "mischievous but bound by ancient laws",
         "powers": "reality manipulation within wish constraints",
         "weakness": "must grant exactly what is asked, no more, no less"
