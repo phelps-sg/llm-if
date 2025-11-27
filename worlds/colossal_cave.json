@@ -1,0 +1,3855 @@
+{
+  "locations": {
+    "nowhere": {
+      "id": "nowhere",
+      "name": "Nowhere",
+      "attributes": {
+        "description_hints": "",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_NOWHERE"
+      },
+      "connections": {}
+    },
+    "start": {
+      "id": "start",
+      "name": "You're in front of building.",
+      "attributes": {
+        "description_hints": "You are standing at the end of a road before a small brick building.\nAround you is a forest.  A small stream flows out of the building and\ndown a gully.",
+        "lighting": "bright",
+        "is_outdoors": true,
+        "has_windows": false,
+        "original_id": "LOC_START"
+      },
+      "connections": {
+        "west": "hill",
+        "in": "building",
+        "south": "valley",
+        "north": "forest1"
+      }
+    },
+    "hill": {
+      "id": "hill",
+      "name": "You're at hill in road.",
+      "attributes": {
+        "description_hints": "You have walked up a hill, still in the forest.  The road slopes back\ndown the other side of the hill.  There is a building in the distance.",
+        "lighting": "bright",
+        "is_outdoors": true,
+        "has_windows": false,
+        "original_id": "LOC_HILL"
+      },
+      "connections": {
+        "east": "start",
+        "west": "roadend",
+        "north": "forest20",
+        "south": "forest13"
+      }
+    },
+    "building": {
+      "id": "building",
+      "name": "You're inside building.",
+      "attributes": {
+        "description_hints": "You are inside a building, a well house for a large spring.",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_BUILDING"
+      },
+      "connections": {
+        "out": "start"
+      }
+    },
+    "valley": {
+      "id": "valley",
+      "name": "You're in valley.",
+      "attributes": {
+        "description_hints": "You are in a valley in the forest beside a stream tumbling along a\nrocky bed.",
+        "lighting": "bright",
+        "is_outdoors": true,
+        "has_windows": false,
+        "original_id": "LOC_VALLEY"
+      },
+      "connections": {
+        "north": "start",
+        "east": "forest6",
+        "west": "forest12",
+        "south": "slit"
+      }
+    },
+    "roadend": {
+      "id": "roadend",
+      "name": "You're at end of road.",
+      "attributes": {
+        "description_hints": "The road, which approaches from the east, ends here amid the trees.",
+        "lighting": "bright",
+        "is_outdoors": true,
+        "has_windows": false,
+        "original_id": "LOC_ROADEND"
+      },
+      "connections": {
+        "east": "hill",
+        "south": "forest14",
+        "west": "forest15",
+        "north": "forest21"
+      }
+    },
+    "cliff": {
+      "id": "cliff",
+      "name": "You're at cliff.",
+      "attributes": {
+        "description_hints": "The forest thins out here to reveal a steep cliff.  There is no way\ndown, but a small ledge can be seen to the west across the chasm.",
+        "lighting": "bright",
+        "is_outdoors": true,
+        "has_windows": false,
+        "original_id": "LOC_CLIFF"
+      },
+      "connections": {
+        "south": "forest17",
+        "east": "forest19"
+      }
+    },
+    "slit": {
+      "id": "slit",
+      "name": "You're at slit in streambed.",
+      "attributes": {
+        "description_hints": "At your feet all the water of the stream splashes into a 2-inch slit\nin the rock.  Downstream the streambed is bare rock.",
+        "lighting": "bright",
+        "is_outdoors": true,
+        "has_windows": false,
+        "original_id": "LOC_SLIT"
+      },
+      "connections": {
+        "north": "valley",
+        "east": "forest6",
+        "west": "forest10",
+        "south": "grate"
+      }
+    },
+    "grate": {
+      "id": "grate",
+      "name": "You're outside grate.",
+      "attributes": {
+        "description_hints": "You are in a 20-foot depression floored with bare dirt.  Set into the\ndirt is a strong steel grate mounted in concrete.  A dry streambed\nleads into the depression.",
+        "lighting": "bright",
+        "is_outdoors": true,
+        "has_windows": false,
+        "original_id": "LOC_GRATE"
+      },
+      "connections": {
+        "east": "forest7",
+        "south": "forest10",
+        "west": "forest9",
+        "north": "slit",
+        "in": "belowgrate"
+      }
+    },
+    "belowgrate": {
+      "id": "belowgrate",
+      "name": "You're below the grate.",
+      "attributes": {
+        "description_hints": "You are in a small chamber beneath a 3x3 steel grate to the surface.\nA low crawl over cobbles leads inward to the west.",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_BELOWGRATE"
+      },
+      "connections": {
+        "out": "grate",
+        "in": "cobble"
+      }
+    },
+    "cobble": {
+      "id": "cobble",
+      "name": "You're in cobble crawl.",
+      "attributes": {
+        "description_hints": "You are crawling over cobbles in a low passage.  There is a dim light\nat the east end of the passage.",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_COBBLE"
+      },
+      "connections": {
+        "out": "belowgrate",
+        "in": "debris"
+      }
+    },
+    "debris": {
+      "id": "debris",
+      "name": "You're in debris room.",
+      "attributes": {
+        "description_hints": "You are in a debris room filled with stuff washed in from the surface.\nA low wide passage with cobbles becomes plugged with mud and debris\nhere, but an awkward canyon leads upward and west.  In the mud someone\nhas scrawled, \"MAGIC WORD XYZZY\".",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_DEBRIS"
+      },
+      "connections": {
+        "east": "cobble",
+        "in": "awkward"
+      }
+    },
+    "awkward": {
+      "id": "awkward",
+      "name": "You are in an awkward sloping east/west canyon.",
+      "attributes": {
+        "description_hints": "You are in an awkward sloping east/west canyon.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_AWKWARD"
+      },
+      "connections": {
+        "down": "debris",
+        "in": "birdchamber"
+      }
+    },
+    "birdchamber": {
+      "id": "birdchamber",
+      "name": "You're in bird chamber.",
+      "attributes": {
+        "description_hints": "You are in a splendid chamber thirty feet high.  The walls are frozen\nrivers of orange stone.  An awkward canyon and a good passage exit\nfrom east and west sides of the chamber.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_BIRDCHAMBER"
+      },
+      "connections": {
+        "east": "awkward",
+        "west": "pittop"
+      }
+    },
+    "pittop": {
+      "id": "pittop",
+      "name": "You're at top of small pit.",
+      "attributes": {
+        "description_hints": "At your feet is a small pit breathing traces of white mist.  An east\npassage ends here except for a small crack leading on.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_PITTOP"
+      },
+      "connections": {
+        "east": "birdchamber",
+        "down": "misthall",
+        "west": "crack"
+      }
+    },
+    "misthall": {
+      "id": "misthall",
+      "name": "You're in Hall of Mists.",
+      "attributes": {
+        "description_hints": "You are at one end of a vast hall stretching forward out of sight to\nthe west.  There are openings to either side.  Nearby, a wide stone\nstaircase leads downward.  The hall is filled with wisps of white mist\nswaying to and fro almost as if alive.  A cold wind blows up the\nstaircase.  There is a passage at the top of a dome behind you.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_MISTHALL"
+      },
+      "connections": {
+        "south": "nugget",
+        "west": "eastbank",
+        "down": "kinghall",
+        "east": "dome"
+      }
+    },
+    "crack": {
+      "id": "crack",
+      "name": "The crack is far too small for you to follow.  At ",
+      "attributes": {
+        "description_hints": "The crack is far too small for you to follow.  At its widest it is\nbarely wide enough to admit your foot.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_CRACK"
+      },
+      "connections": {}
+    },
+    "eastbank": {
+      "id": "eastbank",
+      "name": "You're on east bank of fissure.",
+      "attributes": {
+        "description_hints": "You are on the east bank of a fissure slicing clear across the hall.\nThe mist is quite thick here, and the fissure is too wide to jump.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_EASTBANK"
+      },
+      "connections": {
+        "east": "misthall"
+      }
+    },
+    "nugget": {
+      "id": "nugget",
+      "name": "You're in nugget-of-gold room.",
+      "attributes": {
+        "description_hints": "This is a low room with a crude note on the wall.  The note says,\n\"You won't get it up the steps\".",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_NUGGET"
+      },
+      "connections": {
+        "out": "misthall"
+      }
+    },
+    "kinghall": {
+      "id": "kinghall",
+      "name": "You're in Hall of Mt King.",
+      "attributes": {
+        "description_hints": "You are in the Hall of the Mountain King, with passages off in all\ndirections.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_KINGHALL"
+      },
+      "connections": {
+        "east": "misthall",
+        "north": "snakeblock",
+        "south": "southside",
+        "west": "westside"
+      }
+    },
+    "neckbroke": {
+      "id": "neckbroke",
+      "name": "You are at the bottom of the pit with a broken nec",
+      "attributes": {
+        "description_hints": "You are at the bottom of the pit with a broken neck.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_NECKBROKE"
+      },
+      "connections": {}
+    },
+    "nomake": {
+      "id": "nomake",
+      "name": "You didn't make it.",
+      "attributes": {
+        "description_hints": "You didn't make it.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_NOMAKE"
+      },
+      "connections": {}
+    },
+    "dome": {
+      "id": "dome",
+      "name": "The dome is unclimbable.",
+      "attributes": {
+        "description_hints": "The dome is unclimbable.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_DOME"
+      },
+      "connections": {}
+    },
+    "westend": {
+      "id": "westend",
+      "name": "You're at west end of Twopit Room.",
+      "attributes": {
+        "description_hints": "You are at the west end of the Twopit Room.  There is a large hole in\nthe wall above the pit at this end of the room.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_WESTEND"
+      },
+      "connections": {
+        "east": "eastend",
+        "west": "slab",
+        "down": "westpit"
+      }
+    },
+    "eastpit": {
+      "id": "eastpit",
+      "name": "You're in east pit.",
+      "attributes": {
+        "description_hints": "You are at the bottom of the eastern pit in the Twopit Room.  There is\na small pool of oil in one corner of the pit.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_EASTPIT"
+      },
+      "connections": {
+        "out": "eastend"
+      }
+    },
+    "westpit": {
+      "id": "westpit",
+      "name": "You're in west pit.",
+      "attributes": {
+        "description_hints": "You are at the bottom of the western pit in the Twopit Room.  There is\na large hole in the wall about 25 feet above you.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_WESTPIT"
+      },
+      "connections": {
+        "out": "westend"
+      }
+    },
+    "climbstalk": {
+      "id": "climbstalk",
+      "name": "You clamber up the plant and scurry through the ho",
+      "attributes": {
+        "description_hints": "You clamber up the plant and scurry through the hole at the top.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_CLIMBSTALK"
+      },
+      "connections": {}
+    },
+    "westbank": {
+      "id": "westbank",
+      "name": "You're on west bank of fissure.",
+      "attributes": {
+        "description_hints": "You are on the west side of the fissure in the Hall of Mists.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_WESTBANK"
+      },
+      "connections": {
+        "north": "parallel1",
+        "west": "mistwest"
+      }
+    },
+    "floorhole": {
+      "id": "floorhole",
+      "name": "You're in n/s passage above e/w passage.",
+      "attributes": {
+        "description_hints": "You are in a low n/s passage at a hole in the floor.  The hole goes\ndown to an e/w passage.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_FLOORHOLE"
+      },
+      "connections": {
+        "out": "kinghall",
+        "north": "y2",
+        "down": "broken"
+      }
+    },
+    "southside": {
+      "id": "southside",
+      "name": "You are in the south side chamber.",
+      "attributes": {
+        "description_hints": "You are in the south side chamber.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_SOUTHSIDE"
+      },
+      "connections": {
+        "out": "kinghall"
+      }
+    },
+    "westside": {
+      "id": "westside",
+      "name": "You're in the west side chamber.",
+      "attributes": {
+        "description_hints": "You are in the west side chamber of the Hall of the Mountain King.\nA passage continues west and up here.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_WESTSIDE"
+      },
+      "connections": {
+        "out": "kinghall",
+        "west": "crossover"
+      }
+    },
+    "building1": {
+      "id": "building1",
+      "name": "Building1",
+      "attributes": {
+        "description_hints": "",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_BUILDING1"
+      },
+      "connections": {}
+    },
+    "snakeblock": {
+      "id": "snakeblock",
+      "name": "You can't get by the snake.",
+      "attributes": {
+        "description_hints": "You can't get by the snake.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_SNAKEBLOCK"
+      },
+      "connections": {}
+    },
+    "y2": {
+      "id": "y2",
+      "name": "You're at \"Y2\".",
+      "attributes": {
+        "description_hints": "You are in a large room, with a passage to the south, a passage to the\nwest, and a wall of broken rock to the east.  There is a large \"Y2\" on\na rock in the room's center.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_Y2"
+      },
+      "connections": {
+        "south": "floorhole",
+        "east": "jumble",
+        "west": "window1"
+      }
+    },
+    "jumble": {
+      "id": "jumble",
+      "name": "You are in a jumble of rock, with cracks everywher",
+      "attributes": {
+        "description_hints": "You are in a jumble of rock, with cracks everywhere.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_JUMBLE"
+      },
+      "connections": {
+        "down": "y2"
+      }
+    },
+    "window1": {
+      "id": "window1",
+      "name": "You're at window on pit.",
+      "attributes": {
+        "description_hints": "You're at a low window overlooking a huge pit, which extends up out of\nsight.  A floor is indistinctly visible over 50 feet below.  Traces of\nwhite mist cover the floor of the pit, becoming thicker to the right.\nMarks in the dust around the window would seem to indicate that\nsomeone has been here recently.  Directly across the pit from you and\n25 feet away there is a similar window looking into a lighted room.  A\nshadowy figure can be seen there peering back at you.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_WINDOW1"
+      },
+      "connections": {
+        "east": "y2"
+      }
+    },
+    "broken": {
+      "id": "broken",
+      "name": "You're in dirty passage.",
+      "attributes": {
+        "description_hints": "You are in a dirty broken passage.  To the east is a crawl.  To the\nwest is a large passage.  Above you is a hole to another passage.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_BROKEN"
+      },
+      "connections": {
+        "east": "smallpitbrink",
+        "west": "dusty"
+      }
+    },
+    "smallpitbrink": {
+      "id": "smallpitbrink",
+      "name": "You're at brink of small pit.",
+      "attributes": {
+        "description_hints": "You are on the brink of a small clean climbable pit.  A crawl leads\nwest.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_SMALLPITBRINK"
+      },
+      "connections": {
+        "west": "broken",
+        "down": "smallpit"
+      }
+    },
+    "smallpit": {
+      "id": "smallpit",
+      "name": "You're at bottom of pit with stream.",
+      "attributes": {
+        "description_hints": "You are in the bottom of a small pit with a little stream, which\nenters and exits through tiny slits.",
+        "lighting": "dark",
+        "is_outdoors": true,
+        "has_windows": false,
+        "original_id": "LOC_SMALLPIT"
+      },
+      "connections": {
+        "out": "smallpitbrink"
+      }
+    },
+    "dusty": {
+      "id": "dusty",
+      "name": "You're in dusty rock room.",
+      "attributes": {
+        "description_hints": "You are in a large room full of dusty rocks.  There is a big hole in\nthe floor.  There are cracks everywhere, and a passage leading east.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_DUSTY"
+      },
+      "connections": {
+        "east": "broken",
+        "down": "complex"
+      }
+    },
+    "parallel1": {
+      "id": "parallel1",
+      "name": "You have crawled through a very low wide passage p",
+      "attributes": {
+        "description_hints": "You have crawled through a very low wide passage parallel to and north\nof the Hall of Mists.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_PARALLEL1"
+      },
+      "connections": {}
+    },
+    "mistwest": {
+      "id": "mistwest",
+      "name": "You're at west end of Hall of Mists.",
+      "attributes": {
+        "description_hints": "You are at the west end of the Hall of Mists.  A low wide crawl\ncontinues west and another goes north.  To the south is a little\npassage 6 feet off the floor.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_MISTWEST"
+      },
+      "connections": {
+        "south": "alike1",
+        "east": "westbank",
+        "north": "parallel2",
+        "west": "longeast"
+      }
+    },
+    "alike1": {
+      "id": "alike1",
+      "name": "You are in a maze of twisty little passages, all a",
+      "attributes": {
+        "description_hints": "You are in a maze of twisty little passages, all alike.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_ALIKE1"
+      },
+      "connections": {
+        "north": "alike1",
+        "east": "alike2",
+        "south": "alike4",
+        "west": "alike11"
+      }
+    },
+    "alike2": {
+      "id": "alike2",
+      "name": "You are in a maze of twisty little passages, all a",
+      "attributes": {
+        "description_hints": "You are in a maze of twisty little passages, all alike.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_ALIKE2"
+      },
+      "connections": {
+        "west": "alike1",
+        "south": "alike3",
+        "east": "alike4"
+      }
+    },
+    "alike3": {
+      "id": "alike3",
+      "name": "You are in a maze of twisty little passages, all a",
+      "attributes": {
+        "description_hints": "You are in a maze of twisty little passages, all alike.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_ALIKE3"
+      },
+      "connections": {
+        "east": "alike2",
+        "down": "mazeend3",
+        "south": "alike6",
+        "north": "mazeend9"
+      }
+    },
+    "alike4": {
+      "id": "alike4",
+      "name": "You are in a maze of twisty little passages, all a",
+      "attributes": {
+        "description_hints": "You are in a maze of twisty little passages, all alike.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_ALIKE4"
+      },
+      "connections": {
+        "west": "alike1",
+        "north": "alike2",
+        "east": "mazeend1",
+        "south": "mazeend2",
+        "down": "alike14"
+      }
+    },
+    "mazeend1": {
+      "id": "mazeend1",
+      "name": "Dead end",
+      "attributes": {
+        "description_hints": "Dead end",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_MAZEEND1"
+      },
+      "connections": {
+        "west": "alike4"
+      }
+    },
+    "mazeend2": {
+      "id": "mazeend2",
+      "name": "Dead end",
+      "attributes": {
+        "description_hints": "Dead end",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_MAZEEND2"
+      },
+      "connections": {
+        "east": "alike4"
+      }
+    },
+    "mazeend3": {
+      "id": "mazeend3",
+      "name": "Dead end",
+      "attributes": {
+        "description_hints": "Dead end",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_MAZEEND3"
+      },
+      "connections": {
+        "out": "alike3"
+      }
+    },
+    "alike5": {
+      "id": "alike5",
+      "name": "You are in a maze of twisty little passages, all a",
+      "attributes": {
+        "description_hints": "You are in a maze of twisty little passages, all alike.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_ALIKE5"
+      },
+      "connections": {
+        "east": "alike6",
+        "west": "alike7"
+      }
+    },
+    "alike6": {
+      "id": "alike6",
+      "name": "You are in a maze of twisty little passages, all a",
+      "attributes": {
+        "description_hints": "You are in a maze of twisty little passages, all alike.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_ALIKE6"
+      },
+      "connections": {
+        "east": "alike3",
+        "west": "alike5",
+        "down": "alike7",
+        "south": "alike8"
+      }
+    },
+    "alike7": {
+      "id": "alike7",
+      "name": "You are in a maze of twisty little passages, all a",
+      "attributes": {
+        "description_hints": "You are in a maze of twisty little passages, all alike.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_ALIKE7"
+      },
+      "connections": {
+        "west": "alike5",
+        "east": "alike8",
+        "south": "alike9"
+      }
+    },
+    "alike8": {
+      "id": "alike8",
+      "name": "You are in a maze of twisty little passages, all a",
+      "attributes": {
+        "description_hints": "You are in a maze of twisty little passages, all alike.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_ALIKE8"
+      },
+      "connections": {
+        "west": "alike6",
+        "east": "alike7",
+        "south": "alike8",
+        "north": "alike10",
+        "down": "mazeend11"
+      }
+    },
+    "alike9": {
+      "id": "alike9",
+      "name": "You are in a maze of twisty little passages, all a",
+      "attributes": {
+        "description_hints": "You are in a maze of twisty little passages, all alike.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_ALIKE9"
+      },
+      "connections": {
+        "west": "alike7",
+        "north": "alike8",
+        "south": "mazeend4"
+      }
+    },
+    "mazeend4": {
+      "id": "mazeend4",
+      "name": "Dead end",
+      "attributes": {
+        "description_hints": "Dead end",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_MAZEEND4"
+      },
+      "connections": {
+        "west": "alike9"
+      }
+    },
+    "alike10": {
+      "id": "alike10",
+      "name": "You are in a maze of twisty little passages, all a",
+      "attributes": {
+        "description_hints": "You are in a maze of twisty little passages, all alike.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_ALIKE10"
+      },
+      "connections": {
+        "west": "alike8",
+        "north": "alike10",
+        "down": "mazeend5",
+        "east": "pitbrink"
+      }
+    },
+    "mazeend5": {
+      "id": "mazeend5",
+      "name": "Dead end",
+      "attributes": {
+        "description_hints": "Dead end",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_MAZEEND5"
+      },
+      "connections": {
+        "out": "alike10"
+      }
+    },
+    "pitbrink": {
+      "id": "pitbrink",
+      "name": "You're at brink of pit.",
+      "attributes": {
+        "description_hints": "You are on the brink of a thirty foot pit with a massive orange column\ndown one wall.  You could climb down here but you could not get back\nup.  The maze continues at this level.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_PITBRINK"
+      },
+      "connections": {
+        "down": "birdchamber",
+        "west": "alike10",
+        "south": "mazeend6",
+        "north": "alike12",
+        "east": "alike13"
+      }
+    },
+    "mazeend6": {
+      "id": "mazeend6",
+      "name": "Dead end",
+      "attributes": {
+        "description_hints": "Dead end",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_MAZEEND6"
+      },
+      "connections": {
+        "east": "pitbrink"
+      }
+    },
+    "parallel2": {
+      "id": "parallel2",
+      "name": "You have crawled through a very low wide passage p",
+      "attributes": {
+        "description_hints": "You have crawled through a very low wide passage parallel to and north\nof the Hall of Mists.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_PARALLEL2"
+      },
+      "connections": {}
+    },
+    "longeast": {
+      "id": "longeast",
+      "name": "You're at east end of long hall.",
+      "attributes": {
+        "description_hints": "You are at the east end of a very long hall apparently without side\nchambers.  To the east a low wide crawl slants up.  To the north a\nround two foot hole slants down.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_LONGEAST"
+      },
+      "connections": {
+        "east": "mistwest",
+        "west": "longwest",
+        "north": "crossover"
+      }
+    },
+    "longwest": {
+      "id": "longwest",
+      "name": "You're at west end of long hall.",
+      "attributes": {
+        "description_hints": "You are at the west end of a very long featureless hall.  The hall\njoins up with a narrow north/south passage.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_LONGWEST"
+      },
+      "connections": {
+        "east": "longeast",
+        "north": "crossover",
+        "south": "different1"
+      }
+    },
+    "crossover": {
+      "id": "crossover",
+      "name": "You are at a crossover of a high n/s passage and a",
+      "attributes": {
+        "description_hints": "You are at a crossover of a high n/s passage and a low e/w one.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_CROSSOVER"
+      },
+      "connections": {
+        "west": "longeast",
+        "north": "deadend7",
+        "east": "westside",
+        "south": "longwest"
+      }
+    },
+    "deadend7": {
+      "id": "deadend7",
+      "name": "Dead end",
+      "attributes": {
+        "description_hints": "Dead end",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_DEADEND7"
+      },
+      "connections": {
+        "south": "crossover"
+      }
+    },
+    "complex": {
+      "id": "complex",
+      "name": "You're at complex junction.",
+      "attributes": {
+        "description_hints": "You are at a complex junction.  A low hands and knees passage from the\nnorth joins a higher crawl from the east to make a walking passage\ngoing west.  There is also a large room above.  The air is damp here.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_COMPLEX"
+      },
+      "connections": {
+        "west": "bedquilt",
+        "north": "shellroom",
+        "east": "anteroom"
+      }
+    },
+    "bedquilt": {
+      "id": "bedquilt",
+      "name": "You're in Bedquilt.",
+      "attributes": {
+        "description_hints": "You are in Bedquilt, a long east/west passage with holes everywhere.\nTo explore at random select north, south, up, or down.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_BEDQUILT"
+      },
+      "connections": {
+        "east": "complex",
+        "west": "swisscheese",
+        "north": "threejunction",
+        "down": "anteroom"
+      }
+    },
+    "swisscheese": {
+      "id": "swisscheese",
+      "name": "You're in Swiss Cheese Room.",
+      "attributes": {
+        "description_hints": "You are in a room whose walls resemble Swiss cheese.  Obvious passages\ngo west, east, ne, and nw.  Part of the room is occupied by a large\nbedrock block.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_SWISSCHEESE"
+      },
+      "connections": {
+        "west": "eastend",
+        "east": "softroom"
+      }
+    },
+    "eastend": {
+      "id": "eastend",
+      "name": "You're at east end of Twopit Room.",
+      "attributes": {
+        "description_hints": "You are at the east end of the Twopit Room.  The floor here is\nlittered with thin rock slabs, which make it easy to descend the pits.\nThere is a path here bypassing the pits to connect passages from east\nand west.  There are holes all over, but the only big one is on the\nwall directly over the west pit where you can't get to it.",
+        "lighting": "dark",
+        "is_outdoors": true,
+        "has_windows": false,
+        "original_id": "LOC_EASTEND"
+      },
+      "connections": {
+        "east": "swisscheese",
+        "west": "westend",
+        "down": "eastpit"
+      }
+    },
+    "slab": {
+      "id": "slab",
+      "name": "You're in Slab Room.",
+      "attributes": {
+        "description_hints": "You are in a large low circular chamber whose floor is an immense slab\nfallen from the ceiling (Slab Room).  East and west there once were\nlarge passages, but they are now filled with boulders.  Low small\npassages go north and south, and the south one quickly bends west\naround the boulders.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_SLAB"
+      },
+      "connections": {
+        "south": "westend",
+        "north": "bedquilt"
+      }
+    },
+    "secret1": {
+      "id": "secret1",
+      "name": "You are in a secret n/s canyon above a large room.",
+      "attributes": {
+        "description_hints": "You are in a secret n/s canyon above a large room.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_SECRET1"
+      },
+      "connections": {
+        "down": "slab",
+        "south": "secret4",
+        "north": "mirrorcanyon"
+      }
+    },
+    "secret2": {
+      "id": "secret2",
+      "name": "You are in a secret n/s canyon above a sizable pas",
+      "attributes": {
+        "description_hints": "You are in a secret n/s canyon above a sizable passage.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_SECRET2"
+      },
+      "connections": {
+        "north": "threejunction",
+        "down": "bedquilt",
+        "south": "topstalactite"
+      }
+    },
+    "threejunction": {
+      "id": "threejunction",
+      "name": "You're at junction of three secret canyons.",
+      "attributes": {
+        "description_hints": "You are in a secret canyon at a junction of three canyons, bearing\nnorth, south, and se.  The north one is as tall as the other two\ncombined.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_THREEJUNCTION"
+      },
+      "connections": {
+        "south": "secret2",
+        "north": "window2"
+      }
+    },
+    "lowroom": {
+      "id": "lowroom",
+      "name": "You're in large low room.",
+      "attributes": {
+        "description_hints": "You are in a large low room.  Crawls lead north, se, and sw.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_LOWROOM"
+      },
+      "connections": {
+        "north": "deadcrawl"
+      }
+    },
+    "deadcrawl": {
+      "id": "deadcrawl",
+      "name": "Dead end crawl.",
+      "attributes": {
+        "description_hints": "Dead end crawl.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_DEADCRAWL"
+      },
+      "connections": {
+        "south": "lowroom"
+      }
+    },
+    "secret3": {
+      "id": "secret3",
+      "name": "You're in secret e/w canyon above tight canyon.",
+      "attributes": {
+        "description_hints": "You are in a secret canyon which here runs e/w.  It crosses over a\nvery tight canyon 15 feet below.  If you go down you may not be able\nto get back up.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_SECRET3"
+      },
+      "connections": {
+        "east": "kinghall",
+        "west": "secret6",
+        "down": "wideplace"
+      }
+    },
+    "wideplace": {
+      "id": "wideplace",
+      "name": "You are at a wide place in a very tight n/s canyon",
+      "attributes": {
+        "description_hints": "You are at a wide place in a very tight n/s canyon.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_WIDEPLACE"
+      },
+      "connections": {
+        "south": "tightplace",
+        "north": "tall"
+      }
+    },
+    "tightplace": {
+      "id": "tightplace",
+      "name": "The canyon here becomes too tight to go further so",
+      "attributes": {
+        "description_hints": "The canyon here becomes too tight to go further south.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_TIGHTPLACE"
+      },
+      "connections": {
+        "north": "wideplace"
+      }
+    },
+    "tall": {
+      "id": "tall",
+      "name": "You are in a tall e/w canyon.  A low tight crawl g",
+      "attributes": {
+        "description_hints": "You are in a tall e/w canyon.  A low tight crawl goes 3 feet north and\nseems to open up.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_TALL"
+      },
+      "connections": {
+        "east": "wideplace",
+        "west": "boulders1",
+        "north": "swisscheese"
+      }
+    },
+    "boulders1": {
+      "id": "boulders1",
+      "name": "The canyon runs into a mass of boulders -- dead en",
+      "attributes": {
+        "description_hints": "The canyon runs into a mass of boulders -- dead end.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_BOULDERS1"
+      },
+      "connections": {
+        "south": "tall"
+      }
+    },
+    "sewer": {
+      "id": "sewer",
+      "name": "The stream flows out through a pair of 1 foot diam",
+      "attributes": {
+        "description_hints": "The stream flows out through a pair of 1 foot diameter sewer pipes.\nIt would be advisable to use the exit.",
+        "lighting": "dark",
+        "is_outdoors": true,
+        "has_windows": false,
+        "original_id": "LOC_SEWER"
+      },
+      "connections": {}
+    },
+    "alike11": {
+      "id": "alike11",
+      "name": "You are in a maze of twisty little passages, all a",
+      "attributes": {
+        "description_hints": "You are in a maze of twisty little passages, all alike.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_ALIKE11"
+      },
+      "connections": {
+        "north": "alike1",
+        "west": "alike11",
+        "south": "alike11",
+        "east": "mazeend8"
+      }
+    },
+    "mazeend8": {
+      "id": "mazeend8",
+      "name": "Dead end",
+      "attributes": {
+        "description_hints": "Dead end",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_MAZEEND8"
+      },
+      "connections": {
+        "west": "alike11"
+      }
+    },
+    "mazeend9": {
+      "id": "mazeend9",
+      "name": "Dead end",
+      "attributes": {
+        "description_hints": "Dead end",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_MAZEEND9"
+      },
+      "connections": {
+        "south": "alike3"
+      }
+    },
+    "alike12": {
+      "id": "alike12",
+      "name": "You are in a maze of twisty little passages, all a",
+      "attributes": {
+        "description_hints": "You are in a maze of twisty little passages, all alike.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_ALIKE12"
+      },
+      "connections": {
+        "south": "pitbrink",
+        "east": "alike13",
+        "west": "mazeend10"
+      }
+    },
+    "alike13": {
+      "id": "alike13",
+      "name": "You are in a maze of twisty little passages, all a",
+      "attributes": {
+        "description_hints": "You are in a maze of twisty little passages, all alike.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_ALIKE13"
+      },
+      "connections": {
+        "north": "pitbrink",
+        "west": "alike12"
+      }
+    },
+    "mazeend10": {
+      "id": "mazeend10",
+      "name": "Dead end",
+      "attributes": {
+        "description_hints": "Dead end",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_MAZEEND10"
+      },
+      "connections": {
+        "east": "alike12"
+      }
+    },
+    "mazeend11": {
+      "id": "mazeend11",
+      "name": "Dead end",
+      "attributes": {
+        "description_hints": "Dead end",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_MAZEEND11"
+      },
+      "connections": {
+        "out": "alike8"
+      }
+    },
+    "alike14": {
+      "id": "alike14",
+      "name": "You are in a maze of twisty little passages, all a",
+      "attributes": {
+        "description_hints": "You are in a maze of twisty little passages, all alike.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_ALIKE14"
+      },
+      "connections": {
+        "down": "alike4"
+      }
+    },
+    "narrow": {
+      "id": "narrow",
+      "name": "You're in narrow corridor.",
+      "attributes": {
+        "description_hints": "You are in a long, narrow corridor stretching out of sight to the\nwest.  At the eastern end is a hole through which you can see a\nprofusion of leaves.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_NARROW"
+      },
+      "connections": {
+        "down": "westpit",
+        "west": "giantroom"
+      }
+    },
+    "noclimb": {
+      "id": "noclimb",
+      "name": "There is nothing here to climb.  Use \"up\" or \"out\"",
+      "attributes": {
+        "description_hints": "There is nothing here to climb.  Use \"up\" or \"out\" to leave the pit.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_NOCLIMB"
+      },
+      "connections": {}
+    },
+    "planttop": {
+      "id": "planttop",
+      "name": "You have climbed up the plant and out of the pit.",
+      "attributes": {
+        "description_hints": "You have climbed up the plant and out of the pit.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_PLANTTOP"
+      },
+      "connections": {}
+    },
+    "incline": {
+      "id": "incline",
+      "name": "You're at steep incline above large room.",
+      "attributes": {
+        "description_hints": "You are at the top of a steep incline above a large room.  You could\nclimb down here, but you would not be able to climb up.  There is a\npassage leading back to the north.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_INCLINE"
+      },
+      "connections": {
+        "north": "waterfall",
+        "down": "lowroom"
+      }
+    },
+    "giantroom": {
+      "id": "giantroom",
+      "name": "You're in Giant Room.",
+      "attributes": {
+        "description_hints": "You are in the Giant Room.  The ceiling here is too high up for your\nlamp to show it.  Cavernous passages lead east, north, and south.  On\nthe west wall is scrawled the inscription, \"FEE FIE FOE FOO\" [sic].",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_GIANTROOM"
+      },
+      "connections": {
+        "south": "narrow",
+        "east": "cavein",
+        "north": "immense"
+      }
+    },
+    "cavein": {
+      "id": "cavein",
+      "name": "The passage here is blocked by a recent cave-in.",
+      "attributes": {
+        "description_hints": "The passage here is blocked by a recent cave-in.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_CAVEIN"
+      },
+      "connections": {
+        "south": "giantroom"
+      }
+    },
+    "immense": {
+      "id": "immense",
+      "name": "You are at one end of an immense north/south passa",
+      "attributes": {
+        "description_hints": "You are at one end of an immense north/south passage.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_IMMENSE"
+      },
+      "connections": {
+        "south": "giantroom",
+        "north": "waterfall"
+      }
+    },
+    "waterfall": {
+      "id": "waterfall",
+      "name": "You're in cavern with waterfall.",
+      "attributes": {
+        "description_hints": "You are in a magnificent cavern with a rushing stream, which cascades\nover a sparkling waterfall into a roaring whirlpool which disappears\nthrough a hole in the floor.  Passages exit to the south and west.",
+        "lighting": "dark",
+        "is_outdoors": true,
+        "has_windows": false,
+        "original_id": "LOC_WATERFALL"
+      },
+      "connections": {
+        "south": "immense",
+        "west": "incline"
+      }
+    },
+    "softroom": {
+      "id": "softroom",
+      "name": "You're in Soft Room.",
+      "attributes": {
+        "description_hints": "You are in the Soft Room.  The walls are covered with heavy curtains,\nthe floor with a thick pile carpet.  Moss covers the ceiling.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_SOFTROOM"
+      },
+      "connections": {
+        "west": "swisscheese"
+      }
+    },
+    "oriental": {
+      "id": "oriental",
+      "name": "You're in Oriental Room.",
+      "attributes": {
+        "description_hints": "This is the Oriental Room.  Ancient oriental cave drawings cover the\nwalls.  A gently sloping passage leads upward to the north, another\npassage leads se, and a hands and knees crawl leads west.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_ORIENTAL"
+      },
+      "connections": {
+        "west": "lowroom",
+        "north": "misty"
+      }
+    },
+    "misty": {
+      "id": "misty",
+      "name": "You're in misty cavern.",
+      "attributes": {
+        "description_hints": "You are following a wide path around the outer edge of a large cavern.\nFar below, through a heavy white mist, strange splashing noises can be\nheard.  The mist rises up through a fissure in the ceiling.  The path\nexits to the south and west.",
+        "lighting": "dark",
+        "is_outdoors": true,
+        "has_windows": false,
+        "original_id": "LOC_MISTY"
+      },
+      "connections": {
+        "south": "oriental",
+        "west": "alcove"
+      }
+    },
+    "alcove": {
+      "id": "alcove",
+      "name": "You're in alcove.",
+      "attributes": {
+        "description_hints": "You are in an alcove.  A small nw path seems to widen after a short\ndistance.  An extremely tight tunnel leads east.  It looks like a very\ntight squeeze.  An eerie light can be seen at the other end.",
+        "lighting": "dark",
+        "is_outdoors": true,
+        "has_windows": false,
+        "original_id": "LOC_ALCOVE"
+      },
+      "connections": {
+        "east": "plover"
+      }
+    },
+    "plover": {
+      "id": "plover",
+      "name": "You're in Plover Room.",
+      "attributes": {
+        "description_hints": "You're in a small chamber lit by an eerie green light.  An extremely\nnarrow tunnel exits to the west.  A dark corridor leads ne.",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_PLOVER"
+      },
+      "connections": {
+        "west": "alcove"
+      }
+    },
+    "darkroom": {
+      "id": "darkroom",
+      "name": "You're in dark-room.",
+      "attributes": {
+        "description_hints": "You're in the dark-room.  A corridor leading south is the only exit.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_DARKROOM"
+      },
+      "connections": {
+        "south": "plover"
+      }
+    },
+    "arched": {
+      "id": "arched",
+      "name": "You're in arched hall.",
+      "attributes": {
+        "description_hints": "You are in an arched hall.  A coral passage once continued up and east\nfrom here, but is now blocked by debris.  The air smells of sea water.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_ARCHED"
+      },
+      "connections": {
+        "down": "shellroom"
+      }
+    },
+    "shellroom": {
+      "id": "shellroom",
+      "name": "You're in Shell Room.",
+      "attributes": {
+        "description_hints": "You're in a large room carved out of sedimentary rock.  The floor and\nwalls are littered with bits of shells embedded in the stone.  A\nshallow passage proceeds downward, and a somewhat steeper one leads\nup.  A low hands and knees passage enters from the south.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_SHELLROOM"
+      },
+      "connections": {
+        "down": "sloping1",
+        "south": "complex"
+      }
+    },
+    "sloping1": {
+      "id": "sloping1",
+      "name": "You are in a long sloping corridor with ragged sha",
+      "attributes": {
+        "description_hints": "You are in a long sloping corridor with ragged sharp walls.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_SLOPING1"
+      },
+      "connections": {
+        "down": "culdesac"
+      }
+    },
+    "culdesac": {
+      "id": "culdesac",
+      "name": "You are in a cul-de-sac about eight feet across.",
+      "attributes": {
+        "description_hints": "You are in a cul-de-sac about eight feet across.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_CULDESAC"
+      },
+      "connections": {
+        "out": "sloping1"
+      }
+    },
+    "anteroom": {
+      "id": "anteroom",
+      "name": "You're in anteroom.",
+      "attributes": {
+        "description_hints": "You are in an anteroom leading to a large passage to the east.  Small\npassages go west and up.  The remnants of recent digging are evident.\nA sign in midair here says \"Cave under construction beyond this point.\nProceed at own risk.  [Witt Construction Company]\"",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_ANTEROOM"
+      },
+      "connections": {
+        "west": "bedquilt",
+        "east": "wittsend"
+      }
+    },
+    "different1": {
+      "id": "different1",
+      "name": "You are in a maze of twisty little passages, all d",
+      "attributes": {
+        "description_hints": "You are in a maze of twisty little passages, all different.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_DIFFERENT1"
+      },
+      "connections": {
+        "south": "different3",
+        "east": "different9",
+        "west": "different10",
+        "north": "different11",
+        "down": "longwest"
+      }
+    },
+    "wittsend": {
+      "id": "wittsend",
+      "name": "You're at Witt's End.",
+      "attributes": {
+        "description_hints": "You are at Witt's End.  Passages lead off in *ALL* directions.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_WITTSEND"
+      },
+      "connections": {
+        "east": "anteroom"
+      }
+    },
+    "mirrorcanyon": {
+      "id": "mirrorcanyon",
+      "name": "You're in Mirror Canyon.",
+      "attributes": {
+        "description_hints": "You are in a north/south canyon about 25 feet across.  The floor is\ncovered by white mist seeping in from the north.  The walls extend\nupward for well over 100 feet.  Suspended from some unseen point far\nabove you, an enormous two-sided mirror is hanging parallel to and\nmidway between the canyon walls.  (The mirror is obviously provided\nfor the use of the dwarves who, as you know, are extremely vain.)  A\nsmall window can be seen in either wall, some fifty feet up.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_MIRRORCANYON"
+      },
+      "connections": {
+        "south": "secret1",
+        "north": "reservoir"
+      }
+    },
+    "window2": {
+      "id": "window2",
+      "name": "You're at window on pit.",
+      "attributes": {
+        "description_hints": "You're at a low window overlooking a huge pit, which extends up out of\nsight.  A floor is indistinctly visible over 50 feet below.  Traces of\nwhite mist cover the floor of the pit, becoming thicker to the left.\nMarks in the dust around the window would seem to indicate that\nsomeone has been here recently.  Directly across the pit from you and\n25 feet away there is a similar window looking into a lighted room.  A\nshadowy figure can be seen there peering back at you.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_WINDOW2"
+      },
+      "connections": {
+        "west": "threejunction"
+      }
+    },
+    "topstalactite": {
+      "id": "topstalactite",
+      "name": "You're at top of stalactite.",
+      "attributes": {
+        "description_hints": "A large stalactite extends from the roof and almost reaches the floor\nbelow.  You could climb down it, and jump from it to the floor, but\nhaving done so you would be unable to reach it to climb back up.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_TOPSTALACTITE"
+      },
+      "connections": {
+        "north": "secret2",
+        "down": "alike4"
+      }
+    },
+    "different2": {
+      "id": "different2",
+      "name": "You are in a little maze of twisting passages, all",
+      "attributes": {
+        "description_hints": "You are in a little maze of twisting passages, all different.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_DIFFERENT2"
+      },
+      "connections": {
+        "north": "different4",
+        "east": "different5",
+        "west": "different9",
+        "down": "different10",
+        "south": "deadend13"
+      }
+    },
+    "reservoir": {
+      "id": "reservoir",
+      "name": "You're at reservoir.",
+      "attributes": {
+        "description_hints": "You are at the edge of a large underground reservoir.  An opaque cloud\nof white mist fills the room and rises rapidly upward.  The lake is\nfed by a stream, which tumbles out of a hole in the wall about 10 feet\noverhead and splashes noisily into the water somewhere within the\nmist.  There is a passage going back toward the south.",
+        "lighting": "dark",
+        "is_outdoors": true,
+        "has_windows": false,
+        "original_id": "LOC_RESERVOIR"
+      },
+      "connections": {
+        "south": "mirrorcanyon",
+        "north": "resbottom"
+      }
+    },
+    "mazeend12": {
+      "id": "mazeend12",
+      "name": "Dead end",
+      "attributes": {
+        "description_hints": "Dead end",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_MAZEEND12"
+      },
+      "connections": {}
+    },
+    "ne": {
+      "id": "ne",
+      "name": "You're at ne end.",
+      "attributes": {
+        "description_hints": "You are at the northeast end of an immense room, even larger than the\nGiant Room.  It appears to be a repository for the \"Adventure\"\nprogram.  Massive torches far overhead bathe the room with smoky\nyellow light.  Scattered about you can be seen a pile of bottles (all\nof them empty), a nursery of young beanstalks murmuring quietly, a bed\nof oysters, a bundle of black rods with rusty stars on their ends, and\na collection of brass lanterns.  Off to one side a great many dwarves\nare sleeping on the floor, snoring loudly.  A notice nearby reads: \"Do\nnot disturb the dwarves!\"  An immense mirror is hanging against one\nwall, and stretches to the other end of the room, where various other\nsundry objects can be glimpsed dimly in the distance.",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_NE"
+      },
+      "connections": {}
+    },
+    "sw": {
+      "id": "sw",
+      "name": "You're at sw end.",
+      "attributes": {
+        "description_hints": "You are at the southwest end of the repository.  To one side is a pit\nfull of fierce green snakes.  On the other side is a row of small\nwicker cages, each of which contains a little sulking bird.  In one\ncorner is a bundle of black rods with rusty marks on their ends.  A\nlarge number of velvet pillows are scattered about on the floor.  A\nvast mirror stretches off to the northeast.  At your feet is a large\nsteel grate, next to which is a sign that reads, \"Treasure Vault.\nKeys in main office.\"",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_SW"
+      },
+      "connections": {}
+    },
+    "swchasm": {
+      "id": "swchasm",
+      "name": "You're on sw side of chasm.",
+      "attributes": {
+        "description_hints": "You are on one side of a large, deep chasm.  A heavy white mist rising\nup from below obscures all view of the far side.  A sw path leads away\nfrom the chasm into a winding corridor.",
+        "lighting": "dark",
+        "is_outdoors": true,
+        "has_windows": false,
+        "original_id": "LOC_SWCHASM"
+      },
+      "connections": {}
+    },
+    "winding": {
+      "id": "winding",
+      "name": "You're in sloping corridor.",
+      "attributes": {
+        "description_hints": "You are in a long winding corridor sloping out of sight in both\ndirections.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_WINDING"
+      },
+      "connections": {
+        "down": "lowroom"
+      }
+    },
+    "secret4": {
+      "id": "secret4",
+      "name": "You are in a secret canyon which exits to the nort",
+      "attributes": {
+        "description_hints": "You are in a secret canyon which exits to the north and east.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_SECRET4"
+      },
+      "connections": {
+        "north": "secret1"
+      }
+    },
+    "secret5": {
+      "id": "secret5",
+      "name": "You are in a secret canyon which exits to the nort",
+      "attributes": {
+        "description_hints": "You are in a secret canyon which exits to the north and east.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_SECRET5"
+      },
+      "connections": {
+        "north": "secret1",
+        "east": "secret3"
+      }
+    },
+    "secret6": {
+      "id": "secret6",
+      "name": "You are in a secret canyon which exits to the nort",
+      "attributes": {
+        "description_hints": "You are in a secret canyon which exits to the north and east.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_SECRET6"
+      },
+      "connections": {
+        "east": "secret3"
+      }
+    },
+    "nechasm": {
+      "id": "nechasm",
+      "name": "You're on ne side of chasm.",
+      "attributes": {
+        "description_hints": "You are on the far side of the chasm.  A ne path leads away from the\nchasm on this side.",
+        "lighting": "dark",
+        "is_outdoors": true,
+        "has_windows": false,
+        "original_id": "LOC_NECHASM"
+      },
+      "connections": {}
+    },
+    "corridor": {
+      "id": "corridor",
+      "name": "You're in corridor.",
+      "attributes": {
+        "description_hints": "You're in a long east/west corridor.  A faint rumbling noise can be\nheard in the distance.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_CORRIDOR"
+      },
+      "connections": {
+        "west": "nechasm",
+        "east": "fork"
+      }
+    },
+    "fork": {
+      "id": "fork",
+      "name": "You're at fork in path.",
+      "attributes": {
+        "description_hints": "The path forks here.  The left fork leads northeast.  A dull rumbling\nseems to get louder in that direction.  The right fork leads southeast\ndown a gentle slope.  The main corridor enters from the west.",
+        "lighting": "dark",
+        "is_outdoors": true,
+        "has_windows": false,
+        "original_id": "LOC_FORK"
+      },
+      "connections": {
+        "west": "corridor",
+        "down": "limestone"
+      }
+    },
+    "warmwalls": {
+      "id": "warmwalls",
+      "name": "You're at junction with warm walls.",
+      "attributes": {
+        "description_hints": "The walls are quite warm here.  From the north can be heard a steady\nroar, so loud that the entire cave seems to be trembling.  Another\npassage leads south, and a low crawl goes east.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_WARMWALLS"
+      },
+      "connections": {
+        "south": "fork",
+        "north": "breathtaking",
+        "east": "boulders2"
+      }
+    },
+    "breathtaking": {
+      "id": "breathtaking",
+      "name": "You're at breath-taking view.",
+      "attributes": {
+        "description_hints": "You are on the edge of a breath-taking view.  Far below you is an\nactive volcano, from which great gouts of molten lava come surging\nout, cascading back down into the depths.  The glowing rock fills the\nfarthest reaches of the cavern with a blood-red glare, giving every-\nthing an eerie, macabre appearance.  The air is filled with flickering\nsparks of ash and a heavy smell of brimstone.  The walls are hot to\nthe touch, and the thundering of the volcano drowns out all other\nsounds.  Embedded in the jagged roof far overhead are myriad twisted\nformations composed of pure white alabaster, which scatter the murky\nlight into sinister apparitions upon the walls.  To one side is a deep\ngorge, filled with a bizarre chaos of tortured rock which seems to\nhave been crafted by the devil himself.  An immense river of fire\ncrashes out from the depths of the volcano, burns its way through the\ngorge, and plummets into a bottomless pit far off to your left.  To\nthe right, an immense geyser of blistering steam erupts continuously\nfrom a barren island in the center of a sulfurous lake, which bubbles\nominously.  The far right wall is aflame with an incandescence of its\nown, which lends an additional infernal splendor to the already\nhellish scene.  A dark, foreboding passage exits to the south.",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_BREATHTAKING"
+      },
+      "connections": {
+        "south": "warmwalls"
+      }
+    },
+    "boulders2": {
+      "id": "boulders2",
+      "name": "You're in Chamber of Boulders.",
+      "attributes": {
+        "description_hints": "You are in a small chamber filled with large boulders.  The walls are\nvery warm, causing the air in the room to be almost stifling from the\nheat.  The only exit is a crawl heading west, through which is coming\na low rumbling.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_BOULDERS2"
+      },
+      "connections": {
+        "west": "warmwalls"
+      }
+    },
+    "limestone": {
+      "id": "limestone",
+      "name": "You're in limestone passage.",
+      "attributes": {
+        "description_hints": "You are walking along a gently sloping north/south passage lined with\noddly shaped limestone formations.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_LIMESTONE"
+      },
+      "connections": {
+        "north": "fork",
+        "south": "barrenfront"
+      }
+    },
+    "barrenfront": {
+      "id": "barrenfront",
+      "name": "You're in front of Barren Room.",
+      "attributes": {
+        "description_hints": "You are standing at the entrance to a large, barren room.  A notice\nabove the entrance reads:  \"Caution!  Bear in room!\"",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_BARRENFRONT"
+      },
+      "connections": {
+        "west": "limestone",
+        "east": "barrenroom"
+      }
+    },
+    "barrenroom": {
+      "id": "barrenroom",
+      "name": "You're in Barren Room.",
+      "attributes": {
+        "description_hints": "You are inside a barren room.  The center of the room is completely\nempty except for some dust.  Marks in the dust lead away toward the\nfar end of the room.  The only exit is the way you came in.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_BARRENROOM"
+      },
+      "connections": {
+        "west": "barrenfront"
+      }
+    },
+    "different3": {
+      "id": "different3",
+      "name": "You are in a maze of twisting little passages, all",
+      "attributes": {
+        "description_hints": "You are in a maze of twisting little passages, all different.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_DIFFERENT3"
+      },
+      "connections": {
+        "west": "different1",
+        "down": "different9",
+        "north": "different10",
+        "south": "different11",
+        "east": "different2"
+      }
+    },
+    "different4": {
+      "id": "different4",
+      "name": "You are in a little maze of twisty passages, all d",
+      "attributes": {
+        "description_hints": "You are in a little maze of twisty passages, all different.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_DIFFERENT4"
+      },
+      "connections": {
+        "north": "different5",
+        "south": "different6",
+        "west": "different7",
+        "east": "different10",
+        "down": "different11"
+      }
+    },
+    "different5": {
+      "id": "different5",
+      "name": "You are in a twisting maze of little passages, all",
+      "attributes": {
+        "description_hints": "You are in a twisting maze of little passages, all different.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_DIFFERENT5"
+      },
+      "connections": {
+        "down": "different3",
+        "west": "different4",
+        "east": "different8",
+        "north": "different9",
+        "south": "different2"
+      }
+    },
+    "different6": {
+      "id": "different6",
+      "name": "You are in a twisting little maze of passages, all",
+      "attributes": {
+        "description_hints": "You are in a twisting little maze of passages, all different.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_DIFFERENT6"
+      },
+      "connections": {
+        "north": "different3",
+        "east": "different7",
+        "down": "different8",
+        "south": "different9",
+        "west": "different11"
+      }
+    },
+    "different7": {
+      "id": "different7",
+      "name": "You are in a twisty little maze of passages, all d",
+      "attributes": {
+        "description_hints": "You are in a twisty little maze of passages, all different.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_DIFFERENT7"
+      },
+      "connections": {
+        "north": "different1",
+        "down": "different4",
+        "south": "different5",
+        "east": "different6",
+        "west": "different8"
+      }
+    },
+    "different8": {
+      "id": "different8",
+      "name": "You are in a twisty maze of little passages, all d",
+      "attributes": {
+        "description_hints": "You are in a twisty maze of little passages, all different.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_DIFFERENT8"
+      },
+      "connections": {
+        "east": "different1",
+        "west": "different3",
+        "down": "different6",
+        "south": "different7",
+        "north": "different2"
+      }
+    },
+    "different9": {
+      "id": "different9",
+      "name": "You are in a little twisty maze of passages, all d",
+      "attributes": {
+        "description_hints": "You are in a little twisty maze of passages, all different.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_DIFFERENT9"
+      },
+      "connections": {
+        "south": "different4",
+        "down": "different5",
+        "north": "different8",
+        "east": "different11",
+        "west": "different2"
+      }
+    },
+    "different10": {
+      "id": "different10",
+      "name": "You are in a maze of little twisting passages, all",
+      "attributes": {
+        "description_hints": "You are in a maze of little twisting passages, all different.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_DIFFERENT10"
+      },
+      "connections": {
+        "down": "different1",
+        "east": "different3",
+        "west": "different6",
+        "north": "different7",
+        "south": "different8"
+      }
+    },
+    "different11": {
+      "id": "different11",
+      "name": "You are in a maze of little twisty passages, all d",
+      "attributes": {
+        "description_hints": "You are in a maze of little twisty passages, all different.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_DIFFERENT11"
+      },
+      "connections": {
+        "east": "different4",
+        "west": "different5",
+        "north": "different6",
+        "down": "different7",
+        "south": "different10"
+      }
+    },
+    "deadend13": {
+      "id": "deadend13",
+      "name": "Dead end",
+      "attributes": {
+        "description_hints": "Dead end",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_DEADEND13"
+      },
+      "connections": {
+        "north": "different2",
+        "south": "baddirection"
+      }
+    },
+    "roughhewn": {
+      "id": "roughhewn",
+      "name": "You are in a long, rough-hewn, north/south corrido",
+      "attributes": {
+        "description_hints": "You are in a long, rough-hewn, north/south corridor.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_ROUGHHEWN"
+      },
+      "connections": {
+        "north": "deadend13",
+        "south": "large"
+      }
+    },
+    "baddirection": {
+      "id": "baddirection",
+      "name": "There is no way to go that direction.",
+      "attributes": {
+        "description_hints": "There is no way to go that direction.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_BADDIRECTION"
+      },
+      "connections": {}
+    },
+    "large": {
+      "id": "large",
+      "name": "You are in a large chamber with passages to the we",
+      "attributes": {
+        "description_hints": "You are in a large chamber with passages to the west and north.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_LARGE"
+      },
+      "connections": {
+        "west": "roughhewn",
+        "north": "storeroom"
+      }
+    },
+    "storeroom": {
+      "id": "storeroom",
+      "name": "You are in the ogre's storeroom.  The only exit is",
+      "attributes": {
+        "description_hints": "You are in the ogre's storeroom.  The only exit is to the south.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_STOREROOM"
+      },
+      "connections": {
+        "south": "large"
+      }
+    },
+    "forest1": {
+      "id": "forest1",
+      "name": "You are wandering aimlessly through the forest.",
+      "attributes": {
+        "description_hints": "You are wandering aimlessly through the forest.",
+        "lighting": "bright",
+        "is_outdoors": true,
+        "has_windows": false,
+        "original_id": "LOC_FOREST1"
+      },
+      "connections": {
+        "east": "start",
+        "west": "forest13",
+        "north": "forest2",
+        "south": "forest3"
+      }
+    },
+    "forest2": {
+      "id": "forest2",
+      "name": "You are wandering aimlessly through the forest.",
+      "attributes": {
+        "description_hints": "You are wandering aimlessly through the forest.",
+        "lighting": "bright",
+        "is_outdoors": true,
+        "has_windows": false,
+        "original_id": "LOC_FOREST2"
+      },
+      "connections": {
+        "east": "forest1",
+        "west": "forest19",
+        "north": "forest3",
+        "south": "forest18"
+      }
+    },
+    "forest3": {
+      "id": "forest3",
+      "name": "You are wandering aimlessly through the forest.",
+      "attributes": {
+        "description_hints": "You are wandering aimlessly through the forest.",
+        "lighting": "bright",
+        "is_outdoors": true,
+        "has_windows": false,
+        "original_id": "LOC_FOREST3"
+      },
+      "connections": {
+        "east": "forest4",
+        "north": "forest2",
+        "south": "forest1"
+      }
+    },
+    "forest4": {
+      "id": "forest4",
+      "name": "You are wandering aimlessly through the forest.",
+      "attributes": {
+        "description_hints": "You are wandering aimlessly through the forest.",
+        "lighting": "bright",
+        "is_outdoors": true,
+        "has_windows": false,
+        "original_id": "LOC_FOREST4"
+      },
+      "connections": {
+        "east": "forest3",
+        "west": "forest5"
+      }
+    },
+    "forest5": {
+      "id": "forest5",
+      "name": "You are wandering aimlessly through the forest.",
+      "attributes": {
+        "description_hints": "You are wandering aimlessly through the forest.",
+        "lighting": "bright",
+        "is_outdoors": true,
+        "has_windows": false,
+        "original_id": "LOC_FOREST5"
+      },
+      "connections": {
+        "east": "forest4",
+        "west": "forest7",
+        "south": "forest6"
+      }
+    },
+    "forest6": {
+      "id": "forest6",
+      "name": "You are wandering aimlessly through the forest.",
+      "attributes": {
+        "description_hints": "You are wandering aimlessly through the forest.",
+        "lighting": "bright",
+        "is_outdoors": true,
+        "has_windows": false,
+        "original_id": "LOC_FOREST6"
+      },
+      "connections": {
+        "east": "forest5",
+        "west": "forest7",
+        "north": "valley",
+        "south": "slit"
+      }
+    },
+    "forest7": {
+      "id": "forest7",
+      "name": "You are wandering aimlessly through the forest.",
+      "attributes": {
+        "description_hints": "You are wandering aimlessly through the forest.",
+        "lighting": "bright",
+        "is_outdoors": true,
+        "has_windows": false,
+        "original_id": "LOC_FOREST7"
+      },
+      "connections": {
+        "east": "forest5",
+        "west": "forest6",
+        "north": "grate",
+        "south": "forest8"
+      }
+    },
+    "forest8": {
+      "id": "forest8",
+      "name": "You are wandering aimlessly through the forest.",
+      "attributes": {
+        "description_hints": "You are wandering aimlessly through the forest.",
+        "lighting": "bright",
+        "is_outdoors": true,
+        "has_windows": false,
+        "original_id": "LOC_FOREST8"
+      },
+      "connections": {
+        "east": "forest9",
+        "west": "forest11",
+        "north": "forest22",
+        "south": "forest7"
+      }
+    },
+    "forest9": {
+      "id": "forest9",
+      "name": "You are wandering aimlessly through the forest.",
+      "attributes": {
+        "description_hints": "You are wandering aimlessly through the forest.",
+        "lighting": "bright",
+        "is_outdoors": true,
+        "has_windows": false,
+        "original_id": "LOC_FOREST9"
+      },
+      "connections": {
+        "east": "forest11",
+        "west": "forest8",
+        "north": "forest10",
+        "south": "grate"
+      }
+    },
+    "forest10": {
+      "id": "forest10",
+      "name": "You are wandering aimlessly through the forest.",
+      "attributes": {
+        "description_hints": "You are wandering aimlessly through the forest.",
+        "lighting": "bright",
+        "is_outdoors": true,
+        "has_windows": false,
+        "original_id": "LOC_FOREST10"
+      },
+      "connections": {
+        "east": "slit",
+        "west": "forest11",
+        "north": "forest9",
+        "south": "grate"
+      }
+    },
+    "forest11": {
+      "id": "forest11",
+      "name": "You are wandering aimlessly through the forest.",
+      "attributes": {
+        "description_hints": "You are wandering aimlessly through the forest.",
+        "lighting": "bright",
+        "is_outdoors": true,
+        "has_windows": false,
+        "original_id": "LOC_FOREST11"
+      },
+      "connections": {
+        "east": "forest10",
+        "west": "forest8",
+        "north": "forest22",
+        "south": "forest9"
+      }
+    },
+    "forest12": {
+      "id": "forest12",
+      "name": "You are wandering aimlessly through the forest.",
+      "attributes": {
+        "description_hints": "You are wandering aimlessly through the forest.",
+        "lighting": "bright",
+        "is_outdoors": true,
+        "has_windows": false,
+        "original_id": "LOC_FOREST12"
+      },
+      "connections": {
+        "east": "forest13",
+        "west": "forest14",
+        "north": "forest22",
+        "south": "valley"
+      }
+    },
+    "forest13": {
+      "id": "forest13",
+      "name": "You are wandering aimlessly through the forest.",
+      "attributes": {
+        "description_hints": "You are wandering aimlessly through the forest.",
+        "lighting": "bright",
+        "is_outdoors": true,
+        "has_windows": false,
+        "original_id": "LOC_FOREST13"
+      },
+      "connections": {
+        "east": "forest1",
+        "west": "forest12",
+        "north": "forest20",
+        "south": "hill"
+      }
+    },
+    "forest14": {
+      "id": "forest14",
+      "name": "You are wandering aimlessly through the forest.",
+      "attributes": {
+        "description_hints": "You are wandering aimlessly through the forest.",
+        "lighting": "bright",
+        "is_outdoors": true,
+        "has_windows": false,
+        "original_id": "LOC_FOREST14"
+      },
+      "connections": {
+        "east": "roadend",
+        "west": "forest16",
+        "north": "forest15",
+        "south": "forest12"
+      }
+    },
+    "forest15": {
+      "id": "forest15",
+      "name": "You are wandering aimlessly through the forest.",
+      "attributes": {
+        "description_hints": "You are wandering aimlessly through the forest.",
+        "lighting": "bright",
+        "is_outdoors": true,
+        "has_windows": false,
+        "original_id": "LOC_FOREST15"
+      },
+      "connections": {
+        "east": "forest16",
+        "west": "forest22",
+        "north": "roadend",
+        "south": "forest14"
+      }
+    },
+    "forest16": {
+      "id": "forest16",
+      "name": "You are wandering aimlessly through the forest.",
+      "attributes": {
+        "description_hints": "You are wandering aimlessly through the forest.",
+        "lighting": "bright",
+        "is_outdoors": true,
+        "has_windows": false,
+        "original_id": "LOC_FOREST16"
+      },
+      "connections": {
+        "east": "forest17",
+        "west": "forest14",
+        "south": "forest15"
+      }
+    },
+    "forest17": {
+      "id": "forest17",
+      "name": "You are wandering aimlessly through the forest.",
+      "attributes": {
+        "description_hints": "You are wandering aimlessly through the forest.",
+        "lighting": "bright",
+        "is_outdoors": true,
+        "has_windows": false,
+        "original_id": "LOC_FOREST17"
+      },
+      "connections": {
+        "east": "forest18",
+        "west": "forest16",
+        "north": "cliff"
+      }
+    },
+    "forest18": {
+      "id": "forest18",
+      "name": "You are wandering aimlessly through the forest.",
+      "attributes": {
+        "description_hints": "You are wandering aimlessly through the forest.",
+        "lighting": "bright",
+        "is_outdoors": true,
+        "has_windows": false,
+        "original_id": "LOC_FOREST18"
+      },
+      "connections": {
+        "east": "forest19",
+        "west": "forest17",
+        "north": "forest2",
+        "south": "forest21"
+      }
+    },
+    "forest19": {
+      "id": "forest19",
+      "name": "You are wandering aimlessly through the forest.",
+      "attributes": {
+        "description_hints": "You are wandering aimlessly through the forest.",
+        "lighting": "bright",
+        "is_outdoors": true,
+        "has_windows": false,
+        "original_id": "LOC_FOREST19"
+      },
+      "connections": {
+        "east": "forest2",
+        "west": "forest18",
+        "north": "cliff",
+        "south": "forest20"
+      }
+    },
+    "forest20": {
+      "id": "forest20",
+      "name": "You are wandering aimlessly through the forest.",
+      "attributes": {
+        "description_hints": "You are wandering aimlessly through the forest.",
+        "lighting": "bright",
+        "is_outdoors": true,
+        "has_windows": false,
+        "original_id": "LOC_FOREST20"
+      },
+      "connections": {
+        "east": "hill",
+        "west": "forest21",
+        "north": "forest19",
+        "south": "forest13"
+      }
+    },
+    "forest21": {
+      "id": "forest21",
+      "name": "You are wandering aimlessly through the forest.",
+      "attributes": {
+        "description_hints": "You are wandering aimlessly through the forest.",
+        "lighting": "bright",
+        "is_outdoors": true,
+        "has_windows": false,
+        "original_id": "LOC_FOREST21"
+      },
+      "connections": {
+        "east": "forest20",
+        "west": "roadend",
+        "north": "forest18",
+        "south": "forest21"
+      }
+    },
+    "forest22": {
+      "id": "forest22",
+      "name": "You are wandering aimlessly through the forest.",
+      "attributes": {
+        "description_hints": "You are wandering aimlessly through the forest.",
+        "lighting": "bright",
+        "is_outdoors": true,
+        "has_windows": false,
+        "original_id": "LOC_FOREST22"
+      },
+      "connections": {
+        "east": "forest8",
+        "west": "forest11",
+        "north": "forest15",
+        "south": "forest12"
+      }
+    },
+    "ledge": {
+      "id": "ledge",
+      "name": "You're on ledge.",
+      "attributes": {
+        "description_hints": "You are on a small ledge on one face of a sheer cliff.  There are no\npaths away from the ledge.  Across the chasm is a small clearing\nsurrounded by forest.",
+        "lighting": "bright",
+        "is_outdoors": true,
+        "has_windows": false,
+        "original_id": "LOC_LEDGE"
+      },
+      "connections": {}
+    },
+    "resbottom": {
+      "id": "resbottom",
+      "name": "You're at bottom of reservoir.",
+      "attributes": {
+        "description_hints": "You are walking across the bottom of the reservoir.  Walls of water\nrear up on either side.  The roar of the water cascading past is\nnearly deafening, and the mist is so thick you can barely see.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_RESBOTTOM"
+      },
+      "connections": {
+        "north": "resnorth",
+        "south": "reservoir"
+      }
+    },
+    "resnorth": {
+      "id": "resnorth",
+      "name": "You're north of reservoir.",
+      "attributes": {
+        "description_hints": "You are at the northern edge of the reservoir.  A northwest passage\nleads sharply up from here.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_RESNORTH"
+      },
+      "connections": {
+        "south": "resbottom",
+        "out": "treacherous"
+      }
+    },
+    "treacherous": {
+      "id": "treacherous",
+      "name": "You are scrambling along a treacherously steep, ro",
+      "attributes": {
+        "description_hints": "You are scrambling along a treacherously steep, rocky passage.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_TREACHEROUS"
+      },
+      "connections": {
+        "down": "resnorth"
+      }
+    },
+    "steep": {
+      "id": "steep",
+      "name": "You are on a very steep incline, which widens at i",
+      "attributes": {
+        "description_hints": "You are on a very steep incline, which widens at it goes upward.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_STEEP"
+      },
+      "connections": {
+        "down": "treacherous"
+      }
+    },
+    "cliffbase": {
+      "id": "cliffbase",
+      "name": "You're at base of cliff.",
+      "attributes": {
+        "description_hints": "You are at the base of a nearly vertical cliff.  There are some\nslim footholds which would enable you to climb up, but it looks\nextremely dangerous.  Here at the base of the cliff lie the remains\nof several earlier adventurers who apparently failed to make it.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_CLIFFBASE"
+      },
+      "connections": {
+        "down": "steep"
+      }
+    },
+    "clifface": {
+      "id": "clifface",
+      "name": "You are climbing along a nearly vertical cliff.",
+      "attributes": {
+        "description_hints": "You are climbing along a nearly vertical cliff.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_CLIFFACE"
+      },
+      "connections": {
+        "down": "cliffbase"
+      }
+    },
+    "footslip": {
+      "id": "footslip",
+      "name": "Just as you reach the top, your foot slips on a lo",
+      "attributes": {
+        "description_hints": "Just as you reach the top, your foot slips on a loose rock and you\ntumble several hundred feet to join the other unlucky adventurers.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_FOOTSLIP"
+      },
+      "connections": {}
+    },
+    "clifftop": {
+      "id": "clifftop",
+      "name": "Just as you reach the top, your foot slips on a lo",
+      "attributes": {
+        "description_hints": "Just as you reach the top, your foot slips on a loose rock and you\nmake one last desperate grab.  Your luck holds, as does your grip.\nWith an enormous heave, you lift yourself to the ledge above.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_CLIFFTOP"
+      },
+      "connections": {}
+    },
+    "cliffledge": {
+      "id": "cliffledge",
+      "name": "You're at top of cliff.",
+      "attributes": {
+        "description_hints": "You are on a small ledge at the top of a nearly vertical cliff.\nThere is a low crawl leading off to the northeast.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_CLIFFLEDGE"
+      },
+      "connections": {
+        "down": "clifface"
+      }
+    },
+    "reachdead": {
+      "id": "reachdead",
+      "name": "You have reached a dead end.",
+      "attributes": {
+        "description_hints": "You have reached a dead end.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_REACHDEAD"
+      },
+      "connections": {
+        "out": "cliffledge"
+      }
+    },
+    "gruesome": {
+      "id": "gruesome",
+      "name": "There is now one more gruesome aspect to the spect",
+      "attributes": {
+        "description_hints": "There is now one more gruesome aspect to the spectacular vista.",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_GRUESOME"
+      },
+      "connections": {}
+    },
+    "foof1": {
+      "id": "foof1",
+      "name": ">>Foof!<<",
+      "attributes": {
+        "description_hints": ">>Foof!<<",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_FOOF1"
+      },
+      "connections": {}
+    },
+    "foof2": {
+      "id": "foof2",
+      "name": ">>Foof!<<",
+      "attributes": {
+        "description_hints": ">>Foof!<<",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_FOOF2"
+      },
+      "connections": {}
+    },
+    "foof3": {
+      "id": "foof3",
+      "name": ">>Foof!<<",
+      "attributes": {
+        "description_hints": ">>Foof!<<",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_FOOF3"
+      },
+      "connections": {}
+    },
+    "foof4": {
+      "id": "foof4",
+      "name": ">>Foof!<<",
+      "attributes": {
+        "description_hints": ">>Foof!<<",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_FOOF4"
+      },
+      "connections": {}
+    },
+    "foof5": {
+      "id": "foof5",
+      "name": ">>Foof!<<",
+      "attributes": {
+        "description_hints": ">>Foof!<<",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_FOOF5"
+      },
+      "connections": {}
+    },
+    "foof6": {
+      "id": "foof6",
+      "name": ">>Foof!<<",
+      "attributes": {
+        "description_hints": ">>Foof!<<",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "original_id": "LOC_FOOF6"
+      },
+      "connections": {}
+    }
+  },
+  "npcs": {},
+  "items": {
+    "no_object": {
+      "id": "no_object",
+      "name": "Unknown",
+      "attributes": {
+        "description_hints": "unknown item",
+        "type": "misc",
+        "treasure": false,
+        "aliases": [],
+        "original_id": "NO_OBJECT",
+        "weight": 1.0
+      }
+    },
+    "keys": {
+      "id": "keys",
+      "name": "Keys",
+      "attributes": {
+        "description_hints": "Set of keys",
+        "type": "misc",
+        "treasure": false,
+        "aliases": [
+          "keys",
+          "key"
+        ],
+        "original_id": "KEYS",
+        "weight": 1.0
+      }
+    },
+    "lamp": {
+      "id": "lamp",
+      "name": "Lamp",
+      "attributes": {
+        "description_hints": "Brass lantern",
+        "type": "misc",
+        "treasure": false,
+        "aliases": [
+          "lamp",
+          "lante"
+        ],
+        "original_id": "LAMP",
+        "weight": 1.0
+      }
+    },
+    "grate": {
+      "id": "grate",
+      "name": "Grate",
+      "attributes": {
+        "description_hints": "*grate",
+        "type": "misc",
+        "treasure": false,
+        "aliases": [
+          "grate"
+        ],
+        "original_id": "GRATE",
+        "weight": 1.0
+      }
+    },
+    "cage": {
+      "id": "cage",
+      "name": "Cage",
+      "attributes": {
+        "description_hints": "Wicker cage",
+        "type": "misc",
+        "treasure": false,
+        "aliases": [
+          "cage"
+        ],
+        "original_id": "CAGE",
+        "weight": 1.0
+      }
+    },
+    "rod": {
+      "id": "rod",
+      "name": "Rod",
+      "attributes": {
+        "description_hints": "Black rod",
+        "type": "misc",
+        "treasure": false,
+        "aliases": [
+          "rod"
+        ],
+        "original_id": "ROD",
+        "weight": 1.0
+      }
+    },
+    "rod2": {
+      "id": "rod2",
+      "name": "Rod",
+      "attributes": {
+        "description_hints": "Black rod",
+        "type": "misc",
+        "treasure": false,
+        "aliases": [
+          "rod"
+        ],
+        "original_id": "ROD2",
+        "weight": 1.0
+      }
+    },
+    "steps": {
+      "id": "steps",
+      "name": "Steps",
+      "attributes": {
+        "description_hints": "*steps",
+        "type": "misc",
+        "treasure": false,
+        "aliases": [
+          "steps"
+        ],
+        "original_id": "STEPS",
+        "weight": 1.0
+      }
+    },
+    "bird": {
+      "id": "bird",
+      "name": "Bird",
+      "attributes": {
+        "description_hints": "Little bird in cage",
+        "type": "misc",
+        "treasure": false,
+        "aliases": [
+          "bird"
+        ],
+        "original_id": "BIRD",
+        "weight": 1.0
+      }
+    },
+    "door": {
+      "id": "door",
+      "name": "Door",
+      "attributes": {
+        "description_hints": "*rusty door",
+        "type": "misc",
+        "treasure": false,
+        "aliases": [
+          "door"
+        ],
+        "original_id": "DOOR",
+        "weight": 1.0
+      }
+    },
+    "pillow": {
+      "id": "pillow",
+      "name": "Pillo",
+      "attributes": {
+        "description_hints": "Velvet pillow",
+        "type": "misc",
+        "treasure": false,
+        "aliases": [
+          "pillo",
+          "velve"
+        ],
+        "original_id": "PILLOW",
+        "weight": 1.0
+      }
+    },
+    "snake": {
+      "id": "snake",
+      "name": "Snake",
+      "attributes": {
+        "description_hints": "*snake",
+        "type": "misc",
+        "treasure": false,
+        "aliases": [
+          "snake"
+        ],
+        "original_id": "SNAKE",
+        "weight": 1.0
+      }
+    },
+    "fissure": {
+      "id": "fissure",
+      "name": "Fissu",
+      "attributes": {
+        "description_hints": "*fissure",
+        "type": "misc",
+        "treasure": false,
+        "aliases": [
+          "fissu"
+        ],
+        "original_id": "FISSURE",
+        "weight": 1.0
+      }
+    },
+    "13": {
+      "id": "13",
+      "name": "Table",
+      "attributes": {
+        "description_hints": "*stone tablet",
+        "type": "misc",
+        "treasure": false,
+        "aliases": [
+          "table"
+        ],
+        "original_id": "OBJ_13",
+        "weight": 1.0
+      }
+    },
+    "clam": {
+      "id": "clam",
+      "name": "Clam",
+      "attributes": {
+        "description_hints": "Giant clam  >GRUNT!<",
+        "type": "misc",
+        "treasure": false,
+        "aliases": [
+          "clam"
+        ],
+        "original_id": "CLAM",
+        "weight": 1.0
+      }
+    },
+    "oyster": {
+      "id": "oyster",
+      "name": "Oyste",
+      "attributes": {
+        "description_hints": "Giant oyster  >GROAN!<",
+        "type": "misc",
+        "treasure": false,
+        "aliases": [
+          "oyste"
+        ],
+        "original_id": "OYSTER",
+        "weight": 1.0
+      }
+    },
+    "magazine": {
+      "id": "magazine",
+      "name": "Magaz",
+      "attributes": {
+        "description_hints": "\"Spelunker Today\"",
+        "type": "misc",
+        "treasure": false,
+        "aliases": [
+          "magaz",
+          "issue",
+          "spelu",
+          "\"spel"
+        ],
+        "original_id": "MAGAZINE",
+        "weight": 1.0
+      }
+    },
+    "dwarf": {
+      "id": "dwarf",
+      "name": "Dwarf",
+      "attributes": {
+        "description_hints": "unknown item",
+        "type": "misc",
+        "treasure": false,
+        "aliases": [
+          "dwarf",
+          "dwarv"
+        ],
+        "original_id": "DWARF",
+        "weight": 1.0
+      }
+    },
+    "knife": {
+      "id": "knife",
+      "name": "Knife",
+      "attributes": {
+        "description_hints": "unknown item",
+        "type": "misc",
+        "treasure": false,
+        "aliases": [
+          "knife",
+          "knive"
+        ],
+        "original_id": "KNIFE",
+        "weight": 1.0
+      }
+    },
+    "food": {
+      "id": "food",
+      "name": "Food",
+      "attributes": {
+        "description_hints": "Tasty food",
+        "type": "misc",
+        "treasure": false,
+        "aliases": [
+          "food",
+          "ratio"
+        ],
+        "original_id": "FOOD",
+        "weight": 1.0
+      }
+    },
+    "bottle": {
+      "id": "bottle",
+      "name": "Bottl",
+      "attributes": {
+        "description_hints": "Small bottle",
+        "type": "misc",
+        "treasure": false,
+        "aliases": [
+          "bottl",
+          "jar"
+        ],
+        "original_id": "BOTTLE",
+        "weight": 1.0
+      }
+    },
+    "water": {
+      "id": "water",
+      "name": "Water",
+      "attributes": {
+        "description_hints": "Water in the bottle",
+        "type": "misc",
+        "treasure": false,
+        "aliases": [
+          "water",
+          "h2o"
+        ],
+        "original_id": "WATER",
+        "weight": 1.0
+      }
+    },
+    "oil": {
+      "id": "oil",
+      "name": "Oil",
+      "attributes": {
+        "description_hints": "Oil in the bottle",
+        "type": "misc",
+        "treasure": false,
+        "aliases": [
+          "oil"
+        ],
+        "original_id": "OIL",
+        "weight": 1.0
+      }
+    },
+    "mirror": {
+      "id": "mirror",
+      "name": "Mirro",
+      "attributes": {
+        "description_hints": "*mirror",
+        "type": "misc",
+        "treasure": false,
+        "aliases": [
+          "mirro"
+        ],
+        "original_id": "MIRROR",
+        "weight": 1.0
+      }
+    },
+    "plant": {
+      "id": "plant",
+      "name": "Plant",
+      "attributes": {
+        "description_hints": "*plant",
+        "type": "misc",
+        "treasure": false,
+        "aliases": [
+          "plant",
+          "beans"
+        ],
+        "original_id": "PLANT",
+        "weight": 1.0
+      }
+    },
+    "plant2": {
+      "id": "plant2",
+      "name": "Plant",
+      "attributes": {
+        "description_hints": "*phony plant",
+        "type": "misc",
+        "treasure": false,
+        "aliases": [
+          "plant"
+        ],
+        "original_id": "PLANT2",
+        "weight": 1.0
+      }
+    },
+    "26": {
+      "id": "26",
+      "name": "Stala",
+      "attributes": {
+        "description_hints": "*stalactite",
+        "type": "misc",
+        "treasure": false,
+        "aliases": [
+          "stala"
+        ],
+        "original_id": "OBJ_26",
+        "weight": 1.0
+      }
+    },
+    "27": {
+      "id": "27",
+      "name": "Shado",
+      "attributes": {
+        "description_hints": "*shadowy figure and/or window",
+        "type": "misc",
+        "treasure": false,
+        "aliases": [
+          "shado",
+          "figur",
+          "windo"
+        ],
+        "original_id": "OBJ_27",
+        "weight": 1.0
+      }
+    },
+    "axe": {
+      "id": "axe",
+      "name": "Axe",
+      "attributes": {
+        "description_hints": "Dwarf's axe",
+        "type": "misc",
+        "treasure": false,
+        "aliases": [
+          "axe"
+        ],
+        "original_id": "AXE",
+        "weight": 1.0
+      }
+    },
+    "29": {
+      "id": "29",
+      "name": "Drawi",
+      "attributes": {
+        "description_hints": "*cave drawings",
+        "type": "misc",
+        "treasure": false,
+        "aliases": [
+          "drawi"
+        ],
+        "original_id": "OBJ_29",
+        "weight": 1.0
+      }
+    },
+    "30": {
+      "id": "30",
+      "name": "Pirat",
+      "attributes": {
+        "description_hints": "*pirate/genie",
+        "type": "misc",
+        "treasure": false,
+        "aliases": [
+          "pirat",
+          "genie",
+          "djinn"
+        ],
+        "original_id": "OBJ_30",
+        "weight": 1.0
+      }
+    },
+    "dragon": {
+      "id": "dragon",
+      "name": "Drago",
+      "attributes": {
+        "description_hints": "*dragon",
+        "type": "misc",
+        "treasure": false,
+        "aliases": [
+          "drago"
+        ],
+        "original_id": "DRAGON",
+        "weight": 1.0
+      }
+    },
+    "chasm": {
+      "id": "chasm",
+      "name": "Chasm",
+      "attributes": {
+        "description_hints": "*chasm",
+        "type": "misc",
+        "treasure": false,
+        "aliases": [
+          "chasm"
+        ],
+        "original_id": "CHASM",
+        "weight": 1.0
+      }
+    },
+    "troll": {
+      "id": "troll",
+      "name": "Troll",
+      "attributes": {
+        "description_hints": "*troll",
+        "type": "misc",
+        "treasure": false,
+        "aliases": [
+          "troll"
+        ],
+        "original_id": "TROLL",
+        "weight": 1.0
+      }
+    },
+    "troll2": {
+      "id": "troll2",
+      "name": "Troll",
+      "attributes": {
+        "description_hints": "*phony troll",
+        "type": "misc",
+        "treasure": false,
+        "aliases": [
+          "troll"
+        ],
+        "original_id": "TROLL2",
+        "weight": 1.0
+      }
+    },
+    "bear": {
+      "id": "bear",
+      "name": "Bear",
+      "attributes": {
+        "description_hints": "unknown item",
+        "type": "misc",
+        "treasure": false,
+        "aliases": [
+          "bear"
+        ],
+        "original_id": "BEAR",
+        "weight": 1.0
+      }
+    },
+    "messag": {
+      "id": "messag",
+      "name": "Messa",
+      "attributes": {
+        "description_hints": "*message in second maze",
+        "type": "misc",
+        "treasure": false,
+        "aliases": [
+          "messa"
+        ],
+        "original_id": "MESSAG",
+        "weight": 1.0
+      }
+    },
+    "volcano": {
+      "id": "volcano",
+      "name": "Volca",
+      "attributes": {
+        "description_hints": "*volcano and/or geyser",
+        "type": "misc",
+        "treasure": false,
+        "aliases": [
+          "volca",
+          "geyse"
+        ],
+        "original_id": "VOLCANO",
+        "weight": 1.0
+      }
+    },
+    "vend": {
+      "id": "vend",
+      "name": "Machi",
+      "attributes": {
+        "description_hints": "*vending machine",
+        "type": "misc",
+        "treasure": false,
+        "aliases": [
+          "machi",
+          "vendi"
+        ],
+        "original_id": "VEND",
+        "weight": 1.0
+      }
+    },
+    "battery": {
+      "id": "battery",
+      "name": "Batte",
+      "attributes": {
+        "description_hints": "Batteries",
+        "type": "misc",
+        "treasure": false,
+        "aliases": [
+          "batte"
+        ],
+        "original_id": "BATTERY",
+        "weight": 1.0
+      }
+    },
+    "40": {
+      "id": "40",
+      "name": "Carpe",
+      "attributes": {
+        "description_hints": "*carpet and/or moss and/or curtains",
+        "type": "misc",
+        "treasure": false,
+        "aliases": [
+          "carpe",
+          "moss"
+        ],
+        "original_id": "OBJ_40",
+        "weight": 1.0
+      }
+    },
+    "ogre": {
+      "id": "ogre",
+      "name": "Ogre",
+      "attributes": {
+        "description_hints": "*ogre",
+        "type": "misc",
+        "treasure": false,
+        "aliases": [
+          "ogre"
+        ],
+        "original_id": "OGRE",
+        "weight": 1.0
+      }
+    },
+    "urn": {
+      "id": "urn",
+      "name": "Urn",
+      "attributes": {
+        "description_hints": "*urn",
+        "type": "misc",
+        "treasure": false,
+        "aliases": [
+          "urn"
+        ],
+        "original_id": "URN",
+        "weight": 1.0
+      }
+    },
+    "cavity": {
+      "id": "cavity",
+      "name": "Cavit",
+      "attributes": {
+        "description_hints": "*cavity",
+        "type": "misc",
+        "treasure": false,
+        "aliases": [
+          "cavit"
+        ],
+        "original_id": "CAVITY",
+        "weight": 1.0
+      }
+    },
+    "blood": {
+      "id": "blood",
+      "name": "Blood",
+      "attributes": {
+        "description_hints": "*blood",
+        "type": "misc",
+        "treasure": false,
+        "aliases": [
+          "blood"
+        ],
+        "original_id": "BLOOD",
+        "weight": 1.0
+      }
+    },
+    "reser": {
+      "id": "reser",
+      "name": "Reser",
+      "attributes": {
+        "description_hints": "*reservoir",
+        "type": "misc",
+        "treasure": false,
+        "aliases": [
+          "reser"
+        ],
+        "original_id": "RESER",
+        "weight": 1.0
+      }
+    },
+    "rabbitfoot": {
+      "id": "rabbitfoot",
+      "name": "Appen",
+      "attributes": {
+        "description_hints": "Leporine appendage",
+        "type": "misc",
+        "treasure": false,
+        "aliases": [
+          "appen",
+          "lepor"
+        ],
+        "original_id": "RABBITFOOT",
+        "weight": 1.0
+      }
+    },
+    "47": {
+      "id": "47",
+      "name": "Mud",
+      "attributes": {
+        "description_hints": "*mud",
+        "type": "misc",
+        "treasure": false,
+        "aliases": [
+          "mud"
+        ],
+        "original_id": "OBJ_47",
+        "weight": 1.0
+      }
+    },
+    "48": {
+      "id": "48",
+      "name": "Note",
+      "attributes": {
+        "description_hints": "*note",
+        "type": "misc",
+        "treasure": false,
+        "aliases": [
+          "note"
+        ],
+        "original_id": "OBJ_48",
+        "weight": 1.0
+      }
+    },
+    "sign": {
+      "id": "sign",
+      "name": "Sign",
+      "attributes": {
+        "description_hints": "*sign",
+        "type": "misc",
+        "treasure": false,
+        "aliases": [
+          "sign"
+        ],
+        "original_id": "SIGN",
+        "weight": 1.0
+      }
+    },
+    "nugget": {
+      "id": "nugget",
+      "name": "Gold",
+      "attributes": {
+        "description_hints": "Large gold nugget",
+        "type": "treasure",
+        "treasure": true,
+        "aliases": [
+          "gold",
+          "nugge"
+        ],
+        "original_id": "NUGGET",
+        "weight": 1.0
+      }
+    },
+    "51": {
+      "id": "51",
+      "name": "Diamo",
+      "attributes": {
+        "description_hints": "Several diamonds",
+        "type": "treasure",
+        "treasure": true,
+        "aliases": [
+          "diamo"
+        ],
+        "original_id": "OBJ_51",
+        "weight": 1.0
+      }
+    },
+    "52": {
+      "id": "52",
+      "name": "Silve",
+      "attributes": {
+        "description_hints": "Bars of silver",
+        "type": "treasure",
+        "treasure": true,
+        "aliases": [
+          "silve",
+          "bars"
+        ],
+        "original_id": "OBJ_52",
+        "weight": 1.0
+      }
+    },
+    "53": {
+      "id": "53",
+      "name": "Jewel",
+      "attributes": {
+        "description_hints": "Precious jewelry",
+        "type": "treasure",
+        "treasure": true,
+        "aliases": [
+          "jewel"
+        ],
+        "original_id": "OBJ_53",
+        "weight": 1.0
+      }
+    },
+    "coins": {
+      "id": "coins",
+      "name": "Coins",
+      "attributes": {
+        "description_hints": "Rare coins",
+        "type": "treasure",
+        "treasure": true,
+        "aliases": [
+          "coins"
+        ],
+        "original_id": "COINS",
+        "weight": 1.0
+      }
+    },
+    "chest": {
+      "id": "chest",
+      "name": "Chest",
+      "attributes": {
+        "description_hints": "Treasure chest",
+        "type": "treasure",
+        "treasure": true,
+        "aliases": [
+          "chest",
+          "box",
+          "treas"
+        ],
+        "original_id": "CHEST",
+        "weight": 1.0
+      }
+    },
+    "eggs": {
+      "id": "eggs",
+      "name": "Eggs",
+      "attributes": {
+        "description_hints": "Golden eggs",
+        "type": "treasure",
+        "treasure": true,
+        "aliases": [
+          "eggs",
+          "egg",
+          "nest"
+        ],
+        "original_id": "EGGS",
+        "weight": 1.0
+      }
+    },
+    "trident": {
+      "id": "trident",
+      "name": "Tride",
+      "attributes": {
+        "description_hints": "Jeweled trident",
+        "type": "treasure",
+        "treasure": true,
+        "aliases": [
+          "tride"
+        ],
+        "original_id": "TRIDENT",
+        "weight": 1.0
+      }
+    },
+    "vase": {
+      "id": "vase",
+      "name": "Vase",
+      "attributes": {
+        "description_hints": "Ming vase",
+        "type": "treasure",
+        "treasure": true,
+        "aliases": [
+          "vase",
+          "ming",
+          "shard",
+          "potte"
+        ],
+        "original_id": "VASE",
+        "weight": 1.0
+      }
+    },
+    "emerald": {
+      "id": "emerald",
+      "name": "Emera",
+      "attributes": {
+        "description_hints": "Egg-sized emerald",
+        "type": "treasure",
+        "treasure": true,
+        "aliases": [
+          "emera"
+        ],
+        "original_id": "EMERALD",
+        "weight": 1.0
+      }
+    },
+    "pyramid": {
+      "id": "pyramid",
+      "name": "Plati",
+      "attributes": {
+        "description_hints": "Platinum pyramid",
+        "type": "treasure",
+        "treasure": true,
+        "aliases": [
+          "plati",
+          "pyram"
+        ],
+        "original_id": "PYRAMID",
+        "weight": 1.0
+      }
+    },
+    "pearl": {
+      "id": "pearl",
+      "name": "Pearl",
+      "attributes": {
+        "description_hints": "Glistening pearl",
+        "type": "treasure",
+        "treasure": true,
+        "aliases": [
+          "pearl"
+        ],
+        "original_id": "PEARL",
+        "weight": 1.0
+      }
+    },
+    "rug": {
+      "id": "rug",
+      "name": "Rug",
+      "attributes": {
+        "description_hints": "Persian rug",
+        "type": "treasure",
+        "treasure": true,
+        "aliases": [
+          "rug",
+          "persi"
+        ],
+        "original_id": "RUG",
+        "weight": 1.0
+      }
+    },
+    "63": {
+      "id": "63",
+      "name": "Spice",
+      "attributes": {
+        "description_hints": "Rare spices",
+        "type": "treasure",
+        "treasure": true,
+        "aliases": [
+          "spice"
+        ],
+        "original_id": "OBJ_63",
+        "weight": 1.0
+      }
+    },
+    "chain": {
+      "id": "chain",
+      "name": "Chain",
+      "attributes": {
+        "description_hints": "Golden chain",
+        "type": "treasure",
+        "treasure": true,
+        "aliases": [
+          "chain"
+        ],
+        "original_id": "CHAIN",
+        "weight": 1.0
+      }
+    },
+    "ruby": {
+      "id": "ruby",
+      "name": "Ruby",
+      "attributes": {
+        "description_hints": "Giant ruby",
+        "type": "treasure",
+        "treasure": true,
+        "aliases": [
+          "ruby"
+        ],
+        "original_id": "RUBY",
+        "weight": 1.0
+      }
+    },
+    "jade": {
+      "id": "jade",
+      "name": "Jade",
+      "attributes": {
+        "description_hints": "Jade necklace",
+        "type": "treasure",
+        "treasure": true,
+        "aliases": [
+          "jade",
+          "neckl"
+        ],
+        "original_id": "JADE",
+        "weight": 1.0
+      }
+    },
+    "amber": {
+      "id": "amber",
+      "name": "Amber",
+      "attributes": {
+        "description_hints": "Amber gemstone",
+        "type": "treasure",
+        "treasure": true,
+        "aliases": [
+          "amber",
+          "gemst"
+        ],
+        "original_id": "AMBER",
+        "weight": 1.0
+      }
+    },
+    "sapph": {
+      "id": "sapph",
+      "name": "Sapph",
+      "attributes": {
+        "description_hints": "Star sapphire",
+        "type": "treasure",
+        "treasure": true,
+        "aliases": [
+          "sapph"
+        ],
+        "original_id": "SAPPH",
+        "weight": 1.0
+      }
+    },
+    "69": {
+      "id": "69",
+      "name": "Ebony",
+      "attributes": {
+        "description_hints": "Ebony statuette",
+        "type": "treasure",
+        "treasure": true,
+        "aliases": [
+          "ebony",
+          "statu"
+        ],
+        "original_id": "OBJ_69",
+        "weight": 1.0
+      }
+    }
+  },
+  "player": {
+    "name": "Adventurer",
+    "attributes": {
+      "class": "explorer",
+      "level": 1,
+      "hp": 10,
+      "hp_max": 10,
+      "armor_class": 10,
+      "attack_bonus": 2,
+      "str": 10,
+      "dex": 10,
+      "con": 10,
+      "int": 14,
+      "wis": 12,
+      "cha": 10
+    },
+    "inventory": []
+  },
+  "npc_locations": {},
+  "item_locations": {
+    "grate": "grate",
+    "steps": "pittop",
+    "fissure": "eastbank",
+    "plant2": "westend",
+    "27": "window1",
+    "dragon": "secret4",
+    "chasm": "swchasm",
+    "troll": "swchasm",
+    "troll2": "nowhere",
+    "reser": "reservoir",
+    "rug": "secret4"
+  },
+  "player_location": "start",
+  "turn_count": 0,
+  "history": [],
+  "flags": {
+    "magic_word_xyzzy": {
+      "discovered": false,
+      "description": "Magic word from ancient times"
+    },
+    "magic_word_plugh": {
+      "discovered": false,
+      "description": "Magic word from ancient times"
+    },
+    "magic_word_plover": {
+      "discovered": false,
+      "description": "Magic word from ancient times"
+    },
+    "magic_word_fee": {
+      "discovered": false,
+      "description": "Magic word from ancient times"
+    },
+    "magic_word_fie": {
+      "discovered": false,
+      "description": "Magic word from ancient times"
+    },
+    "magic_word_foe": {
+      "discovered": false,
+      "description": "Magic word from ancient times"
+    },
+    "magic_word_foo": {
+      "discovered": false,
+      "description": "Magic word from ancient times"
+    }
+  }
+}
