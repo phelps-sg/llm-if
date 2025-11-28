@@ -57,6 +57,16 @@ class ActionInterpretation(BaseModel):
         None, description="Dice check parameters if needed"
     )
 
+    time_advancement: Optional[str] = Field(
+        None,
+        description="How much in-game time passes (natural language, e.g., '1 hour', '10 minutes', '3 days', 'several weeks'). DM controls creative time progression including fast travel, time skips, etc."
+    )
+
+    new_time: Optional[str] = Field(
+        None,
+        description="The new in-game date/time after this action (natural language format, e.g., 'Day 1, Afternoon, 2:30 PM'). If provided, this overrides the previous time completely."
+    )
+
     class Config:
         json_schema_extra = {
             "example": {

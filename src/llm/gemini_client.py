@@ -2307,6 +2307,7 @@ CRITICAL: State update params MUST include required fields:
 CURRENT GAME STATE:
 Location: {location.get('name', 'Unknown')} (ID: {location.get('id', 'unknown')})
 Description: {location.get('attributes', {}).get('description_hints', 'A place')}
+Current Time: {context.get('game_time', 'Unknown')}
 Exits: {context.get('exits', [])}
 
 Items at this location (on ground): {item_names_at_location}
@@ -2770,8 +2771,40 @@ Input: "I charm the rat to follow me north"
   ],
   "narrative_response": "You speak soothing words to the giant rat, and its beady red eyes soften. The creature seems entranced by your voice and begins to follow you as you head north into the grand hall.",
   "requires_dice_roll": false,
-  "dice_check": null
+  "dice_check": null,
+  "time_advancement": "5 minutes",
+  "new_time": "Day 1, Afternoon, 2:35 PM"
 }}
+
+⏰ TIME ADVANCEMENT - DM CONTROLS TIME:
+You are responsible for tracking how much in-game time passes with each action.
+Current time is: {context.get('game_time', 'Unknown')}
+
+REQUIRED: Always specify time advancement in your response using these fields:
+- "time_advancement": Natural language description (e.g., "10 minutes", "2 hours", "3 days", "a week")
+- "new_time": The new date/time after this action (natural language format)
+
+Guidelines for time advancement:
+- Quick actions (look, talk): 1-5 minutes
+- Moving between locations: 5-30 minutes
+- Combat: 1-10 minutes
+- Resting/sleeping: 8 hours
+- Long travel: hours to days
+- Crafting/waiting: minutes to hours
+
+Creative time control:
+- Fast travel: "Several hours pass as you journey..."
+- Time skip: "Three days later..."
+- Slow moments: "30 seconds" for tense situations
+- Time travel: Set any time you want for magical/sci-fi scenarios
+
+Format examples:
+- "new_time": "Day 1, Evening, 6:45 PM"
+- "new_time": "Day 3, Morning, 9:00 AM" (after 2-day skip)
+- "new_time": "Year 2084, Night, 11:30 PM" (sci-fi)
+- "new_time": "The Age of Dragons, Dawn" (fantasy)
+
+Be creative with time! It's part of your storytelling power.
 
 Now interpret the player's action: "{player_input}"
 """

@@ -42,6 +42,10 @@ class GameState(BaseModel):
 
     # Game metadata
     turn_count: int = Field(default=0, description="Current turn number")
+    game_time: str = Field(
+        default="Day 1, Morning, 8:00 AM",
+        description="Current in-game date and time (natural language format controlled by DM)"
+    )
     history: List[Dict[str, Any]] = Field(
         default_factory=list, description="History of actions and events"
     )

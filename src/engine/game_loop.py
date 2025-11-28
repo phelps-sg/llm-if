@@ -198,6 +198,10 @@ class GameLoop:
         if state_updates:
             self.action_processor.apply_state_updates(state_updates, self.game_state)
 
+        # Step 3.5: Apply time advancement (DM controls time)
+        if interpretation.get("new_time"):
+            self.game_state.game_time = interpretation["new_time"]
+
         # Step 4: Generate narrative (skip for movement - location description handles that)
         is_movement = any(update.get("type") == "move_player" for update in state_updates)
         is_valid = interpretation.get("is_valid", True)
@@ -352,6 +356,11 @@ class GameLoop:
         # Step 3: Apply state updates
         if state_updates:
             self.action_processor.apply_state_updates(state_updates, self.game_state)
+
+        # Step 3.5: Apply time advancement (DM controls time)
+        if interpretation.get("new_time"):
+            self.game_state.game_time = interpretation["new_time"]
+
             # DEBUG: Log state after updates
             print(f"\n[DEBUG] State After Updates:")
             print(f"  Player location: {self.game_state.player_location}")
@@ -856,6 +865,7 @@ You can also type natural language commands and the AI will interpret them.
                 "inventory_ids": self.game_state.player.inventory,
                 "attributes": self.game_state.player.attributes,
             },
+            "game_time": self.game_state.game_time,  # Current in-game date/time
             "all_locations": all_locations,  # Complete map of location IDs
             "all_npcs": all_npcs,  # All NPCs with locations (for plot management)
             "conversation_history": recent_turns,  # For natural pronoun resolution
