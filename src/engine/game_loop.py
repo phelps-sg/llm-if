@@ -892,6 +892,9 @@ You can also type natural language commands and the AI will interpret them.
         genre = self.game_state.rogue_config.get("genre", "dark fantasy")
         plot = self.game_state.rogue_config.get("plot")
         specifics = self.game_state.rogue_config.get("specifics")
+        num_middle_locations = self.game_state.rogue_config.get("num_middle_locations", 3)
+        num_npcs = self.game_state.rogue_config.get("num_npcs", 2)
+        num_items = self.game_state.rogue_config.get("num_items", 3)
 
         # Increase difficulty with each level
         difficulty_modifier = 1.0 + (next_level - 1) * 0.2
@@ -902,6 +905,9 @@ You can also type natural language commands and the AI will interpret them.
             plot=plot,
             specifics=specifics,
             difficulty_modifier=difficulty_modifier,
+            num_middle_locations=num_middle_locations,
+            num_npcs=num_npcs,
+            num_items=num_items,
         )
 
         # Apply generated level to game state

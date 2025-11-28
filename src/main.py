@@ -140,6 +140,9 @@ def initialize_rogue_mode(args, gcp_project: str) -> GameState:
         plot=args.plot,
         specifics=args.specifics,
         difficulty_modifier=1.0,
+        num_middle_locations=args.num_locations,
+        num_npcs=args.num_npcs,
+        num_items=args.num_items,
     )
 
     # Create minimal GameState with player
@@ -173,6 +176,9 @@ def initialize_rogue_mode(args, gcp_project: str) -> GameState:
             "current_level": 1,
             "level_metadata": {},
             "max_level": None,
+            "num_middle_locations": args.num_locations,
+            "num_npcs": args.num_npcs,
+            "num_items": args.num_items,
         },
         npc_locations={},
         item_locations={},
@@ -269,6 +275,28 @@ def create_parser() -> argparse.ArgumentParser:
         "--specifics",
         type=str,
         help="Specific requests for rogue mode (e.g., 'undead enemies', 'puzzle-focused')",
+    )
+
+    # Rogue mode dungeon size configuration
+    parser.add_argument(
+        "--num-locations",
+        type=int,
+        default=3,
+        help="Number of middle locations to generate (default: 3, total will be +2 for entry/exit)",
+    )
+
+    parser.add_argument(
+        "--num-npcs",
+        type=int,
+        default=2,
+        help="Number of NPCs to generate per level (default: 2)",
+    )
+
+    parser.add_argument(
+        "--num-items",
+        type=int,
+        default=3,
+        help="Number of items to generate per level (default: 3)",
     )
 
     return parser

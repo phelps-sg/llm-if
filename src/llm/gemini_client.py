@@ -218,15 +218,18 @@ class GeminiClient:
         genre: str,
         plot: Optional[str] = None,
         specifics: Optional[str] = None,
-        difficulty_modifier: float = 1.0
+        difficulty_modifier: float = 1.0,
+        num_middle_locations: int = 3,
+        num_npcs: int = 2,
+        num_items: int = 3,
     ) -> Dict[str, Any]:
         """Generate complete dungeon level using iterative LLM calls with validation.
 
-        Uses iterative generation (8-11 LLM calls):
+        Uses iterative generation (configurable number of LLM calls):
         1. Theme generation (1 call)
-        2. Locations iteratively (4-5 calls: entry → middle × 2-3 → exit)
-        3. NPCs iteratively (1-2 calls, each aware of locations)
-        4. Items iteratively (2-3 calls, each aware of locations + NPCs)
+        2. Locations iteratively (num_middle_locations + 2 calls: entry → middle × N → exit)
+        3. NPCs iteratively (num_npcs calls, each aware of locations)
+        4. Items iteratively (num_items calls, each aware of locations + NPCs)
         5. Validation & programmatic repairs (reachability, light source)
 
         Descriptions generated on-demand when player visits locations.
@@ -237,16 +240,17 @@ class GeminiClient:
             plot: Optional plot guidance
             specifics: Optional specific requests
             difficulty_modifier: Multiplier for difficulty scaling
+            num_middle_locations: Number of middle locations to generate (default: 3)
+            num_npcs: Number of NPCs to generate (default: 2)
+            num_items: Number of items to generate (default: 3)
 
         Returns:
             Dict containing complete level data with validated reachability
         """
         import random
 
-        # Pre-determine counts for accurate step tracking
-        num_middle = random.randint(2, 3)
-        num_npcs = random.randint(1, 2)
-        num_items = 3  # weapon, consumable, treasure/tool
+        # Use provided counts for dungeon generation
+        num_middle = num_middle_locations
         total_steps = 4 + num_middle + num_npcs + num_items  # theme + entry + middle + exit + npcs + items + validation
 
         # Step 1: Generate theme (1 call)
@@ -324,15 +328,17 @@ class GeminiClient:
                 "location": npc["location"]
             })
 
-        # Step 4: Generate items iteratively (2-3 calls)
+        # Step 4: Generate items iteratively (configurable number of calls)
         items = []
         item_locations = {}
         existing_state["items"] = []
 
-        # Generate variety: weapon, consumable, treasure/tool
-        item_type_hints = ["weapon", "consumable", random.choice(["treasure", "tool"])]
-        for i, item_type_hint in enumerate(item_type_hints):
+        # Generate variety: cycle through item types
+        item_type_options = ["weapon", "consumable", "treasure", "tool", "light_source"]
+        for i in range(num_items):
             step_num += 1
+            # Cycle through item types for variety
+            item_type_hint = item_type_options[i % len(item_type_options)]
             print(f"  [{step_num}/{total_steps}] Generating item {i+1}/{num_items} ({item_type_hint})...")
             item = self._generate_single_item(
                 level_number, genre, theme, existing_state, item_type_hint
@@ -353,7 +359,18 @@ class GeminiClient:
         step_num += 1
         print(f"  [{step_num}/{total_steps}] Validating and repairing dungeon...")
 
-        # Validate reachability
+        # Validate bidirectional connections
+        bidir_check = self._validate_bidirectional_connections(locations)
+        if not bidir_check["is_valid"]:
+            print(f"    [VALIDATION] Found {len(bidir_check['missing_reverse'])} missing reverse connections")
+            locations = self._repair_bidirectional_connections(
+                locations, bidir_check["missing_reverse"]
+            )
+            print(f"    [REPAIR] All connections now bidirectional ✓")
+        else:
+            print(f"    [VALIDATION] All connections bidirectional ✓")
+
+        # Validate reachability (after fixing bidirectional connections)
         reachability = self._validate_reachability(locations, entry_id)
         if not reachability["is_valid"]:
             print(f"    [VALIDATION] Found {len(reachability['unreachable'])} unreachable locations")
@@ -748,6 +765,91 @@ Return JSON: {{"theme": "Your Theme Here"}}
             "reachable": visited,
             "unreachable": unreachable
         }
+
+    def _validate_bidirectional_connections(
+        self,
+        locations: List[Dict]
+    ) -> Dict[str, Any]:
+        """Validate all connections are bidirectional.
+
+        Args:
+            locations: List of location dicts
+
+        Returns:
+            Dict with:
+            - is_valid: bool (True if all connections are bidirectional)
+            - missing_reverse: list of (from_id, direction, to_id, reverse_direction) tuples
+        """
+        missing_reverse = []
+        reverse_directions = {
+            "north": "south", "south": "north",
+            "east": "west", "west": "east",
+            "up": "down", "down": "up"
+        }
+
+        # Build location lookup
+        loc_by_id = {loc["id"]: loc for loc in locations}
+
+        # Check each connection
+        for loc in locations:
+            loc_id = loc["id"]
+            for direction, dest_id in loc.get("connections", {}).items():
+                if not dest_id:
+                    continue
+
+                # Find reverse direction
+                reverse_dir = reverse_directions.get(direction)
+                if not reverse_dir:
+                    continue
+
+                # Check if destination has reverse connection
+                dest_loc = loc_by_id.get(dest_id)
+                if not dest_loc:
+                    continue
+
+                dest_connections = dest_loc.get("connections", {})
+                reverse_conn = dest_connections.get(reverse_dir)
+
+                # If reverse connection doesn't point back to us, it's missing
+                if reverse_conn != loc_id:
+                    missing_reverse.append((loc_id, direction, dest_id, reverse_dir))
+
+        return {
+            "is_valid": len(missing_reverse) == 0,
+            "missing_reverse": missing_reverse
+        }
+
+    def _repair_bidirectional_connections(
+        self,
+        locations: List[Dict],
+        missing_reverse: List[tuple]
+    ) -> List[Dict]:
+        """Add missing reverse connections to make all connections bidirectional.
+
+        Args:
+            locations: List of location dicts
+            missing_reverse: List of (from_id, direction, to_id, reverse_direction) tuples
+
+        Returns:
+            Updated locations list
+        """
+        # Build location lookup
+        loc_by_id = {loc["id"]: loc for loc in locations}
+
+        for from_id, direction, to_id, reverse_dir in missing_reverse:
+            dest_loc = loc_by_id.get(to_id)
+            if not dest_loc:
+                continue
+
+            # Ensure connections dict exists
+            if "connections" not in dest_loc:
+                dest_loc["connections"] = {}
+
+            # Add reverse connection
+            dest_loc["connections"][reverse_dir] = from_id
+            print(f"  [REPAIR] Added bidirectional connection: {to_id} ({reverse_dir}) -> {from_id}")
+
+        return locations
 
     def _validate_light_source(
         self,
