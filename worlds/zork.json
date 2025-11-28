@@ -1,0 +1,678 @@
+{
+  "locations": {
+    "west_of_house": {
+      "id": "west_of_house",
+      "name": "West of House",
+      "attributes": {
+        "description_hints": "white colonial house, forest to west and south, path circles house, boarded front door, mailbox nearby",
+        "lighting": "bright",
+        "is_outdoors": true,
+        "has_windows": false,
+        "atmosphere": "peaceful suburban setting, hint of adventure"
+      },
+      "connections": {
+        "north": "north_of_house",
+        "south": "south_of_house",
+        "east": "behind_house",
+        "west": "forest_path"
+      }
+    },
+    "north_of_house": {
+      "id": "north_of_house",
+      "name": "North of House",
+      "attributes": {
+        "description_hints": "north side of white house, forest to north, path continues around house",
+        "lighting": "bright",
+        "is_outdoors": true,
+        "has_windows": false
+      },
+      "connections": {
+        "south": "west_of_house",
+        "east": "behind_house",
+        "west": "forest_path"
+      }
+    },
+    "behind_house": {
+      "id": "behind_house",
+      "name": "Behind the House",
+      "attributes": {
+        "description_hints": "behind white house, small window slightly ajar, forest to east, paths to other sides",
+        "lighting": "bright",
+        "is_outdoors": true,
+        "has_windows": false,
+        "special": "window provides entrance to house if opened"
+      },
+      "connections": {
+        "north": "north_of_house",
+        "south": "south_of_house",
+        "west": "west_of_house",
+        "east": "clearing",
+        "in": "kitchen"
+      }
+    },
+    "south_of_house": {
+      "id": "south_of_house",
+      "name": "South of House",
+      "attributes": {
+        "description_hints": "south side of white house, dense forest blocks further south travel",
+        "lighting": "bright",
+        "is_outdoors": true,
+        "has_windows": false
+      },
+      "connections": {
+        "north": "west_of_house",
+        "east": "behind_house",
+        "west": "forest_path"
+      }
+    },
+    "kitchen": {
+      "id": "kitchen",
+      "name": "Kitchen",
+      "attributes": {
+        "description_hints": "kitchen of colonial house, table, chimney, window to east, passages to other rooms, wooden door, smells of old cooking",
+        "lighting": "dim",
+        "is_outdoors": false,
+        "has_windows": true,
+        "atmosphere": "domestic, slightly dusty"
+      },
+      "connections": {
+        "west": "living_room",
+        "east": "behind_house",
+        "down": "cellar"
+      }
+    },
+    "living_room": {
+      "id": "living_room",
+      "name": "Living Room",
+      "attributes": {
+        "description_hints": "living room with ornate oriental rug on floor, large trophy case on wall (empty now, meant for treasures), wooden door to east, stairway going up blocked by rubble",
+        "lighting": "dim",
+        "is_outdoors": false,
+        "has_windows": true,
+        "atmosphere": "once grand, now abandoned, treasure case awaits filling"
+      },
+      "connections": {
+        "east": "kitchen",
+        "down": "cellar"
+      }
+    },
+    "cellar": {
+      "id": "cellar",
+      "name": "Cellar",
+      "attributes": {
+        "description_hints": "damp cellar beneath house, stone walls, stairs going up, darkness to east",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "atmosphere": "dank, musty, gateway to underground"
+      },
+      "connections": {
+        "up": "living_room",
+        "east": "east_of_chasm"
+      }
+    },
+    "clearing": {
+      "id": "clearing",
+      "name": "Forest Clearing",
+      "attributes": {
+        "description_hints": "clearing in forest, pile of leaves in corner, paths in multiple directions, trees surround the area",
+        "lighting": "bright",
+        "is_outdoors": true,
+        "has_windows": false,
+        "atmosphere": "peaceful forest glade"
+      },
+      "connections": {
+        "west": "behind_house",
+        "north": "forest_path",
+        "south": "grating_clearing",
+        "east": "forest_path"
+      }
+    },
+    "grating_clearing": {
+      "id": "grating_clearing",
+      "name": "Clearing with Grating",
+      "attributes": {
+        "description_hints": "small clearing, metal grating set in ground, trees all around, grating appears to be locked",
+        "lighting": "bright",
+        "is_outdoors": true,
+        "has_windows": false,
+        "atmosphere": "mysterious entrance to below",
+        "special": "grating can be unlocked and opened"
+      },
+      "connections": {
+        "north": "clearing",
+        "down": "cave_entrance"
+      }
+    },
+    "forest_path": {
+      "id": "forest_path",
+      "name": "Forest Path",
+      "attributes": {
+        "description_hints": "winding path through dense forest, trees in all directions, paths lead various ways",
+        "lighting": "bright",
+        "is_outdoors": true,
+        "has_windows": false
+      },
+      "connections": {
+        "east": "west_of_house",
+        "south": "clearing",
+        "north": "north_of_house"
+      }
+    },
+    "cave_entrance": {
+      "id": "cave_entrance",
+      "name": "Cave Entrance",
+      "attributes": {
+        "description_hints": "small cave entrance below grating, natural stone walls, passages lead deeper into darkness, faint air current from below",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "atmosphere": "threshold to ancient underground"
+      },
+      "connections": {
+        "up": "grating_clearing",
+        "west": "debris_room",
+        "down": "round_room"
+      }
+    },
+    "debris_room": {
+      "id": "debris_room",
+      "name": "Debris Room",
+      "attributes": {
+        "description_hints": "cave room filled with debris and broken rock, passages in several directions, old mining equipment visible",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false
+      },
+      "connections": {
+        "east": "cave_entrance",
+        "north": "round_room"
+      }
+    },
+    "round_room": {
+      "id": "round_room",
+      "name": "Round Room",
+      "attributes": {
+        "description_hints": "perfectly circular room carved from stone, passages in all cardinal directions, strange acoustics, ancient stonework",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "atmosphere": "ancient craftsmanship, hub location"
+      },
+      "connections": {
+        "north": "loud_room",
+        "east": "temple",
+        "south": "debris_room",
+        "west": "east_west_passage",
+        "up": "cave_entrance"
+      }
+    },
+    "loud_room": {
+      "id": "loud_room",
+      "name": "Loud Room",
+      "attributes": {
+        "description_hints": "room where sounds echo deafeningly, natural acoustics amplify everything, passages up and south, rough stone walls",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "atmosphere": "acoustically strange, ear-ringing echoes"
+      },
+      "connections": {
+        "south": "round_room",
+        "up": "deep_ravine",
+        "west": "dam_room"
+      }
+    },
+    "dam_room": {
+      "id": "dam_room",
+      "name": "Dam",
+      "attributes": {
+        "description_hints": "massive dam holding back reservoir water, control panel with switches and buttons, impressive stonework, water visible through viewing ports",
+        "lighting": "dim",
+        "is_outdoors": false,
+        "has_windows": false,
+        "atmosphere": "engineering marvel, powerful and ancient",
+        "special": "dam controls can manipulate water levels"
+      },
+      "connections": {
+        "east": "loud_room",
+        "south": "dam_lobby",
+        "north": "reservoir"
+      }
+    },
+    "dam_lobby": {
+      "id": "dam_lobby",
+      "name": "Dam Lobby",
+      "attributes": {
+        "description_hints": "lobby area of dam facility, informational plaques about the dam, passages to dam operations and maintenance area",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false
+      },
+      "connections": {
+        "north": "dam_room",
+        "south": "maintenance_room"
+      }
+    },
+    "maintenance_room": {
+      "id": "maintenance_room",
+      "name": "Maintenance Room",
+      "attributes": {
+        "description_hints": "maintenance area with tools and equipment, workbenches, spare parts, narrow passage continues south",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false
+      },
+      "connections": {
+        "north": "dam_lobby",
+        "south": "stream_view"
+      }
+    },
+    "reservoir": {
+      "id": "reservoir",
+      "name": "Reservoir",
+      "attributes": {
+        "description_hints": "underground reservoir, massive body of water, stone shores, water level varies, echoing drips, pathway along shore when water is low",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "atmosphere": "vast underground water, eerie stillness",
+        "special": "accessible areas change with water level"
+      },
+      "connections": {
+        "south": "dam_room"
+      }
+    },
+    "stream_view": {
+      "id": "stream_view",
+      "name": "Stream View",
+      "attributes": {
+        "description_hints": "overlook of underground stream, water flows below, narrow ledge path",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false
+      },
+      "connections": {
+        "north": "maintenance_room"
+      }
+    },
+    "deep_ravine": {
+      "id": "deep_ravine",
+      "name": "Deep Ravine",
+      "attributes": {
+        "description_hints": "narrow ravine between high rock walls, precarious footing, passages up and down, darkness above and below",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "atmosphere": "vertigo-inducing, dangerous"
+      },
+      "connections": {
+        "down": "loud_room"
+      }
+    },
+    "east_west_passage": {
+      "id": "east_west_passage",
+      "name": "East-West Passage",
+      "attributes": {
+        "description_hints": "long passage running east-west, carved stone, ancient construction",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false
+      },
+      "connections": {
+        "east": "round_room",
+        "west": "troll_room"
+      }
+    },
+    "troll_room": {
+      "id": "troll_room",
+      "name": "Troll Room",
+      "attributes": {
+        "description_hints": "large chamber, massive troll guards the passages, bloodstains on floor, ancient weapon marks on walls, troll blocks passage north",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "atmosphere": "dangerous, lair of guardian creature",
+        "special": "troll must be defeated or pacified to pass"
+      },
+      "connections": {
+        "east": "east_west_passage",
+        "north": "treasure_room"
+      }
+    },
+    "treasure_room": {
+      "id": "treasure_room",
+      "name": "Treasure Room",
+      "attributes": {
+        "description_hints": "chamber once filled with riches, some treasures remain scattered about, ornate stonework, feeling of ancient wealth",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "atmosphere": "former glory, scattered wealth"
+      },
+      "connections": {
+        "south": "troll_room"
+      }
+    },
+    "temple": {
+      "id": "temple",
+      "name": "Temple",
+      "attributes": {
+        "description_hints": "ancient temple chamber, religious iconography on walls, altar in center, passages east and west, atmosphere of old worship",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "atmosphere": "sacred space, ancient religion"
+      },
+      "connections": {
+        "west": "round_room",
+        "south": "altar_area"
+      }
+    },
+    "altar_area": {
+      "id": "altar_area",
+      "name": "Altar",
+      "attributes": {
+        "description_hints": "area before great altar, religious symbols carved everywhere, burnt offerings, spiritual significance",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "atmosphere": "holy ground, powerful magic"
+      },
+      "connections": {
+        "north": "temple"
+      }
+    },
+    "east_of_chasm": {
+      "id": "east_of_chasm",
+      "name": "East of Chasm",
+      "attributes": {
+        "description_hints": "narrow ledge on east side of great chasm, deep darkness below, narrow passages continue, treacherous footing",
+        "lighting": "dark",
+        "is_outdoors": false,
+        "has_windows": false,
+        "atmosphere": "dangerous, vertiginous",
+        "special": "crossing requires care or equipment"
+      },
+      "connections": {
+        "west": "cellar"
+      }
+    }
+  },
+  "npcs": {
+    "troll": {
+      "id": "troll",
+      "name": "Nasty Troll",
+      "attributes": {
+        "description_hints": "large ugly troll, wielding bloodied axe, blocks passage, hostile demeanor, can be fought or bribed",
+        "creature_type": "giant",
+        "hp": 40,
+        "hp_max": 40,
+        "armor_class": 14,
+        "attack_bonus": 6,
+        "hostility": "aggressive",
+        "str": 18,
+        "dex": 8,
+        "con": 16,
+        "int": 6,
+        "wis": 6,
+        "cha": 4,
+        "special_behavior": "guards treasure room, may be pacified with treasures, respects strength"
+      }
+    },
+    "thief": {
+      "id": "thief",
+      "name": "Shady Thief",
+      "attributes": {
+        "description_hints": "sneaky thief in dark cloak, quick movements, carries stolen goods, appears and disappears mysteriously",
+        "creature_type": "humanoid",
+        "hp": 25,
+        "hp_max": 25,
+        "armor_class": 16,
+        "attack_bonus": 5,
+        "hostility": "defensive",
+        "str": 10,
+        "dex": 18,
+        "con": 12,
+        "int": 14,
+        "wis": 12,
+        "cha": 8,
+        "special_behavior": "steals treasures if can, roams dungeon, may fight if cornered"
+      }
+    }
+  },
+  "items": {
+    "mailbox": {
+      "id": "mailbox",
+      "name": "Mailbox",
+      "attributes": {
+        "description_hints": "small mailbox, contains leaflet",
+        "type": "container",
+        "weight": 5,
+        "immovable": true,
+        "can_contain": ["leaflet"]
+      }
+    },
+    "leaflet": {
+      "id": "leaflet",
+      "name": "Leaflet",
+      "attributes": {
+        "description_hints": "small leaflet, welcoming message from Zork developers, basic instructions",
+        "type": "readable",
+        "weight": 0.1,
+        "text": "Welcome to the Great Underground Empire! Your quest is to collect treasures and return them to the trophy case."
+      }
+    },
+    "brass_lantern": {
+      "id": "brass_lantern",
+      "name": "Brass Lantern",
+      "attributes": {
+        "description_hints": "brass lantern, can be turned on to provide light in dark places",
+        "type": "light_source",
+        "weight": 1,
+        "provides_light": true,
+        "light_level": "bright",
+        "fuel_remaining": 100,
+        "special": "must be turned on to provide light, uses fuel"
+      }
+    },
+    "sword": {
+      "id": "sword",
+      "name": "Elvish Sword",
+      "attributes": {
+        "description_hints": "ancient elvish sword, glows blue near enemies, sharp blade, excellent craftsmanship",
+        "type": "weapon",
+        "damage": "1d8+2",
+        "damage_type": "slashing",
+        "weight": 3,
+        "magical": true,
+        "special": "glows blue when enemies near"
+      }
+    },
+    "rope": {
+      "id": "rope",
+      "name": "Rope",
+      "attributes": {
+        "description_hints": "strong hemp rope, useful for climbing and descending",
+        "type": "tool",
+        "weight": 2,
+        "uses": "climbing, descending, tying"
+      }
+    },
+    "jeweled_egg": {
+      "id": "jeweled_egg",
+      "name": "Jeweled Egg",
+      "attributes": {
+        "description_hints": "large jeweled egg, encrusted with precious gems, extremely valuable, beautiful craftsmanship",
+        "type": "treasure",
+        "weight": 1,
+        "value": 1000,
+        "treasure": true
+      }
+    },
+    "brass_bell": {
+      "id": "brass_bell",
+      "name": "Brass Bell",
+      "attributes": {
+        "description_hints": "brass bell, musical tone when rung, ornate engravings, valuable",
+        "type": "treasure",
+        "weight": 1,
+        "value": 500,
+        "treasure": true,
+        "special": "rings when used"
+      }
+    },
+    "crystal_trident": {
+      "id": "crystal_trident",
+      "name": "Crystal Trident",
+      "attributes": {
+        "description_hints": "trident made of solid crystal, three sharp prongs, magically durable, valuable",
+        "type": "treasure",
+        "weight": 2,
+        "value": 800,
+        "treasure": true
+      }
+    },
+    "sceptre": {
+      "id": "sceptre",
+      "name": "Sceptre",
+      "attributes": {
+        "description_hints": "ornate sceptre, gem-topped, symbol of ancient authority, extremely valuable",
+        "type": "treasure",
+        "weight": 1,
+        "value": 1200,
+        "treasure": true
+      }
+    },
+    "trunk_of_jewels": {
+      "id": "trunk_of_jewels",
+      "name": "Trunk of Jewels",
+      "attributes": {
+        "description_hints": "large trunk filled with precious jewels, diamonds, rubies, emeralds, incredibly valuable, heavy",
+        "type": "treasure",
+        "weight": 10,
+        "value": 2000,
+        "treasure": true
+      }
+    },
+    "chalice": {
+      "id": "chalice",
+      "name": "Chalice",
+      "attributes": {
+        "description_hints": "golden chalice encrusted with jewels, ceremonial drinking vessel, extremely valuable",
+        "type": "treasure",
+        "weight": 1,
+        "value": 900,
+        "treasure": true
+      }
+    },
+    "painting": {
+      "id": "painting",
+      "name": "Painting",
+      "attributes": {
+        "description_hints": "ancient painting in ornate frame, priceless artwork, depicts forgotten scene",
+        "type": "treasure",
+        "weight": 3,
+        "value": 700,
+        "treasure": true
+      }
+    },
+    "water": {
+      "id": "water",
+      "name": "Water",
+      "attributes": {
+        "description_hints": "bottle of clear water from underground stream",
+        "type": "consumable",
+        "weight": 0.5,
+        "effect": "quenches thirst"
+      }
+    },
+    "garlic": {
+      "id": "garlic",
+      "name": "Clove of Garlic",
+      "attributes": {
+        "description_hints": "clove of garlic, pungent smell, may ward off certain creatures",
+        "type": "misc",
+        "weight": 0.1,
+        "special": "repels certain undead"
+      }
+    },
+    "screwdriver": {
+      "id": "screwdriver",
+      "name": "Screwdriver",
+      "attributes": {
+        "description_hints": "flathead screwdriver, useful tool",
+        "type": "tool",
+        "weight": 0.5,
+        "uses": "opening panels, prying"
+      }
+    },
+    "wrench": {
+      "id": "wrench",
+      "name": "Wrench",
+      "attributes": {
+        "description_hints": "adjustable wrench, for turning valves and bolts",
+        "type": "tool",
+        "weight": 1,
+        "uses": "dam controls, machinery"
+      }
+    }
+  },
+  "player": {
+    "name": "Adventurer",
+    "attributes": {
+      "class": "explorer",
+      "level": 1,
+      "hp": 15,
+      "hp_max": 15,
+      "armor_class": 12,
+      "attack_bonus": 3,
+      "str": 12,
+      "dex": 14,
+      "con": 13,
+      "int": 14,
+      "wis": 12,
+      "cha": 11,
+      "score": 0,
+      "max_score": 350
+    },
+    "inventory": []
+  },
+  "npc_locations": {
+    "troll": "troll_room",
+    "thief": "round_room"
+  },
+  "item_locations": {
+    "mailbox": "west_of_house",
+    "leaflet": "west_of_house",
+    "brass_lantern": "living_room",
+    "sword": "living_room",
+    "rope": "kitchen",
+    "jeweled_egg": "treasure_room",
+    "brass_bell": "temple",
+    "crystal_trident": "altar_area",
+    "sceptre": "treasure_room",
+    "trunk_of_jewels": "treasure_room",
+    "chalice": "temple",
+    "painting": "living_room",
+    "water": "stream_view",
+    "garlic": "kitchen",
+    "screwdriver": "maintenance_room",
+    "wrench": "maintenance_room"
+  },
+  "player_location": "west_of_house",
+  "turn_count": 0,
+  "game_time": "Day 1, Afternoon, 2:00 PM",
+  "history": [],
+  "flags": {
+    "trophy_case_location": "living_room",
+    "treasures_collected": 0,
+    "goal": "Collect treasures and return them to the trophy case in the living room"
+  },
+  "plot_config": {
+    "title": "The Great Underground Empire",
+    "description": "Explore the ruins of the Great Underground Empire, collect treasures, solve puzzles, and survive encounters with dangerous creatures. Your goal is to fill the trophy case with treasures.",
+    "win_condition": "All major treasures returned to trophy case",
+    "themes": ["exploration", "treasure hunting", "puzzle solving", "classic adventure"]
+  }
+}
