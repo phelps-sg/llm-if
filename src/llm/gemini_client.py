@@ -1812,6 +1812,13 @@ CURRENT GAME STATE (after action was processed):
 Location: {location.get('name', 'Unknown')}
 Location details: {location.get('attributes', {})}
 
+⏰ CURRENT TIME: {context.get('game_time', 'Unknown')}
+CRITICAL: Use this EXACT time when describing lighting/time-of-day in your narrative!
+- If time says "Afternoon" or "2:00 PM" → describe AFTERNOON/DAYTIME lighting
+- If time says "Evening" or "6:00 PM" → describe EVENING/DUSK lighting
+- If time says "Night" or "Midnight" → describe NIGHTTIME/DARKNESS
+- DO NOT say "dawn" or "morning" unless the time explicitly says so!
+
 Items at this location (on the ground): {[item.get('name') for item in items] if items else 'none'}
 Item details: {items if items else 'none'}
 

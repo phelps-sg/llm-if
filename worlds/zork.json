@@ -567,6 +567,20 @@
         "treasure": true
       }
     },
+    "trophy_case": {
+      "id": "trophy_case",
+      "name": "Trophy Case",
+      "attributes": {
+        "description_hints": "large glass-fronted trophy case mounted on wall, ornate wooden frame, currently empty but designed to display treasures, has small brass placard reading 'Great Underground Empire Treasures'",
+        "type": "container",
+        "weight": 100,
+        "immovable": true,
+        "container": true,
+        "open": true,
+        "transparent": true,
+        "special": "primary goal location - place treasures here to score points"
+      }
+    },
     "oriental_rug": {
       "id": "oriental_rug",
       "name": "Oriental Rug",
@@ -657,6 +671,7 @@
   "item_locations": {
     "mailbox": "west_of_house",
     "leaflet": "west_of_house",
+    "trophy_case": "living_room",
     "brass_lantern": "living_room",
     "sword": "living_room",
     "oriental_rug": "living_room",
