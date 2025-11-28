@@ -85,11 +85,12 @@
       "id": "living_room",
       "name": "Living Room",
       "attributes": {
-        "description_hints": "living room with ornate oriental rug on floor, large trophy case on wall (empty now, meant for treasures), wooden door to east, stairway going up blocked by rubble",
+        "description_hints": "living room with ornate oriental rug on floor (concealing trap door beneath), large trophy case on wall (empty now, meant for treasures), wooden door to east, stairway going up blocked by rubble",
         "lighting": "dim",
         "is_outdoors": false,
         "has_windows": true,
-        "atmosphere": "once grand, now abandoned, treasure case awaits filling"
+        "atmosphere": "once grand, now abandoned, treasure case awaits filling",
+        "special": "rug can be moved to reveal trap door to cellar"
       },
       "connections": {
         "east": "kitchen",
@@ -566,11 +567,22 @@
         "treasure": true
       }
     },
+    "oriental_rug": {
+      "id": "oriental_rug",
+      "name": "Oriental Rug",
+      "attributes": {
+        "description_hints": "ornate oriental rug with intricate patterns, covers most of the living room floor, conceals trap door beneath",
+        "type": "furniture",
+        "weight": 20,
+        "immovable": false,
+        "special": "moving rug reveals trap door to cellar"
+      }
+    },
     "painting": {
       "id": "painting",
       "name": "Painting",
       "attributes": {
-        "description_hints": "ancient painting in ornate frame, priceless artwork, depicts forgotten scene",
+        "description_hints": "ancient painting of the Flathead royal family in ornate gilt frame, priceless artwork showing rulers of the Great Underground Empire in their finery",
         "type": "treasure",
         "weight": 3,
         "value": 700,
@@ -647,6 +659,7 @@
     "leaflet": "west_of_house",
     "brass_lantern": "living_room",
     "sword": "living_room",
+    "oriental_rug": "living_room",
     "rope": "kitchen",
     "jeweled_egg": "treasure_room",
     "brass_bell": "temple",
