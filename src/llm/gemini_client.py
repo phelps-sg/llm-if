@@ -1428,6 +1428,14 @@ Return JSON: {{"id": "...", "name": "...", "attributes": {{}}, "location": "..."
                     },
                     "narrative_response": {"type": "STRING", "nullable": True},
                     "requires_dice_roll": {"type": "BOOLEAN"},
+                    "dice_check": {
+                        "type": "OBJECT",
+                        "properties": {},
+                        "additionalProperties": True,
+                        "nullable": True,
+                    },
+                    "time_advancement": {"type": "STRING", "nullable": True},
+                    "new_time": {"type": "STRING", "nullable": True},
                 },
                 "required": [
                     "intent",
