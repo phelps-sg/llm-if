@@ -386,12 +386,47 @@ class GameState(BaseModel):
 
     @classmethod
     def from_file(cls, filepath: str) -> "GameState":
-        """Load game state from JSON file."""
+        """Load game state from JSON file with puzzle system support."""
         import json
 
         with open(filepath, "r") as f:
             data = json.load(f)
-        return cls.from_dict(data)
+
+        # Extract puzzles before creating GameState
+        puzzles_data = data.pop("puzzles", {})
+
+        # Create GameState from remaining data
+        game_state = cls.from_dict(data)
+
+        # Load puzzles into dm_state
+        if puzzles_data:
+            game_state.dm_state["puzzles"] = {}
+            for puzzle_id, puzzle_def in puzzles_data.items():
+                game_state.dm_state["puzzles"][puzzle_id] = {
+                    **puzzle_def,
+                    "solved": False,
+                    "failed_attempts": 0,
+                    "hints_given": [],
+                    "current_state": "locked"
+                }
+
+            # Block exits for unsolved puzzles
+            game_state.dm_state["blocked_exits"] = {}
+            for location_id, location in game_state.locations.items():
+                exit_blocked = location.attributes.get("exit_blocked", {})
+                for direction, puzzle_id in exit_blocked.items():
+                    if direction in location.connections:
+                        blocked_key = f"{location_id}_{direction}"
+                        game_state.dm_state["blocked_exits"][blocked_key] = {
+                            "from_location": location_id,
+                            "direction": direction,
+                            "to_location": location.connections[direction],
+                            "puzzle_id": puzzle_id
+                        }
+                        # Remove connection (blocks movement)
+                        del location.connections[direction]
+
+        return game_state
 
     def to_file(self, filepath: str) -> None:
         """Save game state to JSON file."""

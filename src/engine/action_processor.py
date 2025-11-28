@@ -284,6 +284,11 @@ class ActionProcessor:
                 if path:
                     self._set_nested_dm_state(game_state, path, value)
 
+                    # Check if puzzle was solved
+                    if path.endswith(".solved") and value == True:
+                        puzzle_id = path.split(".")[1]
+                        self._handle_puzzle_solved(game_state, puzzle_id)
+
             elif update_type == "no_change":
                 # Narrative-only action, no state change
                 pass
@@ -575,6 +580,28 @@ class ActionProcessor:
         # Set the final value
         if len(parts) > 0:
             current[parts[-1]] = value
+
+    def _handle_puzzle_solved(self, game_state: GameState, puzzle_id: str) -> None:
+        """Restore exits blocked by solved puzzle.
+
+        Args:
+            game_state: Current game state
+            puzzle_id: ID of puzzle that was solved
+        """
+        blocked_exits = game_state.dm_state.get("blocked_exits", {})
+
+        # Find and restore exits blocked by this puzzle
+        for blocked_key, blocked_data in list(blocked_exits.items()):
+            if blocked_data["puzzle_id"] == puzzle_id:
+                from_loc = blocked_data["from_location"]
+                direction = blocked_data["direction"]
+                to_loc = blocked_data["to_location"]
+
+                # Restore the connection
+                if from_loc in game_state.locations:
+                    game_state.locations[from_loc].connections[direction] = to_loc
+                    del blocked_exits[blocked_key]
+                    print(f"[PUZZLE] Exit '{direction}' from '{from_loc}' restored ('{puzzle_id}' solved)")
 
     def process_action(
         self, action: Dict[str, Any], game_state: GameState

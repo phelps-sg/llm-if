@@ -138,7 +138,10 @@
         "is_outdoors": true,
         "has_windows": false,
         "atmosphere": "mysterious entrance to below",
-        "special": "grating can be unlocked and opened"
+        "special": "grating can be unlocked and opened",
+        "exit_blocked": {
+          "down": "grating_puzzle"
+        }
       },
       "connections": {
         "north": "clearing",
@@ -642,6 +645,16 @@
         "weight": 1,
         "uses": "dam controls, machinery"
       }
+    },
+    "brass_key": {
+      "id": "brass_key",
+      "name": "Brass Key",
+      "attributes": {
+        "description_hints": "small brass key with worn edges, looks like it might fit a lock",
+        "type": "key",
+        "weight": 0.1,
+        "unlocks": "grating_puzzle"
+      }
     }
   },
   "player": {
@@ -686,7 +699,8 @@
     "water": "stream_view",
     "garlic": "kitchen",
     "screwdriver": "maintenance_room",
-    "wrench": "maintenance_room"
+    "wrench": "maintenance_room",
+    "brass_key": "living_room"
   },
   "player_location": "west_of_house",
   "turn_count": 0,
@@ -702,5 +716,54 @@
     "description": "Explore the ruins of the Great Underground Empire, collect treasures, solve puzzles, and survive encounters with dangerous creatures. Your goal is to fill the trophy case with treasures.",
     "win_condition": "All major treasures returned to trophy case",
     "themes": ["exploration", "treasure hunting", "puzzle solving", "classic adventure"]
+  },
+  "puzzles": {
+    "grating_puzzle": {
+      "id": "grating_puzzle",
+      "type": "locked_exit",
+      "name": "Locked Grating",
+      "location": "grating_clearing",
+      "exit_direction": "down",
+      "description": "A heavy metal grating secured with a brass padlock blocks the way down",
+      "requirements": {
+        "type": "any_of",
+        "solutions": [
+          {
+            "type": "item_in_inventory",
+            "item_id": "brass_key",
+            "success_message": "The brass key turns smoothly in the lock. Click! The padlock opens and you lift the grating.",
+            "action_verbs": ["unlock", "open", "use key", "unlock grating", "open grating"]
+          },
+          {
+            "type": "item_with_attribute",
+            "attribute_check": "type == 'tool' AND (name contains 'wrench' OR name contains 'screwdriver')",
+            "success_message": "You pry at the lock with the tool. After some effort, the lock breaks free!",
+            "action_verbs": ["break", "pry", "force", "smash", "break lock", "pry open"],
+            "requires_strength": true
+          }
+        ]
+      },
+      "hints": {
+        "subtle": "The grating is locked with a brass padlock. You'll need the right key or perhaps a tool to force it open.",
+        "moderate": "You need either a brass key to unlock it properly, or a heavy tool to break the lock.",
+        "explicit": "Try: 'unlock grating with brass key' if you have the key, or 'break lock with wrench' if you have tools."
+      },
+      "hint_threshold": {
+        "moderate": 2,
+        "explicit": 4
+      },
+      "deus_ex_machina_prevention": {
+        "blocked_actions": [
+          "teleport past",
+          "phase through",
+          "wish to other side",
+          "create key",
+          "magic open",
+          "blast open",
+          "teleport down"
+        ],
+        "rejection_message": "The grating is firmly locked and secured with ancient wards. You'll need a proper solution - either the key or a tool to force it."
+      }
+    }
   }
 }

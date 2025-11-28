@@ -2240,6 +2240,100 @@ EXAMPLES:
 - Transform NPC: {{"type": "modify_attribute", "target": "deer", "params": {{"attribute_path": "attributes.creature_type", "value": "undead"}}}}
 """
 
+    def _build_puzzle_context(self, context: Dict[str, Any]) -> str:
+        """Build puzzle validation context for DM prompt.
+
+        Provides information about active puzzles at the current location,
+        including valid solutions, blocked actions, and progressive hints.
+        """
+        location_id = context.get("player_location")
+        dm_state = context.get("dm_state", {})
+        puzzles = dm_state.get("puzzles", {})
+
+        # Find unsolved puzzles at current location
+        location_puzzles = [
+            p for p in puzzles.values()
+            if p.get("location") == location_id and not p.get("solved")
+        ]
+
+        if not location_puzzles:
+            return ""
+
+        lines = []
+        for puzzle in location_puzzles:
+            lines.append(f"\n🧩 ACTIVE PUZZLE: {puzzle['name']}")
+            lines.append(f"   Type: {puzzle['type']}")
+            lines.append(f"   Blocks exit: {puzzle.get('exit_direction', 'N/A')}")
+            lines.append(f"   Failed attempts: {puzzle.get('failed_attempts', 0)}")
+
+            lines.append(f"\n   ✅ VALID SOLUTIONS (player must match ONE of these):")
+            requirements = puzzle.get("requirements", {})
+            solutions = requirements.get("solutions", [])
+
+            for i, sol in enumerate(solutions, 1):
+                sol_type = sol.get("type")
+                action_verbs = sol.get("action_verbs", [])
+
+                if sol_type == "item_in_inventory":
+                    item_id = sol.get("item_id")
+                    item_name = context.get("items", {}).get(item_id, {}).get("name", item_id)
+                    lines.append(f"   {i}. Player has '{item_name}' (ID: {item_id}) in inventory")
+                    lines.append(f"      Accepted verbs: {', '.join(action_verbs)}")
+                    lines.append(f"      Success message: \"{sol.get('success_message', '')}\"")
+
+                elif sol_type == "item_with_attribute":
+                    attr_check = sol.get("attribute_check")
+                    lines.append(f"   {i}. Player has item matching: {attr_check}")
+                    lines.append(f"      Accepted verbs: {', '.join(action_verbs)}")
+                    lines.append(f"      Success message: \"{sol.get('success_message', '')}\"")
+
+                elif sol_type == "npc_ability":
+                    npc_attr = sol.get("npc_attribute")
+                    lines.append(f"   {i}. NPC present with attribute '{npc_attr}' = true")
+                    lines.append(f"      Accepted verbs: {', '.join(action_verbs)}")
+                    lines.append(f"      Success message: \"{sol.get('success_message', '')}\"")
+                    if sol.get("consumes_resource"):
+                        lines.append(f"      WARNING: Consumes resource: {sol['consumes_resource']}")
+
+            # Show blocked actions
+            blocked = puzzle.get("deus_ex_machina_prevention", {})
+            blocked_actions = blocked.get("blocked_actions", [])
+            if blocked_actions:
+                lines.append(f"\n   ❌ BLOCKED ACTIONS (always reject these):")
+                for action in blocked_actions:
+                    lines.append(f"      - {action}")
+                rejection_msg = blocked.get("rejection_message", "That won't work.")
+                lines.append(f"   Rejection message: \"{rejection_msg}\"")
+
+            # Progressive hints
+            failed_attempts = puzzle.get("failed_attempts", 0)
+            hint_threshold = puzzle.get("hint_threshold", {})
+            hints = puzzle.get("hints", {})
+
+            lines.append(f"\n   💡 HINT SYSTEM:")
+            if failed_attempts >= hint_threshold.get("explicit", 999):
+                lines.append(f"   Level: EXPLICIT (failed {failed_attempts} times)")
+                lines.append(f"   Hint: \"{hints.get('explicit', '')}\"")
+            elif failed_attempts >= hint_threshold.get("moderate", 999):
+                lines.append(f"   Level: MODERATE (failed {failed_attempts} times)")
+                lines.append(f"   Hint: \"{hints.get('moderate', '')}\"")
+            else:
+                lines.append(f"   Level: SUBTLE (failed {failed_attempts} times)")
+                lines.append(f"   Hint: \"{hints.get('subtle', '')}\"")
+
+            lines.append(f"\n   🎯 ON VALID SOLUTION:")
+            lines.append(f"      - Set is_valid = true")
+            lines.append(f"      - Use success_message in narrative")
+            lines.append(f"      - Add state update: {{\"type\": \"update_dm_state\", \"params\": {{\"path\": \"puzzles.{puzzle['id']}.solved\", \"value\": true}}}}")
+            lines.append(f"      - Exit will be automatically restored by engine")
+
+            lines.append(f"\n   ❌ ON INVALID ATTEMPT:")
+            lines.append(f"      - Set is_valid = false")
+            lines.append(f"      - Provide narrative with current hint level")
+            lines.append(f"      - Increment: {{\"type\": \"update_dm_state\", \"params\": {{\"path\": \"puzzles.{puzzle['id']}.failed_attempts\", \"value\": {failed_attempts + 1}}}}}")
+
+        return "\n".join(lines)
+
     def _build_action_interpretation_prompt(
         self, player_input: str, context: Dict[str, Any]
     ) -> str:
@@ -2403,6 +2497,7 @@ Common mistakes to avoid:
 If narrative says player is blinded/injured/changed, MUST include modify_attribute on player!
 
 {self._build_plot_instructions(context)}
+{self._build_puzzle_context(context)}
 
 PLAYER ACTION: "{player_input}"
 
@@ -2575,6 +2670,32 @@ Example 6 - Validate Locked Doors:
   ❌ WRONG: Allow movement through locked door
   ✅ RIGHT: Set is_valid=false, explain "The heavy wooden door to the north is locked. You'd need a key to open it."
   Principle: Respect world constraints (locked doors, blocked paths, etc.)
+
+Example 7 - Validate Puzzle Solutions (Active Puzzle Present):
+  Player: "unlock grating with brass key"
+  Current State: player.inventory = ["brass_key"], active puzzle allows item_in_inventory with item_id="brass_key"
+  Active Puzzle: grating_puzzle (blocks "down" exit)
+  ✅ RIGHT:
+    - is_valid = true
+    - narrative_response: "The brass key turns smoothly in the lock. Click! The padlock opens and you lift the grating."
+    - state_updates: [
+        {{"type": "update_dm_state", "params": {{"path": "puzzles.grating_puzzle.solved", "value": true}}}}
+      ]
+  Principle: When player action matches ANY valid puzzle solution, mark puzzle as solved. Engine will restore exits automatically.
+
+Example 8 - Reject Deus Ex Machina (Active Puzzle Present):
+  Player: "wish to teleport past grating"
+  Current State: active puzzle blocks ["teleport past", "wish to other side", ...]
+  Active Puzzle: grating_puzzle with deus_ex_machina_prevention
+  ❌ WRONG: Allow teleportation or magical bypass without proper solution
+  ✅ RIGHT:
+    - is_valid = false
+    - narrative_response: "The grating is firmly locked and secured with ancient wards. You'll need a proper solution - either the key or a tool to force it."
+    - state_updates: [
+        {{"type": "no_change"}},
+        {{"type": "update_dm_state", "params": {{"path": "puzzles.grating_puzzle.failed_attempts", "value": 1}}}}
+      ]
+  Principle: Enforce puzzle constraints. Blocked actions must be rejected even if they seem creative. Increment failed_attempts for progressive hints.
 
 🔑 WHEN TO SET is_valid=false:
 - Movement to non-existent exit (ALWAYS check exits list first!)
