@@ -1587,13 +1587,15 @@ Return JSON: {{"id": "...", "name": "...", "attributes": {{}}, "location": "..."
 Location: {location.get('name', 'Unknown')}
 Attributes: {location.get('attributes', {})}
 
-⏰ CURRENT TIME: {player_context.get('game_time') if player_context else 'Unknown'}
-CRITICAL: Use this EXACT time when describing lighting/time-of-day in your description!
-- If time says "Afternoon" or "2:00 PM" → describe AFTERNOON/DAYTIME lighting (bright sun)
-- If time says "Evening" or "5:00 PM" or "6:00 PM" → describe EVENING/DUSK lighting (fading sun, long shadows)
-- If time says "Night" or "Midnight" or "10:00 PM" → describe NIGHTTIME/DARKNESS (moon/stars)
-- If time says "Morning" or "8:00 AM" → describe MORNING lighting (rising sun)
-- DO NOT say "dawn" unless the time explicitly says "Dawn"!
+⏰ CURRENT TIME (for lighting only): {player_context.get('game_time') if player_context else 'Unknown'}
+CRITICAL: Use time to DETERMINE LIGHTING, but DO NOT MENTION THE TIME in your description!
+- If time says "Afternoon" or "2:00 PM" → describe AFTERNOON/DAYTIME lighting (bright sun, warm light)
+- If time says "Evening" or "5:00 PM" or "6:00 PM" → describe EVENING/DUSK lighting (fading sun, long shadows, golden hour)
+- If time says "Night" or "Midnight" or "10:00 PM" → describe NIGHTTIME/DARKNESS (moon/stars, darkness)
+- If time says "Morning" or "8:00 AM" → describe MORNING lighting (rising sun, fresh light)
+- DO NOT include clock times like "at 5:15 PM" or "at 2:00 PM" in the description!
+- Players only know exact time if they have a watch/clock/sundial AND explicitly ask for it
+- Focus on lighting EFFECTS (shadows, brightness, color of light), not the time itself
 
 """
 
@@ -1825,12 +1827,15 @@ CURRENT GAME STATE (after action was processed):
 Location: {location.get('name', 'Unknown')}
 Location details: {location.get('attributes', {})}
 
-⏰ CURRENT TIME: {context.get('game_time', 'Unknown')}
-CRITICAL: Use this EXACT time when describing lighting/time-of-day in your narrative!
-- If time says "Afternoon" or "2:00 PM" → describe AFTERNOON/DAYTIME lighting
-- If time says "Evening" or "6:00 PM" → describe EVENING/DUSK lighting
-- If time says "Night" or "Midnight" → describe NIGHTTIME/DARKNESS
-- DO NOT say "dawn" or "morning" unless the time explicitly says so!
+⏰ CURRENT TIME (for lighting only): {context.get('game_time', 'Unknown')}
+CRITICAL: Use time to DETERMINE LIGHTING, but DO NOT MENTION THE TIME in your narrative!
+- If time says "Afternoon" or "2:00 PM" → describe AFTERNOON/DAYTIME lighting (bright sun, warm light)
+- If time says "Evening" or "5:00 PM" or "6:00 PM" → describe EVENING/DUSK lighting (fading sun, long shadows, golden hour)
+- If time says "Night" or "Midnight" or "10:00 PM" → describe NIGHTTIME/DARKNESS (moon/stars, darkness)
+- If time says "Morning" or "8:00 AM" → describe MORNING lighting (rising sun, fresh light)
+- DO NOT include clock times like "at 5:15 PM" or "at 2:00 PM" in the narrative!
+- Players only know exact time if they have a watch/clock/sundial AND explicitly ask "what time is it?"
+- Focus on lighting EFFECTS (shadows, brightness, color of light), not the time itself
 
 Items at this location (on the ground): {[item.get('name') for item in items] if items else 'none'}
 Item details: {items if items else 'none'}
