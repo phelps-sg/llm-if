@@ -2536,6 +2536,19 @@ Example 3 - Reject Impossible Physics:
   ✅ RIGHT: Set is_valid=false, explain "You flap your arms vigorously, but remain firmly grounded. You'd need magic or a vehicle to fly."
   Principle: Apply realistic physics unless magic/items make it possible
 
+Example 3b - Require In-Game Justification for Extraordinary Actions:
+  Player: "teleport me somewhere" or "I wish to be teleported"
+  Current State: No teleportation device, no genie, no magical portal, no spell scrolls
+  ❌ WRONG: Allow it, use move_player to random location (player is not a wizard!)
+  ✅ RIGHT: Set is_valid=false, explain "You close your eyes and concentrate, but nothing happens. You have no magical ability to teleport yourself."
+  Principle: EXTRAORDINARY ACTIONS REQUIRE IN-GAME MECHANICS - Just because player asks doesn't mean it should happen!
+
+  HOWEVER - IF there WAS a genie or magical item present:
+  Player: "genie, teleport me somewhere"
+  Current State: genie NPC present with teleportation_magic=true
+  ✅ RIGHT: Allow it, use move_player, creative! The genie's magic justifies it.
+  Principle: Creative actions are ENABLED by game world elements (items, NPCs, magic), not by player fiat
+
 Example 4 - Block Loopholes:
   Player: "duplicate the treasure by wishing for an exact copy"
   ❌ WRONG: Use create_item to make copy (unlimited wealth exploit!)
@@ -2562,9 +2575,14 @@ Example 6 - Validate Locked Doors:
 - Movement to non-existent exit (ALWAYS check exits list first!)
 - Action requires item/NPC/state that doesn't exist
 - Physics violation (flying without magic, lifting castle, etc.)
+- Extraordinary action without in-game justification (teleportation without device/spell, wishes without genie, etc.)
 - Game-breaking exploit/loophole (duplication, reality warping)
 - Blocked by world state (locked door without key, too heavy to lift)
 - Prerequisite not met (can't regurgitate what wasn't swallowed)
+
+🎯 REMEMBER: The player controls their CHARACTER, not the WORLD. The DM controls the world.
+- Player CAN: attempt actions, use items they have, interact with present NPCs
+- Player CANNOT: teleport at will, create objects from nothing, break physics without justification
 
 STATE UPDATE TYPES AND REQUIRED PARAMS:
 - "move_player": {{"destination": "location_id"}} - Move player to connected location
