@@ -95,12 +95,16 @@ class GameLoop:
                     cached_descriptions=cached_descriptions,
                 )
 
-                # Cache the generated description
+                # Cache the generated description with current state
                 self.game_state.cache_description(
                     "location",
                     location.id,
                     narrative,
-                    state_snapshot={"lighting": lighting.get("level"), "turn": self.game_state.turn_count}
+                    state_snapshot={
+                        "game_time": self.game_state.game_time,
+                        "lighting": lighting.get("level"),
+                        "turn": self.game_state.turn_count
+                    }
                 )
 
             # Check for dungeon exit (rogue mode only)
@@ -491,6 +495,7 @@ class GameLoop:
                 if item_id in self.game_state.items
             ],
             "attributes": self.game_state.player.attributes,
+            "game_time": self.game_state.game_time,  # Current in-game time
         }
 
         # Gather cached descriptions for consistency
@@ -509,12 +514,16 @@ class GameLoop:
 
         print(f"\n{description}")
 
-        # Cache the generated description
+        # Cache the generated description with current state
         self.game_state.cache_description(
             "location",
             location.id,
             description,
-            state_snapshot={"lighting": lighting.get("level"), "turn": self.game_state.turn_count}
+            state_snapshot={
+                "game_time": self.game_state.game_time,
+                "lighting": lighting.get("level"),
+                "turn": self.game_state.turn_count
+            }
         )
 
         # Show exits

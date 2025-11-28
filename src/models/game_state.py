@@ -325,17 +325,36 @@ class GameState(BaseModel):
         entity_type: str,
         entity_id: str
     ) -> Optional[Dict[str, Any]]:
-        """Get cached description for an entity if available.
+        """Get cached description for an entity if still valid.
+
+        Validates that relevant state hasn't changed before returning cached description.
+        For locations, checks if time/lighting has changed significantly.
 
         Args:
             entity_type: Type of entity ("location", "npc", or "item")
             entity_id: Unique identifier for the entity
 
         Returns:
-            Dict with description, turn, and state_snapshot, or None if not cached
+            Dict with description, turn, and state_snapshot, or None if not cached/invalid
         """
         cache_key = f"{entity_type}:{entity_id}"
-        return self.description_cache.get(cache_key)
+        cached = self.description_cache.get(cache_key)
+
+        if not cached:
+            return None
+
+        # For locations, check if time/lighting state has changed significantly
+        if entity_type == "location":
+            cached_state = cached.get("state_snapshot", {})
+            cached_time = cached_state.get("game_time", "")
+            current_time = self.game_time
+
+            # If time has changed, invalidate the cache
+            # (any time change might affect lighting descriptions)
+            if cached_time != current_time:
+                return None
+
+        return cached
 
     # Serialization
 

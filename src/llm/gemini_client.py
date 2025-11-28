@@ -1577,10 +1577,23 @@ Return JSON: {{"id": "...", "name": "...", "attributes": {{}}, "location": "..."
         cached_descriptions: Optional[Dict[str, Any]] = None,
     ) -> str:
         """Build prompt for location description."""
+        game_time = player_context.get("attributes", {}).get("game_time") if player_context else None
+        if not game_time and lighting_info:
+            # Try to get from lighting_info if not in player_context
+            game_time = "Unknown"
+
         prompt = f"""You are a Dungeon Master describing a location.
 
 Location: {location.get('name', 'Unknown')}
 Attributes: {location.get('attributes', {})}
+
+⏰ CURRENT TIME: {player_context.get('game_time') if player_context else 'Unknown'}
+CRITICAL: Use this EXACT time when describing lighting/time-of-day in your description!
+- If time says "Afternoon" or "2:00 PM" → describe AFTERNOON/DAYTIME lighting (bright sun)
+- If time says "Evening" or "5:00 PM" or "6:00 PM" → describe EVENING/DUSK lighting (fading sun, long shadows)
+- If time says "Night" or "Midnight" or "10:00 PM" → describe NIGHTTIME/DARKNESS (moon/stars)
+- If time says "Morning" or "8:00 AM" → describe MORNING lighting (rising sun)
+- DO NOT say "dawn" unless the time explicitly says "Dawn"!
 
 """
 
