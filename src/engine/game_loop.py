@@ -103,6 +103,14 @@ class GameLoop:
                     state_snapshot={"lighting": lighting.get("level"), "turn": self.game_state.turn_count}
                 )
 
+            # Check for dungeon exit (rogue mode only)
+            if is_movement and self.game_state.rogue_config and self.game_state.rogue_config.get("enabled"):
+                current_location = self.game_state.get_player_location()
+                if current_location and current_location.attributes.get("is_dungeon_exit"):
+                    # In single-step mode, we can't show the interactive transition
+                    # Just append a note to the narrative
+                    narrative += "\n\n[You've reached the exit to the next level!]"
+
         # Gather current state
         location = self.game_state.get_player_location()
         exits = location.get_available_exits() if location else []
@@ -397,6 +405,12 @@ class GameLoop:
         if any(update.get("type") == "move_player" for update in state_updates):
             print()
             self._show_location()
+
+            # Check for dungeon exit (rogue mode only)
+            if self.game_state.rogue_config and self.game_state.rogue_config.get("enabled"):
+                current_location = self.game_state.get_player_location()
+                if current_location and current_location.attributes.get("is_dungeon_exit"):
+                    self._handle_level_transition()
 
         # Process NPC turns (aggressive NPCs attack, chase fleeing player)
         player_moved = any(update.get("type") == "move_player" for update in state_updates)
@@ -855,3 +869,104 @@ You can also type natural language commands and the AI will interpret them.
             }
 
         return context
+
+    def _handle_level_transition(self) -> None:
+        """Handle transition to next dungeon level in rogue mode.
+
+        Generates the next level, applies it to game state, and moves player to entry.
+        """
+        from ..models.location import Location
+        from ..models.npc import NPC
+        from ..models.item import Item
+
+        current_level = self.game_state.rogue_config["current_level"]
+        next_level = current_level + 1
+
+        print("\n" + "=" * 60)
+        print(f"🎊 LEVEL {current_level} COMPLETE!")
+        print("=" * 60)
+        print(f"\nDescending deeper into the dungeon...")
+        print(f"Generating Level {next_level}...")
+
+        # Generate next level
+        genre = self.game_state.rogue_config.get("genre", "dark fantasy")
+        plot = self.game_state.rogue_config.get("plot")
+        specifics = self.game_state.rogue_config.get("specifics")
+
+        # Increase difficulty with each level
+        difficulty_modifier = 1.0 + (next_level - 1) * 0.2
+
+        level_data = self.gemini.generate_dungeon_level(
+            level_number=next_level,
+            genre=genre,
+            plot=plot,
+            specifics=specifics,
+            difficulty_modifier=difficulty_modifier,
+        )
+
+        # Apply generated level to game state
+        # Add locations
+        for loc_data in level_data["locations"]:
+            location = Location(
+                id=loc_data["id"],
+                name=loc_data["name"],
+                attributes=loc_data.get("attributes", {}),
+                connections=loc_data.get("connections", {}),
+            )
+            self.game_state.locations[location.id] = location
+
+        # Add NPCs
+        for npc_data in level_data.get("npcs", []):
+            npc = NPC(
+                id=npc_data["id"],
+                name=npc_data["name"],
+                attributes=npc_data.get("attributes", {}),
+            )
+            self.game_state.npcs[npc.id] = npc
+
+        # Add items
+        for item_data in level_data.get("items", []):
+            item = Item(
+                id=item_data["id"],
+                name=item_data["name"],
+                attributes=item_data.get("attributes", {}),
+            )
+            self.game_state.items[item.id] = item
+
+        # Set locations
+        self.game_state.npc_locations.update(level_data.get("npc_locations", {}))
+        self.game_state.item_locations.update(level_data.get("item_locations", {}))
+
+        # Track metadata in rogue_config
+        if "level_metadata" not in self.game_state.rogue_config:
+            self.game_state.rogue_config["level_metadata"] = {}
+
+        self.game_state.rogue_config["level_metadata"][str(next_level)] = {
+            "entry_location_id": level_data["entry_location_id"],
+            "exit_location_id": level_data["exit_location_id"],
+            "generated_locations": [loc["id"] for loc in level_data["locations"]],
+            "generated_npcs": [npc["id"] for npc in level_data.get("npcs", [])],
+            "generated_items": [item["id"] for item in level_data.get("items", [])],
+            "theme": level_data.get("theme", "unknown"),
+            "difficulty": next_level,
+        }
+
+        # Update current level
+        self.game_state.rogue_config["current_level"] = next_level
+
+        # Move player to entry location
+        self.game_state.player_location = level_data["entry_location_id"]
+
+        # Show level generation summary
+        print(f"\n✓ Level {next_level} generated!")
+        print(f"  Theme: {level_data['theme']}")
+        print(f"  Locations: {len(level_data['locations'])}")
+        print(f"  NPCs: {len(level_data.get('npcs', []))}")
+        print(f"  Items: {len(level_data.get('items', []))}")
+        print(f"  Difficulty: {difficulty_modifier:.1f}x")
+        print("=" * 60)
+        print("\nYou find yourself in a new area...")
+
+        # Show the new location
+        print()
+        self._show_location()

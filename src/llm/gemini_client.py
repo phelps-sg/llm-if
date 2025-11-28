@@ -220,12 +220,14 @@ class GeminiClient:
         specifics: Optional[str] = None,
         difficulty_modifier: float = 1.0
     ) -> Dict[str, Any]:
-        """Generate complete dungeon level using incremental LLM calls.
+        """Generate complete dungeon level using iterative LLM calls with validation.
 
-        Uses 3-step generation:
-        1. Structure (locations, connections, theme)
-        2. NPCs (entities with stats)
-        3. Items (objects with attributes)
+        Uses iterative generation (8-11 LLM calls):
+        1. Theme generation (1 call)
+        2. Locations iteratively (4-5 calls: entry → middle × 2-3 → exit)
+        3. NPCs iteratively (1-2 calls, each aware of locations)
+        4. Items iteratively (2-3 calls, each aware of locations + NPCs)
+        5. Validation & programmatic repairs (reachability, light source)
 
         Descriptions generated on-demand when player visits locations.
 
@@ -237,35 +239,152 @@ class GeminiClient:
             difficulty_modifier: Multiplier for difficulty scaling
 
         Returns:
-            Dict containing complete level data
+            Dict containing complete level data with validated reachability
         """
-        print(f"  [1/3] Generating level structure...")
-        structure = self._generate_level_structure(
-            level_number, genre, plot, specifics
-        )
+        import random
 
-        print(f"  [2/3] Generating NPCs...")
-        npcs_data = self._generate_level_npcs(
-            level_number, genre, structure["theme"],
-            structure["location_ids"], difficulty_modifier
-        )
+        # Pre-determine counts for accurate step tracking
+        num_middle = random.randint(2, 3)
+        num_npcs = random.randint(1, 2)
+        num_items = 3  # weapon, consumable, treasure/tool
+        total_steps = 4 + num_middle + num_npcs + num_items  # theme + entry + middle + exit + npcs + items + validation
 
-        print(f"  [3/3] Generating items...")
-        items_data = self._generate_level_items(
-            level_number, genre, structure["theme"],
-            structure["location_ids"]
-        )
+        # Step 1: Generate theme (1 call)
+        step_num = 1
+        print(f"  [{step_num}/{total_steps}] Generating level theme...")
+        theme = self._generate_level_theme(level_number, genre, plot, specifics)
+        print(f"    Theme: {theme}")
 
-        # Combine all parts
+        # Step 2: Generate locations iteratively (4-5 calls)
+        locations = []
+        existing_state = {"locations": [], "theme": theme, "genre": genre}
+
+        # Entry location
+        step_num += 1
+        print(f"  [{step_num}/{total_steps}] Generating entry location...")
+        entry = self._generate_single_location(
+            level_number, genre, theme, "entry", existing_state, plot, specifics
+        )
+        locations.append(entry)
+        existing_state["locations"].append({
+            "id": entry["id"],
+            "name": entry["name"],
+            "connections": entry["connections"]
+        })
+        entry_id = entry["id"]
+
+        # Middle locations (2-3)
+        for i in range(num_middle):
+            step_num += 1
+            print(f"  [{step_num}/{total_steps}] Generating middle location {i+1}/{num_middle}...")
+            middle = self._generate_single_location(
+                level_number, genre, theme, "middle", existing_state, plot, specifics
+            )
+            locations.append(middle)
+            existing_state["locations"].append({
+                "id": middle["id"],
+                "name": middle["name"],
+                "connections": middle["connections"]
+            })
+
+        # Exit location
+        step_num += 1
+        print(f"  [{step_num}/{total_steps}] Generating exit location...")
+        exit_loc = self._generate_single_location(
+            level_number, genre, theme, "exit", existing_state, plot, specifics
+        )
+        locations.append(exit_loc)
+        existing_state["locations"].append({
+            "id": exit_loc["id"],
+            "name": exit_loc["name"],
+            "connections": exit_loc["connections"]
+        })
+        exit_id = exit_loc["id"]
+
+        # Step 3: Generate NPCs iteratively (1-2 calls)
+        npcs = []
+        npc_locations = {}
+        existing_state["npcs"] = []
+
+        for i in range(num_npcs):
+            step_num += 1
+            print(f"  [{step_num}/{total_steps}] Generating NPC {i+1}/{num_npcs}...")
+            npc = self._generate_single_npc(
+                level_number, genre, theme, existing_state, difficulty_modifier
+            )
+            npcs.append({
+                "id": npc["id"],
+                "name": npc["name"],
+                "attributes": npc["attributes"]
+            })
+            npc_locations[npc["id"]] = npc["location"]
+            existing_state["npcs"].append({
+                "id": npc["id"],
+                "name": npc["name"],
+                "location": npc["location"]
+            })
+
+        # Step 4: Generate items iteratively (2-3 calls)
+        items = []
+        item_locations = {}
+        existing_state["items"] = []
+
+        # Generate variety: weapon, consumable, treasure/tool
+        item_type_hints = ["weapon", "consumable", random.choice(["treasure", "tool"])]
+        for i, item_type_hint in enumerate(item_type_hints):
+            step_num += 1
+            print(f"  [{step_num}/{total_steps}] Generating item {i+1}/{num_items} ({item_type_hint})...")
+            item = self._generate_single_item(
+                level_number, genre, theme, existing_state, item_type_hint
+            )
+            items.append({
+                "id": item["id"],
+                "name": item["name"],
+                "attributes": item["attributes"]
+            })
+            item_locations[item["id"]] = item["location"]
+            existing_state["items"].append({
+                "id": item["id"],
+                "name": item["name"],
+                "type": item["attributes"].get("type", "unknown")
+            })
+
+        # Step 5: Validate & Repair
+        step_num += 1
+        print(f"  [{step_num}/{total_steps}] Validating and repairing dungeon...")
+
+        # Validate reachability
+        reachability = self._validate_reachability(locations, entry_id)
+        if not reachability["is_valid"]:
+            print(f"    [VALIDATION] Found {len(reachability['unreachable'])} unreachable locations")
+            locations = self._repair_unreachable_locations(
+                locations, reachability["reachable"], reachability["unreachable"]
+            )
+            print(f"    [REPAIR] All locations now reachable")
+        else:
+            print(f"    [VALIDATION] All locations reachable ✓")
+
+        # Validate light source
+        light_check = self._validate_light_source(items, item_locations, entry_id, [])
+        if not light_check["is_valid"]:
+            print(f"    [VALIDATION] No light source at entry location")
+            items, item_locations = self._repair_missing_light(
+                items, item_locations, entry_id, level_number, genre, theme
+            )
+            print(f"    [REPAIR] Added light source at entry ✓")
+        else:
+            print(f"    [VALIDATION] Light source available at entry ✓")
+
+        # Return complete level data
         return {
-            "locations": structure["locations"],
-            "npcs": npcs_data["npcs"],
-            "items": items_data["items"],
-            "npc_locations": npcs_data["npc_locations"],
-            "item_locations": items_data["item_locations"],
-            "entry_location_id": structure["entry_location_id"],
-            "exit_location_id": structure["exit_location_id"],
-            "theme": structure["theme"]
+            "locations": locations,
+            "npcs": npcs,
+            "items": items,
+            "npc_locations": npc_locations,
+            "item_locations": item_locations,
+            "entry_location_id": entry_id,
+            "exit_location_id": exit_id,
+            "theme": theme
         }
 
     def _generate_level_structure(
@@ -296,24 +415,51 @@ Create 3-4 interconnected locations with connections. DO NOT generate descriptio
 
 Requirements:
 1. Generate 3-4 locations (keep it small and manageable)
-2. Each location: ID, name, connections, minimal attributes
+2. Each location MUST have:
+   - id: "l{level_number}_<name>" (e.g., "l{level_number}_crypt")
+   - name: Descriptive location name
+   - connections: OBJECT with direction keys ("north", "south", "east", "west") mapping to location IDs
+   - attributes: OBJECT with at least "description_hints" (brief hints for AI descriptions) and "lighting" ("bright", "dim", or "dark")
 3. One must be ENTRY (where player arrives)
-4. One must be EXIT (leads to next level, has is_dungeon_exit: true)
+4. One must be EXIT (leads to next level)
 5. Create cohesive theme for the level
-6. Use ID pattern: "l{level_number}_<name>" (e.g., "l{level_number}_crypt")
+6. Ensure locations form a connected graph (player can reach all locations)
+
+The EXIT location MUST have these attributes:
+- is_dungeon_exit: true
+- leads_to_level: {level_number + 1}
+- description_hints: something like "passage leading deeper"
+
+Example location:
+{{
+  "id": "l1_chamber",
+  "name": "Stone Chamber",
+  "connections": {{"north": "l1_hallway", "east": "l1_crypt"}},
+  "attributes": {{"description_hints": "ancient stone walls, dusty", "lighting": "dim"}}
+}}
 
 Return JSON with:
-- locations: Array of {{"id": string, "name": string, "connections": {{}}, "attributes": {{}} }}
+- locations: Array of location objects (each with id, name, connections OBJECT, attributes OBJECT)
 - entry_location_id: ID string
 - exit_location_id: ID string
-- theme: Theme description string
-
-EXIT location MUST have: attributes.is_dungeon_exit = true, attributes.leads_to_level = {level_number + 1}"""
+- theme: Theme description string"""
 
         schema = {
             "type": "OBJECT",
             "properties": {
-                "locations": {"type": "ARRAY"},
+                "locations": {
+                    "type": "ARRAY",
+                    "items": {
+                        "type": "OBJECT",
+                        "properties": {
+                            "id": {"type": "STRING"},
+                            "name": {"type": "STRING"},
+                            "connections": {"type": "OBJECT"},
+                            "attributes": {"type": "OBJECT"}
+                        },
+                        "required": ["id", "name", "connections", "attributes"]
+                    }
+                },
                 "entry_location_id": {"type": "STRING"},
                 "exit_location_id": {"type": "STRING"},
                 "theme": {"type": "STRING"}
@@ -365,23 +511,54 @@ NPC Stats (scale to level {level_number}):
 - AC: {ac - 1} to {ac + 1}
 - Attack bonus: +{max(2, level_number + 1)}
 
-Each NPC must have:
+Each NPC MUST have:
 - id: "npc{level_number}_<name>_1" (e.g., "npc{level_number}_skeleton_1")
 - name: Thematic to {genre}
-- attributes: hp, hp_max, armor_class, attack_bonus, hostility, creature_type, description_hints
+- attributes: OBJECT containing ALL of these fields:
+  - hp: current hit points (number)
+  - hp_max: maximum hit points (number)
+  - armor_class: AC value (number)
+  - attack_bonus: attack modifier (number)
+  - hostility: "aggressive" (60% chance), "neutral" (30%), or "passive" (10%)
+  - creature_type: "beast", "undead", "humanoid", etc.
+  - description_hints: brief physical description for AI
 
-Hostility: "aggressive" (60% chance), "neutral" (30%), or "passive" (10%)
+Example NPC:
+{{
+  "id": "npc1_zombie_1",
+  "name": "Shambling Zombie",
+  "attributes": {{
+    "hp": 12,
+    "hp_max": 12,
+    "armor_class": 10,
+    "attack_bonus": 3,
+    "hostility": "aggressive",
+    "creature_type": "undead",
+    "description_hints": "rotting flesh, vacant eyes, slow movements"
+  }}
+}}
 
 Place NPCs at these locations: {location_ids}
 
 Return JSON:
-- npcs: Array of NPC objects
-- npc_locations: Object mapping NPC IDs to location IDs"""
+- npcs: Array of NPC objects (each with id, name, attributes OBJECT)
+- npc_locations: OBJECT mapping NPC IDs to location IDs (e.g., {{"npc1_zombie_1": "l1_crypt"}})"""
 
         schema = {
             "type": "OBJECT",
             "properties": {
-                "npcs": {"type": "ARRAY"},
+                "npcs": {
+                    "type": "ARRAY",
+                    "items": {
+                        "type": "OBJECT",
+                        "properties": {
+                            "id": {"type": "STRING"},
+                            "name": {"type": "STRING"},
+                            "attributes": {"type": "OBJECT"}
+                        },
+                        "required": ["id", "name", "attributes"]
+                    }
+                },
                 "npc_locations": {"type": "OBJECT"}
             },
             "required": ["npcs", "npc_locations"]
@@ -432,7 +609,18 @@ Return JSON:
         schema = {
             "type": "OBJECT",
             "properties": {
-                "items": {"type": "ARRAY"},
+                "items": {
+                    "type": "ARRAY",
+                    "items": {
+                        "type": "OBJECT",
+                        "properties": {
+                            "id": {"type": "STRING"},
+                            "name": {"type": "STRING"},
+                            "attributes": {"type": "OBJECT"}
+                        },
+                        "required": ["id", "name", "attributes"]
+                    }
+                },
                 "item_locations": {"type": "OBJECT"}
             },
             "required": ["items", "item_locations"]
@@ -442,6 +630,640 @@ Return JSON:
             response_mime_type="application/json",
             response_schema=schema,
             temperature=0.8
+        )
+
+        response = self.model.generate_content(prompt, generation_config=config)
+        return json.loads(response.text)
+
+    # ========================================================================
+    # ITERATIVE GENERATION METHODS (New approach with validation & repairs)
+    # ========================================================================
+
+    def _generate_level_theme(
+        self,
+        level_number: int,
+        genre: str,
+        plot: Optional[str],
+        specifics: Optional[str]
+    ) -> str:
+        """Generate a cohesive theme for the level.
+
+        Args:
+            level_number: Level depth
+            genre: Overall genre
+            plot: Optional plot guidance
+            specifics: Optional specific requests
+
+        Returns:
+            Theme string (e.g., "Abandoned Crypt", "Flooded Caverns")
+        """
+        from vertexai.generative_models import GenerationConfig
+        import json
+
+        plot_text = f"\nPlot: {plot}" if plot else ""
+        specifics_text = f"\nSpecifics: {specifics}" if specifics else ""
+
+        prompt = f"""Generate a cohesive THEME for Level {level_number} of a {genre} dungeon.{plot_text}{specifics_text}
+
+Return a brief theme description (2-4 words) that will guide the generation of locations, NPCs, and items.
+
+Examples:
+- "Flooded Catacombs"
+- "Ancient Dwarven Mine"
+- "Cursed Burial Chambers"
+- "Overgrown Temple Ruins"
+
+Return JSON: {{"theme": "Your Theme Here"}}
+"""
+
+        schema = {
+            "type": "OBJECT",
+            "properties": {
+                "theme": {"type": "STRING"}
+            },
+            "required": ["theme"]
+        }
+
+        config = GenerationConfig(
+            response_mime_type="application/json",
+            response_schema=schema,
+            temperature=0.9
+        )
+
+        response = self.model.generate_content(prompt, generation_config=config)
+        data = json.loads(response.text)
+
+        return data["theme"]
+
+    def _validate_reachability(
+        self,
+        locations: List[Dict],
+        entry_id: str
+    ) -> Dict[str, Any]:
+        """Validate all locations are reachable from entry using BFS.
+
+        Args:
+            locations: List of location dicts with id, connections
+            entry_id: ID of entry location
+
+        Returns:
+            Dict with:
+            - is_valid: bool
+            - reachable: set of reachable location IDs
+            - unreachable: set of unreachable location IDs
+        """
+        # Build adjacency graph
+        graph = {}
+        all_location_ids = set()
+
+        for loc in locations:
+            loc_id = loc["id"]
+            all_location_ids.add(loc_id)
+            graph[loc_id] = []
+
+            # Add connections (bidirectional assumed from generation)
+            for direction, dest_id in loc.get("connections", {}).items():
+                if dest_id:
+                    graph[loc_id].append(dest_id)
+
+        # BFS from entry
+        visited = set()
+        queue = [entry_id]
+
+        while queue:
+            current = queue.pop(0)
+            if current in visited:
+                continue
+
+            visited.add(current)
+
+            for neighbor in graph.get(current, []):
+                if neighbor not in visited:
+                    queue.append(neighbor)
+
+        unreachable = all_location_ids - visited
+
+        return {
+            "is_valid": len(unreachable) == 0,
+            "reachable": visited,
+            "unreachable": unreachable
+        }
+
+    def _validate_light_source(
+        self,
+        items: List[Dict],
+        item_locations: Dict[str, str],
+        entry_id: str,
+        player_inventory: List[str]
+    ) -> Dict[str, Any]:
+        """Validate player has access to light source at start.
+
+        Args:
+            items: List of item dicts
+            item_locations: Map of item_id -> location_id
+            entry_id: Entry location ID
+            player_inventory: Initial player inventory item IDs
+
+        Returns:
+            Dict with:
+            - is_valid: bool
+            - has_light: bool
+            - light_items_at_entry: list of item IDs
+            - light_items_in_inventory: list of item IDs
+        """
+        light_items_at_entry = []
+        light_items_in_inventory = []
+
+        for item in items:
+            item_id = item["id"]
+            attributes = item.get("attributes", {})
+
+            # Check if item provides light
+            provides_light = attributes.get("provides_light", False)
+            is_light_source = attributes.get("type") == "light_source"
+
+            if provides_light or is_light_source:
+                # Check if at entry or in player inventory
+                item_location = item_locations.get(item_id)
+
+                if item_location == entry_id:
+                    light_items_at_entry.append(item_id)
+                elif item_id in player_inventory:
+                    light_items_in_inventory.append(item_id)
+
+        has_light = len(light_items_at_entry) > 0 or len(light_items_in_inventory) > 0
+
+        return {
+            "is_valid": has_light,
+            "has_light": has_light,
+            "light_items_at_entry": light_items_at_entry,
+            "light_items_in_inventory": light_items_in_inventory
+        }
+
+    def _repair_unreachable_locations(
+        self,
+        locations: List[Dict],
+        reachable: set,
+        unreachable: set
+    ) -> List[Dict]:
+        """Add connections to make all locations reachable.
+
+        Strategy: For each unreachable location, connect to nearest reachable location.
+
+        Args:
+            locations: List of location dicts (will be modified in place)
+            reachable: Set of reachable location IDs
+            unreachable: Set of unreachable location IDs
+
+        Returns:
+            Modified locations list with repairs
+        """
+        # Build location dict for easy lookup
+        loc_dict = {loc["id"]: loc for loc in locations}
+
+        # Direction priorities (prefer cardinal directions)
+        direction_options = ["north", "south", "east", "west", "up", "down"]
+        reverse_directions = {
+            "north": "south",
+            "south": "north",
+            "east": "west",
+            "west": "east",
+            "up": "down",
+            "down": "up"
+        }
+
+        for unreachable_id in unreachable:
+            unreachable_loc = loc_dict[unreachable_id]
+
+            # Find first available direction on unreachable location
+            chosen_direction = None
+            for direction in direction_options:
+                if direction not in unreachable_loc.get("connections", {}):
+                    chosen_direction = direction
+                    break
+
+            if not chosen_direction:
+                # All directions used, pick first and override
+                chosen_direction = "north"
+
+            # Pick a reachable location to connect to (preferably entry or a central location)
+            # For simplicity, connect to first reachable location with available reverse direction
+            target_loc_id = None
+            target_direction = reverse_directions.get(chosen_direction)
+
+            for reachable_id in reachable:
+                reachable_loc = loc_dict[reachable_id]
+                if target_direction not in reachable_loc.get("connections", {}):
+                    target_loc_id = reachable_id
+                    break
+
+            if not target_loc_id:
+                # Fallback: just pick first reachable
+                target_loc_id = list(reachable)[0]
+                target_direction = "north"  # Override
+
+            # Add bidirectional connections
+            unreachable_loc["connections"][chosen_direction] = target_loc_id
+            loc_dict[target_loc_id]["connections"][target_direction] = unreachable_id
+
+            print(f"  [REPAIR] Connected {unreachable_id} ({chosen_direction}) <-> {target_loc_id} ({target_direction})")
+
+        return locations
+
+    def _repair_missing_light(
+        self,
+        items: List[Dict],
+        item_locations: Dict[str, str],
+        entry_id: str,
+        level_number: int,
+        genre: str,
+        theme: str
+    ) -> tuple[List[Dict], Dict[str, str]]:
+        """Add a light source at entry if none exists.
+
+        Uses LLM to generate a thematically appropriate light source.
+
+        Args:
+            items: List of item dicts
+            item_locations: Map of item_id -> location_id
+            entry_id: Entry location ID
+            level_number: Current level number
+            genre: Genre for thematic consistency
+            theme: Level theme for thematic consistency
+
+        Returns:
+            Tuple of (updated items list, updated item_locations dict)
+        """
+        from vertexai.generative_models import GenerationConfig
+        import json
+
+        prompt = f"""Generate a LIGHT SOURCE item for Level {level_number} ({genre} theme: {theme}).
+
+This light source will be placed at the dungeon entry to ensure the player can see.
+
+Requirements:
+1. Generate ONE light source item appropriate to {genre}:
+   - id: "item{level_number}_light_starter"
+   - name: Thematic light source name (e.g., "Worn Torch" for fantasy, "Flashlight" for sci-fi, "Glowing Crystal" for magic)
+   - attributes: OBJECT with:
+     * type: "light_source"
+     * provides_light: true
+     * light_radius: 10-15
+     * description_hints: brief description
+     * [optional] Can also function as improvised weapon: damage (e.g., "1d4"), damage_type
+
+Examples by genre:
+- Dark fantasy: worn torch, oil lantern, dying candle
+- Sci-fi: flashlight, emergency glow-stick, portable lamp
+- Magic: enchanted crystal, glowing orb, light spell focus
+- Horror: flickering candle, cracked lantern, dim flashlight
+
+Return JSON: {{"id": "item{level_number}_light_starter", "name": "...", "attributes": {{}}}}
+"""
+
+        schema = {
+            "type": "OBJECT",
+            "properties": {
+                "id": {"type": "STRING"},
+                "name": {"type": "STRING"},
+                "attributes": {"type": "OBJECT"}
+            },
+            "required": ["id", "name", "attributes"]
+        }
+
+        config = GenerationConfig(
+            response_mime_type="application/json",
+            response_schema=schema,
+            temperature=0.8
+        )
+
+        response = self.model.generate_content(prompt, generation_config=config)
+        light_item = json.loads(response.text)
+
+        items.append(light_item)
+        item_locations[light_item["id"]] = entry_id
+
+        print(f"  [REPAIR] Added light source '{light_item['name']}' ({light_item['id']}) at entry location '{entry_id}'")
+
+        return items, item_locations
+
+    def _generate_single_location(
+        self,
+        level_number: int,
+        genre: str,
+        theme: str,
+        location_type: str,  # "entry", "middle", "exit"
+        existing_state: Dict[str, Any],
+        plot: Optional[str] = None,
+        specifics: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """Generate a single location with context awareness.
+
+        Args:
+            level_number: Current dungeon level
+            genre: Genre/theme
+            theme: Specific theme for this level
+            location_type: "entry", "middle", or "exit"
+            existing_state: Current dungeon state (locations, connections)
+            plot: Optional plot guidance
+            specifics: Optional specific requests
+
+        Returns:
+            Dict with location data including id, name, connections, attributes
+        """
+        from vertexai.generative_models import GenerationConfig
+        import json
+
+        existing_locations_json = ""
+        if location_type != "entry" and existing_state.get("locations"):
+            existing_locations_json = f"\n\nEXISTING LOCATIONS (you must connect to at least one):\n{json.dumps(existing_state.get('locations', []), indent=2)}"
+
+        prompt = f"""Generate a SINGLE {location_type} location for Level {level_number} of a {genre} dungeon.
+Theme: {theme}{existing_locations_json}
+
+Requirements:
+1. Generate ONE location with:
+   - id: "l{level_number}_<name>" (e.g., "l{level_number}_crypt")
+   - name: Descriptive location name
+   - connections: OBJECT mapping directions to location IDs
+     {"* Entry location can have connections: {} (will be filled later by other locations)" if location_type == "entry" else "* MUST connect to at least ONE existing location above"}
+     * Use directions: north, south, east, west, up, down
+   - attributes: OBJECT with:
+     * description_hints: Brief hints for AI descriptions
+     * lighting: "bright", "dim", or "dark"
+     {"* is_dungeon_exit: true" if location_type == "exit" else ""}
+     {"* leads_to_level: " + str(level_number + 1) if location_type == "exit" else ""}
+
+2. Location Type Requirements:
+   - entry: Starting point{", no connections needed" if location_type == "entry" else ""}
+   - middle: Connects between entry and exit, adds exploration
+   - exit: Leads to next level, marked as dungeon exit
+
+Return JSON: {{"id": "...", "name": "...", "connections": {{}}, "attributes": {{}}}}
+"""
+
+        schema = {
+            "type": "OBJECT",
+            "properties": {
+                "id": {"type": "STRING"},
+                "name": {"type": "STRING"},
+                "connections": {"type": "OBJECT"},
+                "attributes": {"type": "OBJECT"}
+            },
+            "required": ["id", "name", "connections", "attributes"]
+        }
+
+        config = GenerationConfig(
+            response_mime_type="application/json",
+            response_schema=schema,
+            temperature=0.8
+        )
+
+        response = self.model.generate_content(prompt, generation_config=config)
+        return json.loads(response.text)
+
+    def _generate_single_npc(
+        self,
+        level_number: int,
+        genre: str,
+        theme: str,
+        existing_state: Dict[str, Any],
+        difficulty_modifier: float = 1.0,
+    ) -> Dict[str, Any]:
+        """Generate a single NPC with full dungeon context.
+
+        Args:
+            level_number: Current dungeon level
+            genre: Genre/theme (e.g., "dark fantasy", "sci-fi horror")
+            theme: Level theme (e.g., "Abandoned Crypt")
+            existing_state: Current dungeon state with locations and existing NPCs
+            difficulty_modifier: Multiplier for NPC stats
+
+        Returns:
+            Dict with:
+            - id: NPC ID
+            - name: NPC name
+            - attributes: NPC attributes (hp, ac, hostility, etc.)
+            - location: Location ID where NPC is placed
+        """
+        from vertexai.generative_models import GenerationConfig
+
+        # Calculate scaled stats based on level and difficulty
+        base_hp = 10 + (level_number * 5)
+        base_ac = 10 + level_number
+        base_attack = level_number + 2
+
+        hp_min = int(base_hp * difficulty_modifier * 0.8)
+        hp_max = int(base_hp * difficulty_modifier * 1.2)
+        ac_min = int(base_ac * difficulty_modifier * 0.9)
+        ac_max = int(base_ac * difficulty_modifier * 1.1)
+        attack_bonus = int(base_attack * difficulty_modifier)
+
+        # Format existing locations for prompt
+        existing_locations_summary = [
+            {"id": loc["id"], "name": loc["name"]}
+            for loc in existing_state.get("locations", [])
+        ]
+
+        # Format existing NPCs for variety
+        existing_npcs_summary = []
+        for npc in existing_state.get("npcs", []):
+            existing_npcs_summary.append({
+                "id": npc["id"],
+                "name": npc["name"],
+                "creature_type": npc.get("attributes", {}).get("creature_type", "unknown")
+            })
+
+        existing_npcs_json = ""
+        if existing_npcs_summary:
+            existing_npcs_json = f"\n\nEXISTING NPCs (for variety - generate a different type):\n{json.dumps(existing_npcs_summary, indent=2)}"
+
+        prompt = f"""Generate ONE NPC for Level {level_number} of a {genre} dungeon.
+Theme: {theme}
+
+EXISTING LOCATIONS (place NPC at one):
+{json.dumps(existing_locations_summary, indent=2)}{existing_npcs_json}
+
+NPC Stats (use values in these ranges):
+- HP: {hp_min}-{hp_max}
+- Armor Class: {ac_min}-{ac_max}
+- Attack bonus: +{attack_bonus}
+
+Requirements:
+1. Generate ONE NPC with:
+   - id: "npc{level_number}_<name>_<number>" (e.g., "npc{level_number}_goblin_1")
+   - name: Thematic to {genre} and {theme}
+   - attributes: OBJECT with:
+     * hp: number (current hit points, same as hp_max)
+     * hp_max: number (maximum hit points)
+     * armor_class: number (AC)
+     * attack_bonus: number (attack roll bonus)
+     * hostility: "aggressive" (60% chance), "neutral" (30%), or "passive" (10%)
+     * creature_type: "beast", "undead", "humanoid", "aberration", "construct", etc.
+     * description_hints: brief physical description (1-2 sentences)
+   - location: ONE of the existing location IDs above
+
+2. Creature Type Examples by Genre:
+   - Dark fantasy: undead, beast, humanoid bandits
+   - Sci-fi horror: aberration, alien, corrupted humanoid, construct
+   - Ancient ruins: construct, elemental, guardian
+   - Space opera: alien, robot, cyborg
+
+Return JSON: {{"id": "...", "name": "...", "attributes": {{}}, "location": "..."}}
+"""
+
+        schema = {
+            "type": "OBJECT",
+            "properties": {
+                "id": {"type": "STRING"},
+                "name": {"type": "STRING"},
+                "attributes": {
+                    "type": "OBJECT",
+                    "properties": {
+                        "hp": {"type": "NUMBER"},
+                        "hp_max": {"type": "NUMBER"},
+                        "armor_class": {"type": "NUMBER"},
+                        "attack_bonus": {"type": "NUMBER"},
+                        "hostility": {"type": "STRING"},
+                        "creature_type": {"type": "STRING"},
+                        "description_hints": {"type": "STRING"}
+                    },
+                    "required": ["hp", "hp_max", "armor_class", "attack_bonus", "hostility", "creature_type", "description_hints"]
+                },
+                "location": {"type": "STRING"}
+            },
+            "required": ["id", "name", "attributes", "location"]
+        }
+
+        config = GenerationConfig(
+            response_mime_type="application/json",
+            response_schema=schema,
+            temperature=0.85
+        )
+
+        response = self.model.generate_content(prompt, generation_config=config)
+        return json.loads(response.text)
+
+    def _generate_single_item(
+        self,
+        level_number: int,
+        genre: str,
+        theme: str,
+        existing_state: Dict[str, Any],
+        item_type_hint: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """Generate a single item with full dungeon context.
+
+        Args:
+            level_number: Current dungeon level
+            genre: Genre/theme (e.g., "dark fantasy", "sci-fi horror")
+            theme: Level theme (e.g., "Abandoned Crypt")
+            existing_state: Current dungeon state with locations, NPCs, existing items
+            item_type_hint: Preferred item type ("weapon", "consumable", "treasure", "tool", "light_source")
+
+        Returns:
+            Dict with:
+            - id: Item ID
+            - name: Item name
+            - attributes: Item attributes (type, damage, effect, etc.)
+            - location: Location ID where item is placed
+        """
+        from vertexai.generative_models import GenerationConfig
+
+        # Format existing locations for prompt
+        existing_locations_summary = [
+            {"id": loc["id"], "name": loc["name"]}
+            for loc in existing_state.get("locations", [])
+        ]
+
+        # Format existing NPCs for context
+        existing_npcs_summary = []
+        for npc in existing_state.get("npcs", []):
+            existing_npcs_summary.append({
+                "id": npc["id"],
+                "name": npc["name"],
+                "location": npc.get("location", "unknown")
+            })
+
+        existing_npcs_json = ""
+        if existing_npcs_summary:
+            existing_npcs_json = f"\n\nEXISTING NPCs:\n{json.dumps(existing_npcs_summary, indent=2)}"
+
+        # Format existing items for variety
+        existing_items_summary = []
+        for item in existing_state.get("items", []):
+            existing_items_summary.append({
+                "id": item["id"],
+                "name": item["name"],
+                "type": item.get("attributes", {}).get("type", "unknown")
+            })
+
+        existing_items_json = ""
+        if existing_items_summary:
+            existing_items_json = f"\n\nEXISTING ITEMS (for variety - generate a different type or use):\n{json.dumps(existing_items_summary, indent=2)}"
+
+        item_type_guidance = ""
+        if item_type_hint:
+            item_type_guidance = f"\n\nItem Type Preference: {item_type_hint} (try to generate this type if thematically appropriate)"
+
+        prompt = f"""Generate ONE item for Level {level_number} of a {genre} dungeon.
+Theme: {theme}
+
+EXISTING LOCATIONS (place item at one):
+{json.dumps(existing_locations_summary, indent=2)}{existing_npcs_json}{existing_items_json}{item_type_guidance}
+
+Requirements:
+1. Generate ONE item with:
+   - id: "item{level_number}_<name>_<number>" (e.g., "item{level_number}_sword_1")
+   - name: Thematic to {genre} and {theme}
+   - attributes: OBJECT with:
+     * type: "weapon", "consumable", "treasure", "tool", or "light_source"
+     * description_hints: brief description (1-2 sentences)
+
+     [IF type is "weapon"]:
+     * damage: dice notation (e.g., "1d6", "1d8+1")
+     * damage_type: "slashing", "piercing", "bludgeoning", "energy", etc.
+
+     [IF type is "consumable"]:
+     * effect: what it does (e.g., "heals 2d6 HP", "grants +2 AC for 3 turns")
+     * uses: number (how many times it can be used)
+
+     [IF type is "light_source"]:
+     * provides_light: true
+     * light_radius: number (10-15)
+
+     [IF type is "treasure"]:
+     * value: number (gold/credits value)
+
+     [IF type is "tool"]:
+     * utility: what it's used for (e.g., "opens locks", "reveals hidden doors")
+
+   - location: ONE of the existing location IDs above
+
+2. Item Type Examples by Genre:
+   - Dark fantasy: rusty sword, healing potion, ancient tome, lockpick, torch
+   - Sci-fi horror: plasma cutter, med-kit, data chip, multi-tool, flashlight
+   - Ancient ruins: stone weapon, herb bundle, golden idol, rope, enchanted crystal
+   - Space opera: blaster, stim-pack, credits chip, scanner, glow-stick
+
+Return JSON: {{"id": "...", "name": "...", "attributes": {{}}, "location": "..."}}
+"""
+
+        schema = {
+            "type": "OBJECT",
+            "properties": {
+                "id": {"type": "STRING"},
+                "name": {"type": "STRING"},
+                "attributes": {"type": "OBJECT"},
+                "location": {"type": "STRING"}
+            },
+            "required": ["id", "name", "attributes", "location"]
+        }
+
+        config = GenerationConfig(
+            response_mime_type="application/json",
+            response_schema=schema,
+            temperature=0.85
         )
 
         response = self.model.generate_content(prompt, generation_config=config)
