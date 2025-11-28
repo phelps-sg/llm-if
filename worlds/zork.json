@@ -698,7 +698,7 @@
     "goal": "Collect treasures and return them to the trophy case in the living room"
   },
   "plot_config": {
-    "title": "The Great Underground Empire",
+    "title": "Zork: The Great Underground Empire",
     "description": "Explore the ruins of the Great Underground Empire, collect treasures, solve puzzles, and survive encounters with dangerous creatures. Your goal is to fill the trophy case with treasures.",
     "win_condition": "All major treasures returned to trophy case",
     "themes": ["exploration", "treasure hunting", "puzzle solving", "classic adventure"]

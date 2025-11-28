@@ -323,16 +323,20 @@ class GameState(BaseModel):
     def get_cached_description(
         self,
         entity_type: str,
-        entity_id: str
+        entity_id: str,
+        current_item_ids: Optional[List[str]] = None,
+        current_npc_ids: Optional[List[str]] = None
     ) -> Optional[Dict[str, Any]]:
         """Get cached description for an entity if still valid.
 
         Validates that relevant state hasn't changed before returning cached description.
-        For locations, checks if time/lighting has changed significantly.
+        For locations, checks if time, items, or NPCs have changed.
 
         Args:
             entity_type: Type of entity ("location", "npc", or "item")
             entity_id: Unique identifier for the entity
+            current_item_ids: Current item IDs at location (for validation)
+            current_npc_ids: Current NPC IDs at location (for validation)
 
         Returns:
             Dict with description, turn, and state_snapshot, or None if not cached/invalid
@@ -343,16 +347,29 @@ class GameState(BaseModel):
         if not cached:
             return None
 
-        # For locations, check if time/lighting state has changed significantly
+        # For locations, check if significant state has changed
         if entity_type == "location":
             cached_state = cached.get("state_snapshot", {})
+
+            # Check if time has changed
             cached_time = cached_state.get("game_time", "")
             current_time = self.game_time
-
-            # If time has changed, invalidate the cache
-            # (any time change might affect lighting descriptions)
             if cached_time != current_time:
                 return None
+
+            # Check if items at location have changed
+            if current_item_ids is not None:
+                cached_items = set(cached_state.get("item_ids", []))
+                current_items = set(current_item_ids)
+                if cached_items != current_items:
+                    return None
+
+            # Check if NPCs at location have changed
+            if current_npc_ids is not None:
+                cached_npcs = set(cached_state.get("npc_ids", []))
+                current_npcs = set(current_npc_ids)
+                if cached_npcs != current_npcs:
+                    return None
 
         return cached
 

@@ -103,7 +103,9 @@ class GameLoop:
                     state_snapshot={
                         "game_time": self.game_state.game_time,
                         "lighting": lighting.get("level"),
-                        "turn": self.game_state.turn_count
+                        "turn": self.game_state.turn_count,
+                        "item_ids": [item.id for item in items],
+                        "npc_ids": [npc.id for npc in npcs]
                     }
                 )
 
@@ -522,7 +524,9 @@ class GameLoop:
             state_snapshot={
                 "game_time": self.game_state.game_time,
                 "lighting": lighting.get("level"),
-                "turn": self.game_state.turn_count
+                "turn": self.game_state.turn_count,
+                "item_ids": [item.id for item in items],
+                "npc_ids": [npc.id for npc in npcs]
             }
         )
 
@@ -546,8 +550,17 @@ class GameLoop:
         """
         cached = {}
 
-        # Get cached location description
-        location_cache = self.game_state.get_cached_description("location", location_id)
+        # Get current item and NPC IDs for cache validation
+        current_item_ids = [item.id for item in items]
+        current_npc_ids = [npc.id for npc in npcs]
+
+        # Get cached location description (with validation)
+        location_cache = self.game_state.get_cached_description(
+            "location",
+            location_id,
+            current_item_ids=current_item_ids,
+            current_npc_ids=current_npc_ids
+        )
         if location_cache:
             cached["location"] = location_cache
 
