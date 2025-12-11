@@ -168,9 +168,10 @@ class GameLoop:
     def process_turn(self, player_input: str) -> tuple[str, Dict[str, Any]]:
         """Process a single turn and return results (for testing).
 
-        Uses two-step approach:
-        1. Interpret action and get state updates
-        2. Apply updates, then generate narrative from actual state
+        Uses three-step approach:
+        1. Interpret intent and check permission (is_valid, is_allowed)
+        2. Generate state updates (only if allowed)
+        3. Apply updates, then generate narrative from actual state
 
         Args:
             player_input: Player's input string
@@ -178,7 +179,7 @@ class GameLoop:
         Returns:
             Tuple of (narrative_response, interpretation)
         """
-        # Step 1: Build context and interpret action
+        # STEP 1: Build context and interpret intent
         context = self._build_context()
 
         # Add pronoun resolution hints to context
@@ -187,30 +188,42 @@ class GameLoop:
         if self.last_referenced_npc:
             context["last_npc"] = self.last_referenced_npc
 
-        # Interpret action using LLM (gets state updates only)
-        interpretation = self.gemini.interpret_action(player_input, context)
+        # Interpret intent and check permission
+        intent_result = self.gemini.interpret_intent(player_input, context)
+        intent = intent_result["intent"]
+        is_valid = intent_result["is_valid"]
+        is_allowed = intent_result["is_allowed"]
+        invalid_reason = intent_result.get("invalid_reason")
+        not_allowed_reason = intent_result.get("not_allowed_reason")
 
-        # Track what was referenced for pronoun resolution
-        self._update_reference_tracking(interpretation, player_input, context)
+        # STEP 2: Generate mechanics (only if valid AND allowed)
+        state_updates = []
+        mechanics_result = {}
+        if is_valid and is_allowed:
+            mechanics_result = self.gemini.generate_state_updates(intent, context, intent_result)
+            state_updates = mechanics_result.get("state_updates", [])
 
-        # Step 2: Extract metadata about current state BEFORE applying updates
-        state_updates = interpretation.get("state_updates", [])
+            # Track what was referenced for pronoun resolution
+            # Build temporary interpretation for tracking
+            temp_interpretation = {**intent_result, **mechanics_result}
+            self._update_reference_tracking(temp_interpretation, player_input, context)
+
+        # Extract metadata about current state BEFORE applying updates
         action_metadata = self._extract_action_metadata(state_updates, context)
 
         # Track previous location for chase mechanics
         previous_location = self.game_state.player_location
 
-        # Step 3: Apply state updates
+        # Apply state updates
         if state_updates:
             self.action_processor.apply_state_updates(state_updates, self.game_state)
 
-        # Step 3.5: Apply time advancement (DM controls time)
-        if interpretation.get("new_time"):
-            self.game_state.game_time = interpretation["new_time"]
+        # Apply time advancement (DM controls time)
+        if mechanics_result.get("new_time"):
+            self.game_state.game_time = mechanics_result["new_time"]
 
-        # Step 4: Generate narrative (skip for movement - location description handles that)
+        # STEP 3: Generate narrative
         is_movement = any(update.get("type") == "move_player" for update in state_updates)
-        is_valid = interpretation.get("is_valid", True)
 
         if is_movement:
             # For movement, skip narrative - location description will show new state
@@ -220,14 +233,16 @@ class GameLoop:
             updated_context = self._build_context()
             narrative = self.gemini.generate_narrative(
                 player_input,
-                interpretation.get("intent", ""),
+                intent,
                 updated_context,
                 action_metadata=action_metadata,
-                is_valid=is_valid
+                is_valid=is_valid,
+                invalid_reason=invalid_reason,
+                not_allowed_reason=not_allowed_reason
             )
 
-        # Store narrative in interpretation for history
-        interpretation["narrative_response"] = narrative
+        # Combine results for backward compatibility
+        interpretation = {**intent_result, **mechanics_result, "narrative_response": narrative}
 
         # Process NPC turns (aggressive NPCs attack, chase fleeing player)
         npc_actions = self.action_processor.process_npc_turns(
@@ -332,7 +347,7 @@ class GameLoop:
                 print(f"\nError loading save file: {e}")
             return
 
-        # Step 1: Interpret action using LLM
+        # STEP 1: Interpret intent and check permission
         print("[DM interprets your action...]")
         context = self._build_context()
 
@@ -342,30 +357,52 @@ class GameLoop:
         if self.last_referenced_npc:
             context["last_npc"] = self.last_referenced_npc
 
-        interpretation = self.gemini.interpret_action(player_input, context)
+        # Interpret intent and check permission
+        intent_result = self.gemini.interpret_intent(player_input, context)
+        intent = intent_result["intent"]
+        is_valid = intent_result["is_valid"]
+        is_allowed = intent_result["is_allowed"]
+        invalid_reason = intent_result.get("invalid_reason")
+        not_allowed_reason = intent_result.get("not_allowed_reason")
 
         # DEBUG: Log what LLM returned
-        print(f"\n[DEBUG] Interpretation:")
-        print(f"  Intent: {interpretation.get('intent', 'N/A')}")
-        print(f"  State Updates: {interpretation.get('state_updates', [])}")
+        print(f"\n[DEBUG] Intent Interpretation:")
+        print(f"  Intent: {intent}")
+        print(f"  is_valid: {is_valid}")
+        print(f"  is_allowed: {is_allowed}")
+        if invalid_reason:
+            print(f"  invalid_reason: {invalid_reason}")
+        if not_allowed_reason:
+            print(f"  not_allowed_reason: {not_allowed_reason}")
 
-        # Track what was referenced for pronoun resolution
-        self._update_reference_tracking(interpretation, player_input, context)
+        # STEP 2: Generate mechanics (only if valid AND allowed)
+        state_updates = []
+        mechanics_result = {}
+        if is_valid and is_allowed:
+            print("[DM generates mechanics...]")
+            mechanics_result = self.gemini.generate_state_updates(intent, context, intent_result)
+            state_updates = mechanics_result.get("state_updates", [])
 
-        # Step 2: Extract metadata about current state BEFORE applying updates
-        state_updates = interpretation.get("state_updates", [])
+            print(f"\n[DEBUG] Mechanics:")
+            print(f"  State Updates: {state_updates}")
+
+            # Track what was referenced for pronoun resolution
+            temp_interpretation = {**intent_result, **mechanics_result}
+            self._update_reference_tracking(temp_interpretation, player_input, context)
+
+        # Extract metadata about current state BEFORE applying updates
         action_metadata = self._extract_action_metadata(state_updates, context)
 
         # Track previous location for chase mechanics
         previous_location = self.game_state.player_location
 
-        # Step 3: Apply state updates
+        # Apply state updates
         if state_updates:
             self.action_processor.apply_state_updates(state_updates, self.game_state)
 
-        # Step 3.5: Apply time advancement (DM controls time)
-        if interpretation.get("new_time"):
-            self.game_state.game_time = interpretation["new_time"]
+        # Apply time advancement (DM controls time)
+        if mechanics_result.get("new_time"):
+            self.game_state.game_time = mechanics_result["new_time"]
 
             # DEBUG: Log state after updates
             print(f"\n[DEBUG] State After Updates:")
@@ -380,9 +417,8 @@ class GameLoop:
             )
             print(f"  NPC locations: {self.game_state.npc_locations}")
 
-        # Step 4: Generate narrative (skip for movement - location description handles that)
+        # STEP 3: Generate narrative (skip for movement - location description handles that)
         is_movement = any(update.get("type") == "move_player" for update in state_updates)
-        is_valid = interpretation.get("is_valid", True)
 
         if is_movement:
             # For movement, skip narrative - location description will show new state
@@ -393,14 +429,16 @@ class GameLoop:
             updated_context = self._build_context()
             narrative = self.gemini.generate_narrative(
                 player_input,
-                interpretation.get("intent", ""),
+                intent,
                 updated_context,
                 action_metadata=action_metadata,
-                is_valid=is_valid
+                is_valid=is_valid,
+                invalid_reason=invalid_reason,
+                not_allowed_reason=not_allowed_reason
             )
 
-        # Store narrative in interpretation for history
-        interpretation["narrative_response"] = narrative
+        # Combine results for backward compatibility
+        interpretation = {**intent_result, **mechanics_result, "narrative_response": narrative}
 
         # Show narrative response (if any)
         if narrative:

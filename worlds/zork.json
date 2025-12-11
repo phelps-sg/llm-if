@@ -4,7 +4,7 @@
       "id": "west_of_house",
       "name": "West of House",
       "attributes": {
-        "description_hints": "white colonial house, forest to west and south, path circles house, boarded front door, mailbox nearby",
+        "description_hints": "white colonial house, forest to west and south, path circles house",
         "lighting": "bright",
         "is_outdoors": true,
         "has_windows": false,
@@ -457,6 +457,17 @@
         "can_contain": ["leaflet"]
       }
     },
+    "door": {
+      "id": "door",
+      "name": "font door of house",
+      "attributes": {
+        "description_hints": "boarded shut",
+        "type": "entrance",
+        "immovable": true,
+        "shut": true,
+        "openable": false
+      }
+    },
     "leaflet": {
       "id": "leaflet",
       "name": "Leaflet",
@@ -684,6 +695,7 @@
   "item_locations": {
     "mailbox": "west_of_house",
     "leaflet": "west_of_house",
+    "door": "west_of_house",
     "trophy_case": "living_room",
     "brass_lantern": "living_room",
     "sword": "living_room",

@@ -49,7 +49,7 @@ def test_teleport_without_justification(skip_if_no_gcp, basic_setup):
     Scenario:
     - Player is in entrance (no genie, no magical portal, no teleport spell)
     - Player says "teleport me somewhere"
-    - Expected: is_valid=false, no movement occurs
+    - Expected: is_valid=True, is_allowed=False, no movement occurs
 
     Principle: Extraordinary actions require in-game mechanics.
     The player controls their CHARACTER, not the WORLD.
@@ -89,26 +89,39 @@ def test_teleport_without_justification(skip_if_no_gcp, basic_setup):
     print(f"\nNarrative: {narrative}")
     print(f"Interpretation: {interpretation}")
 
-    # CRITICAL ASSERTION: is_valid should be FALSE
-    is_valid = interpretation.get("is_valid", True)
-    print(f"\nis_valid: {is_valid}")
+    # CRITICAL ASSERTION: is_allowed should be FALSE (is_valid should be TRUE)
+    is_valid = interpretation.get("is_valid", False)
+    is_allowed = interpretation.get("is_allowed", True)
+    not_allowed_reason = interpretation.get("not_allowed_reason", "")
 
-    if is_valid:
+    print(f"\nis_valid: {is_valid}")
+    print(f"is_allowed: {is_allowed}")
+    print(f"not_allowed_reason: {not_allowed_reason}")
+
+    # With 3-step architecture: is_valid=True (coherent command), is_allowed=False (no magic)
+    assert is_valid == True, "Teleportation is a logically coherent command (is_valid should be True)"
+
+    if is_allowed:
         print(f"\n❌ CRITICAL FAILURE: DM allowed teleportation without justification!")
         print(f"This violates the principle: Extraordinary actions require in-game mechanics")
         print(f"Player location before: {initial_location}")
         print(f"Player location after: {game_state.player_location}")
         pytest.fail(
             "DM should reject teleportation when no teleportation device/genie/spell exists.\n"
-            "The player is not a wizard! They cannot teleport at will."
+            "The player is not a wizard! They cannot teleport at will.\n"
+            "is_allowed should be False."
         )
 
-    print("✅ DM correctly rejected teleportation (is_valid=false)")
+    print("✅ DM correctly rejected teleportation (is_valid=True, is_allowed=False)")
+
+    # Verify not_allowed_reason is present
+    assert not_allowed_reason, "Should have not_allowed_reason explaining why teleportation is not allowed"
+    print(f"Reason: {not_allowed_reason}")
 
     # Verify player DID NOT move
     assert game_state.player_location == initial_location, (
         f"Player should still be at {initial_location}, but is at {game_state.player_location}.\n"
-        f"When is_valid=false, player should NOT move."
+        f"When is_allowed=false, player should NOT move."
     )
 
     print(f"✅ Player remained at {initial_location} (no movement occurred)")
@@ -138,7 +151,7 @@ def test_create_object_without_justification(skip_if_no_gcp, basic_setup):
     Scenario:
     - Player is in entrance (no genie, no magic wand, no creation spell)
     - Player says "create a diamond"
-    - Expected: is_valid=false, no diamond created
+    - Expected: is_valid=True, is_allowed=False, no diamond created
 
     Principle: Player cannot create objects from thin air.
     Only NPCs (like genie) or magical items can create objects.
@@ -163,19 +176,32 @@ def test_create_object_without_justification(skip_if_no_gcp, basic_setup):
     print(f"\nNarrative: {narrative}")
     print(f"State updates: {interpretation.get('state_updates', [])}")
 
-    # CRITICAL ASSERTION: is_valid should be FALSE
-    is_valid = interpretation.get("is_valid", True)
-    print(f"\nis_valid: {is_valid}")
+    # CRITICAL ASSERTION: is_allowed should be FALSE (is_valid should be TRUE)
+    is_valid = interpretation.get("is_valid", False)
+    is_allowed = interpretation.get("is_allowed", True)
+    not_allowed_reason = interpretation.get("not_allowed_reason", "")
 
-    if is_valid:
+    print(f"\nis_valid: {is_valid}")
+    print(f"is_allowed: {is_allowed}")
+    print(f"not_allowed_reason: {not_allowed_reason}")
+
+    # With 3-step architecture: is_valid=True (coherent command), is_allowed=False (no magic)
+    assert is_valid == True, "Creating a diamond is a logically coherent command (is_valid should be True)"
+
+    if is_allowed:
         print(f"\n❌ CRITICAL FAILURE: DM allowed object creation without justification!")
         print(f"This violates the principle: Player controls CHARACTER, not WORLD")
         pytest.fail(
             "DM should reject object creation when no genie/magic exists.\n"
-            "The player cannot create diamonds from thin air!"
+            "The player cannot create diamonds from thin air!\n"
+            "is_allowed should be False."
         )
 
-    print("✅ DM correctly rejected object creation (is_valid=false)")
+    print("✅ DM correctly rejected object creation (is_valid=True, is_allowed=False)")
+
+    # Verify not_allowed_reason is present
+    assert not_allowed_reason, "Should have not_allowed_reason explaining why creation is not allowed"
+    print(f"Reason: {not_allowed_reason}")
 
     # Verify NO diamond was created
     current_items = set(game_state.items.keys())

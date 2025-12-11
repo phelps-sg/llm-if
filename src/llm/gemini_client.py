@@ -144,6 +144,8 @@ class GeminiClient:
         context: Dict[str, Any],
         action_metadata: Optional[Dict[str, Any]] = None,
         is_valid: bool = True,
+        invalid_reason: Optional[str] = None,
+        not_allowed_reason: Optional[str] = None,
     ) -> str:
         """Generate narrative response based on current game state after updates.
 
@@ -156,10 +158,20 @@ class GeminiClient:
             context: Current game context (after state updates)
             action_metadata: Metadata about what changed (extracted before updates)
             is_valid: Whether the action was valid (False means action failed)
+            invalid_reason: If action was logically invalid, the reason to return directly
+            not_allowed_reason: If action was not allowed by DM, the reason to return directly
 
         Returns:
             Narrative description of what happened
         """
+        # Step 3 of 3-step architecture: Handle pre-generated rejection reasons
+        if invalid_reason:
+            return invalid_reason
+
+        if not_allowed_reason:
+            return not_allowed_reason
+
+        # Otherwise, generate narrative from actual state (existing behavior)
         prompt = self._build_narrative_prompt(player_input, intent, context, action_metadata, is_valid)
         return self.generate(prompt)
 
@@ -1374,25 +1386,55 @@ Return JSON: {{"id": "...", "name": "...", "attributes": {{}}, "location": "..."
     def interpret_action(
         self, player_input: str, context: Dict[str, Any]
     ) -> Dict[str, Any]:
-        """Interpret player action and determine state updates.
+        """DEPRECATED: Use 3-step flow (interpret_intent + generate_state_updates + generate_narrative).
 
-        This is the LLM-driven approach where the DM interprets the action,
-        determines what state changes are needed, and provides a narrative response.
-
-        Uses structured output to ensure valid IDs are returned.
+        This method is maintained for backward compatibility with existing tests.
+        It internally uses the 3-step architecture to prevent hallucination.
 
         Args:
             player_input: Natural language input from player
             context: Current game context with location, items, NPCs, etc.
 
         Returns:
-            ActionInterpretation as dictionary with:
+            Combined result from 3-step flow with:
             - intent: What the player is trying to do
-            - is_valid: Whether action makes sense
+            - is_valid: Whether action makes logical sense
+            - is_allowed: Whether DM allows it given context
             - state_updates: List of state changes to apply
-            - narrative_response: DM's response text
+            - narrative_response: None (should be generated separately)
             - requires_dice_roll: Whether mechanics require a roll
             - dice_check: Parameters for dice roll if needed
+        """
+        # STEP 1: Interpret intent and check permission
+        intent_result = self.interpret_intent(player_input, context)
+
+        # STEP 2: Generate mechanics (only if valid AND allowed)
+        if intent_result["is_valid"] and intent_result["is_allowed"]:
+            mechanics_result = self.generate_state_updates(
+                intent_result["intent"], context, intent_result
+            )
+        else:
+            # Not allowed - no mechanics
+            mechanics_result = {
+                "state_updates": [],
+                "requires_dice_roll": False,
+                "dice_check": None,
+                "time_advancement": None,
+                "new_time": None
+            }
+
+        # Combine for backward compatibility
+        combined = {**intent_result, **mechanics_result}
+        combined["narrative_response"] = None  # Should be generated separately
+
+        return combined
+
+    def _interpret_action_old(
+        self, player_input: str, context: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """OLD IMPLEMENTATION - Kept for reference only.
+
+        This old single-step approach could hallucinate state changes.
         """
         prompt = self._build_action_interpretation_prompt(player_input, context)
 
@@ -1566,6 +1608,153 @@ Return JSON: {{"id": "...", "name": "...", "attributes": {{}}, "location": "..."
                     print(f"[DEBUG] Filled missing target_npc_id from target: {target}")
 
         return interpretation
+
+    def interpret_intent(
+        self, player_input: str, context: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """STEP 1: Interpret player intent and check permission.
+
+        This is the first step of the 3-step LLM architecture.
+        It ONLY interprets intent and checks if the action is valid and allowed.
+        It does NOT generate state updates or narrative.
+
+        Args:
+            player_input: Natural language input from player
+            context: Current game context
+
+        Returns:
+            IntentInterpretation as dict with:
+            - intent: What player is trying to do
+            - is_valid: Does the action make logical sense?
+            - is_allowed: Will DM allow it given game state?
+            - invalid_reason: If is_valid=false, why not?
+            - not_allowed_reason: If is_allowed=false, why not?
+        """
+        from vertexai.generative_models import GenerationConfig
+
+        prompt = self._build_intent_interpretation_prompt(player_input, context)
+
+        print(f"[DEBUG] prompt = {prompt}")
+
+        # Define schema for structured output
+        response_schema = {
+            "type": "OBJECT",
+            "properties": {
+                "intent": {"type": "STRING"},
+                "is_valid": {"type": "BOOLEAN"},
+                "is_allowed": {"type": "BOOLEAN"},
+                "invalid_reason": {"type": "STRING", "nullable": True},
+                "not_allowed_reason": {"type": "STRING", "nullable": True},
+            },
+            "required": ["intent", "is_valid", "is_allowed"],
+        }
+
+        generation_config = GenerationConfig(
+            response_mime_type="application/json",
+            response_schema=response_schema,
+            temperature=0.7,
+        )
+
+        try:
+            response = self.model.generate_content(prompt, generation_config=generation_config)
+            parsed = json.loads(response.text)
+            return parsed
+
+        except json.JSONDecodeError as e:
+            print(f"[WARNING] Intent interpretation JSON parsing error: {e}")
+            # Return safe default: invalid
+            return {
+                "intent": f"Interpret '{player_input}'",
+                "is_valid": False,
+                "is_allowed": False,
+                "invalid_reason": "I don't understand that command.",
+                "not_allowed_reason": None
+            }
+
+    def generate_state_updates(
+        self, intent: str, context: Dict[str, Any], interpretation: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """STEP 2: Generate state updates for an allowed action.
+
+        This is the second step of the 3-step LLM architecture.
+        It ONLY generates state updates to implement the interpreted intent.
+        It does NOT generate narrative.
+
+        This should ONLY be called if is_valid=true AND is_allowed=true from Step 1.
+
+        Args:
+            intent: What the player wants to do (from Step 1)
+            context: Current game context
+            interpretation: Full interpretation from Step 1 (for reference)
+
+        Returns:
+            MechanicsResult as dict with:
+            - state_updates: List of state changes
+            - requires_dice_roll: Whether mechanics need dice
+            - dice_check: Parameters for roll if needed
+            - time_advancement: How much time passes
+            - new_time: New game time after action
+        """
+        from vertexai.generative_models import GenerationConfig
+
+        prompt = self._build_mechanics_generation_prompt(intent, context, interpretation)
+
+        # Define schema for structured output (similar to current state_updates schema)
+        response_schema = {
+            "type": "OBJECT",
+            "properties": {
+                "state_updates": {
+                    "type": "ARRAY",
+                    "items": {
+                        "type": "OBJECT",
+                        "properties": {
+                            "type": {"type": "STRING"},
+                            "target": {"type": "STRING", "nullable": True},
+                            "params": {
+                                "type": "OBJECT",
+                                "additionalProperties": True,
+                            },
+                        },
+                        "required": ["type", "params"],
+                    },
+                },
+                "requires_dice_roll": {"type": "BOOLEAN"},
+                "dice_check": {
+                    "type": "OBJECT",
+                    "additionalProperties": True,
+                    "nullable": True,
+                },
+                "time_advancement": {"type": "STRING", "nullable": True},
+                "new_time": {"type": "STRING", "nullable": True},
+            },
+            "required": ["state_updates", "requires_dice_roll"],
+        }
+
+        generation_config = GenerationConfig(
+            response_mime_type="application/json",
+            response_schema=response_schema,
+            temperature=0.7,
+        )
+
+        try:
+            response = self.model.generate_content(prompt, generation_config=generation_config)
+            parsed = json.loads(response.text)
+
+            # Post-process to fill missing params
+            parsed = self._fill_missing_params(parsed, context)
+
+            return parsed
+
+        except json.JSONDecodeError as e:
+            print(f"[WARNING] Mechanics generation JSON parsing error: {e}")
+            # Return safe default: no changes
+            return {
+                "state_updates": [],
+                "requires_dice_roll": False,
+                "dice_check": None,
+                "time_advancement": "1 minute",
+                "new_time": None
+            }
 
     def _build_location_prompt(
         self,
@@ -2984,6 +3173,426 @@ Format examples:
 Be creative with time! It's part of your storytelling power.
 
 Now interpret the player's action: "{player_input}"
+"""
+
+        return prompt
+
+    def _build_intent_interpretation_prompt(
+        self, player_input: str, context: Dict[str, Any]
+    ) -> str:
+        """Build prompt for STEP 1: Intent interpretation and permission check.
+
+        This prompt focuses ONLY on:
+        1. What is the player trying to do? (intent)
+        2. Does it make logical sense? (is_valid)
+        3. Is it allowed given current state? (is_allowed)
+        4. If not, why not? (invalid_reason / not_allowed_reason)
+
+        NO state updates, NO narrative generation yet.
+        """
+        location = context.get("location", {})
+        items = context.get("items", [])
+        npcs = context.get("npcs", [])
+        player = context.get("player", {})
+        exits = context.get("exits", [])
+        exit_destinations = context.get("exit_destinations", {})
+        last_item = context.get("last_item")
+        last_npc = context.get("last_npc")
+
+        # Build pronoun context
+        pronoun_context = ""
+        if last_item or last_npc:
+            pronoun_context = "\n🔗 PRONOUN RESOLUTION:\n"
+            if last_item:
+                pronoun_context += f"  - Last referenced item: {last_item} (use this for 'it', 'them', etc.)\n"
+            if last_npc:
+                pronoun_context += f"  - Last referenced NPC: {last_npc} (use this for 'him', 'her', 'them', etc.)\n"
+
+        # Format conversation history for context understanding
+        conversation_history = context.get("conversation_history", [])
+        history_text = ""
+        if conversation_history:
+            history_text = "\n📜 RECENT CONVERSATION (for context and pronoun resolution):\n"
+            for i, turn in enumerate(conversation_history, 1):
+                history_text += f"\nTurn -{len(conversation_history) - i + 1}:\n"
+                history_text += f"  Player: {turn.get('player_input', '')}\n"
+                narrative = turn.get('narrative', '')
+                if narrative:
+                    # Truncate long narratives
+                    history_text += f"  DM: {narrative[:150]}...\n"
+            history_text += "\n⚠️  USE THIS HISTORY TO:\n"
+            history_text += "1. Understand player intent better (what they're trying to accomplish)\n"
+            history_text += "2. Resolve pronouns (it, them, he, she refer to entities in PLAYER INPUT, not DM narrative)\n"
+            history_text += "3. Prevent circular actions (if player keeps trying same thing that fails, explain why)\n"
+            history_text += "4. Understand context (what player was just doing)\n\n"
+
+        prompt = f"""You are a Dungeon Master interpreting a player's action.
+
+PLAYER ACTION: "{player_input}"
+
+CURRENT GAME STATE:
+Location: {location.get('name', 'Unknown')} (ID: {location.get('id')})
+Description: {location.get('description', 'No description')}
+Available Exits: {exits}
+Exit Destinations: {exit_destinations}
+
+Items here:
+{chr(10).join([f"  - {item.get('name')} (ID: {item.get('id')})" +
+               (f" - {item.get('description')}" if item.get('description') else "") +
+               (f" - Attributes: {item.get('attributes')}" if item.get('attributes') else "")
+               for item in items]) if items else "  (none)"}
+
+NPCs here:
+{chr(10).join([f"  - {npc.get('name')} (ID: {npc.get('id')})" +
+               (f" - {npc.get('description')}" if npc.get('description') else "")
+               for npc in npcs]) if npcs else "  (none)"}
+
+Player inventory: {[item.get('name') for item in player.get('inventory_items', [])]}
+Player attributes: {player.get('attributes', dict())}
+{pronoun_context}{history_text}
+YOUR TASK - STEP 1: INTERPRET INTENT & CHECK PERMISSION
+
+1. **Understand Intent**: What is the player trying to do?
+   - Be specific: "move north", "pick up sword", "greet genie", "examine room", etc.
+   - **PRONOUNS**: If player uses "it", "them", "him", "her" - resolve using the pronoun context above
+     - Example: Player says "open it" + last_item="door" → Intent: "Player wants to open the door"
+     - Example: Player says "talk to him" + last_npc="guard" → Intent: "Player wants to talk to the guard"
+     - If pronoun used but no context provided → ask for clarification in not_allowed_reason
+
+2. **Check Logical Validity (is_valid)**: Does the command make logical sense?
+
+   Set is_valid = FALSE if:
+   - Nonsensical input ("asdfghjkl", "blorg the fleem")
+   - Grammatically incoherent
+   - Not a recognizable game command
+
+   Set is_valid = TRUE if:
+   - It's a coherent action, even if not currently possible
+   - "go north" → valid (logical command)
+   - "teleport to castle" → valid (makes sense, but requires magic)
+   - "eat the castle" → INVALID (logically nonsensical)
+
+3. **Check Permission (is_allowed)**: If valid, will the DM allow it?
+
+   Set is_allowed = FALSE if:
+   - Movement to non-existent exit (ALWAYS check exits list!)
+     Example: Player says "go north" but exits = ["south"] → NOT ALLOWED
+   - Item/NPC doesn't exist at location or in inventory
+   - Prerequisite not met (can't drop what you don't have, can't regurgitate what wasn't swallowed)
+   - Extraordinary action without justification (teleport without genie, create objects without magic)
+   - Physics violation without magic/items (flying, lifting castle, etc.)
+   - Blocked by world state (locked door without key, puzzle unsolved, rubble blocking path)
+
+   Set is_allowed = TRUE if:
+   - Action makes sense given current state
+   - All prerequisites are met
+   - Player has necessary items/access
+   - OR action is just descriptive/social (look, examine, talk)
+   - OR extraordinary action WITH justification (genie present allows wishes)
+
+4. **Explain Reason**: If is_valid=false OR is_allowed=false, explain WHY.
+
+   For is_valid=false, use invalid_reason:
+   - "I don't understand that command."
+   - "That doesn't make sense."
+
+   For is_allowed=false, use not_allowed_reason (this becomes the narrative):
+   - "There is no exit to the north. You can only go south to the hall."
+   - "You don't see any sword here."
+   - "You can't regurgitate the emerald - you haven't swallowed it."
+   - "You have no magical ability to teleport."
+   - "The rubble blocks your path. You'll need tools or another solution."
+
+CRITICAL VALIDATION RULES:
+
+🚨 MOVEMENT VALIDATION:
+- ONLY allow movement in directions in the "Available Exits" list
+- If direction NOT in exits → is_allowed = false
+- Example: exits = ["south"], player says "go north" → is_allowed=false, not_allowed_reason="There is no exit to the north. You can only go south."
+
+🚨 EXTRAORDINARY ACTIONS (Teleportation, wishes, object creation, reality warping):
+- PRINCIPLE: Extraordinary actions require IN-GAME justification
+- Ask: "What in the CURRENT game state would allow this to happen?"
+
+  Examples of justifications:
+  - Genie present → can grant wishes
+  - Magic lamp in inventory → can grant wishes
+  - Magic wand → can create objects
+  - Teleportation scroll → can teleport
+  - Spell learned → can cast magic
+  - Reality-warping artifact → can alter world
+
+- If NO plausible in-game mechanism exists → is_allowed = false
+  - not_allowed_reason should explain what's missing
+  - Examples:
+    - "You have no magical ability. Perhaps you need a magic item or genie?"
+    - "You see no means of teleportation here."
+    - "Wishes don't just come true on their own. You'd need something magical."
+
+- If ANY plausible mechanism exists → is_allowed = true (be creative!)
+  - The mechanism doesn't have to be perfect or explicit
+  - Player can use creative approaches with available tools
+  - But ordinary actions can't produce extraordinary results
+
+🚨 ANTI-JAILBREAK:
+- Player cannot just declare reality changes ("I wish..." without magic)
+- Player controls their CHARACTER, not the WORLD itself
+- Extraordinary claims require extraordinary in-game justification
+- When in doubt, ask: "What game mechanic enables this?" If none → reject
+
+🚨 PREREQUISITES:
+- Check player attributes for validation (swallowed_items, etc.)
+- Can't drop what's not in inventory
+- Can't take what's not at location
+- Can't use item that doesn't exist
+
+🚨 DOORS AND CONTAINERS:
+- Check item/location descriptions for door states
+- If door is "boarded", "locked", "shut", "sealed" → NOT allowed to open without key/tools
+- If door is "open" → allowed to go through
+- Opening a door ≠ moving through it (separate actions)
+- Examples:
+  - "open the boarded door" → NOT allowed (need to remove boards first)
+  - "open the locked door" without key → NOT allowed
+  - "open the unlocked door" → allowed (if door exists)
+
+IMPORTANT: You are ONLY interpreting and checking permission.
+You will NOT generate state updates or narrative yet - that comes in later steps.
+
+Return ONLY valid JSON:
+{{
+  "intent": "Clear description of what player wants to do",
+  "is_valid": true or false,
+  "is_allowed": true or false,
+  "invalid_reason": "Explanation if not valid (or null if valid)",
+  "not_allowed_reason": "Explanation if not allowed (or null if allowed)"
+}}
+
+EXAMPLES:
+
+Input: "go north"
+Context: exits = ["south"]
+Output:
+{{
+  "intent": "Player wants to move north",
+  "is_valid": true,
+  "is_allowed": false,
+  "invalid_reason": null,
+  "not_allowed_reason": "There is no exit to the north. You can only go south to the hall."
+}}
+
+Input: "pick up the sword"
+Context: items_here = ["Rusty Sword"]
+Output:
+{{
+  "intent": "Player wants to pick up the rusty sword",
+  "is_valid": true,
+  "is_allowed": true,
+  "invalid_reason": null,
+  "not_allowed_reason": null
+}}
+
+Input: "asdfghjkl"
+Output:
+{{
+  "intent": "Unknown - nonsensical input",
+  "is_valid": false,
+  "is_allowed": false,
+  "invalid_reason": "I don't understand that command.",
+  "not_allowed_reason": null
+}}
+
+Input: "teleport to the castle"
+Context: no genie present
+Output:
+{{
+  "intent": "Player wants to teleport to a castle",
+  "is_valid": true,
+  "is_allowed": false,
+  "invalid_reason": null,
+  "not_allowed_reason": "You have no magical ability to teleport."
+}}
+
+Input: "remove the rubble"
+Context: rubble blocks stairs, player has no tools
+Output:
+{{
+  "intent": "Player wants to remove the rubble blocking the stairway",
+  "is_valid": true,
+  "is_allowed": false,
+  "invalid_reason": null,
+  "not_allowed_reason": "The rubble is heavy and firmly lodged. You'll need proper tools or another solution to clear it."
+}}
+
+Input: "look around"
+Output:
+{{
+  "intent": "Player wants to examine the current location",
+  "is_valid": true,
+  "is_allowed": true,
+  "invalid_reason": null,
+  "not_allowed_reason": null
+}}
+"""
+
+        return prompt
+
+    def _build_mechanics_generation_prompt(
+        self, intent: str, context: Dict[str, Any], interpretation: Dict[str, Any]
+    ) -> str:
+        """Build prompt for STEP 2: State update generation.
+
+        This prompt generates state updates to implement the allowed intent.
+        NO narrative generation.
+        """
+        location = context.get("location", {})
+        items = context.get("items", [])
+        npcs = context.get("npcs", [])
+        player = context.get("player", {})
+        exit_destinations = context.get("exit_destinations", {})
+        all_locations = context.get("all_locations", {})
+
+        # Extract valid IDs
+        item_ids_at_location = [item.get("id") for item in items]
+        item_ids_in_inventory = player.get("inventory_ids", [])
+        npc_ids_at_location = [npc.get("id") for npc in npcs]
+
+        # Format conversation history for context
+        conversation_history = context.get("conversation_history", [])
+        history_text = ""
+        if conversation_history:
+            history_text = "\n📜 RECENT CONVERSATION (for context):\n"
+            for i, turn in enumerate(conversation_history, 1):
+                history_text += f"\nTurn -{len(conversation_history) - i + 1}:\n"
+                history_text += f"  Player: {turn.get('player_input', '')}\n"
+            history_text += "\n⚠️  USE THIS HISTORY TO:\n"
+            history_text += "1. Understand what player has been doing recently\n"
+            history_text += "2. Avoid circular state updates (if player keeps trying same action)\n"
+            history_text += "3. Generate appropriate state updates given recent context\n\n"
+
+        prompt = f"""You are a Dungeon Master generating state updates for a player action.
+
+PLAYER INTENT: {intent}
+
+This action has been PRE-APPROVED (is_valid=true, is_allowed=true).
+Your job is to generate the state updates to make it happen.
+
+CURRENT GAME STATE:
+Location: {location.get('name')} (ID: {location.get('id')})
+Exit Destinations: {exit_destinations}
+
+Items at location: {[f"{item.get('name')} ({item.get('id')})" for item in items]}
+NPCs at location: {[f"{npc.get('name')} ({npc.get('id')})" for npc in npcs]}
+Player inventory IDs: {item_ids_in_inventory}
+Player inventory names: {player.get('inventory_items', [])}
+
+VALID IDs YOU MUST USE:
+- Location IDs: {list(all_locations.keys())}
+- Item IDs here: {item_ids_at_location}
+- Item IDs in inventory: {item_ids_in_inventory}
+- NPC IDs here: {npc_ids_at_location}
+{history_text}
+YOUR TASK - STEP 2: GENERATE STATE UPDATES
+
+Generate state_updates array to implement the intent.
+
+STATE UPDATE TYPES:
+- "move_player": {{"destination": "location_id"}}
+- "add_to_inventory": {{"item_id": "item_id"}}
+- "remove_from_inventory": {{"item_id": "item_id"}}
+- "consume_item": {{"item_id": "item_id"}} (eat/drink/destroy)
+- "create_item": {{"item_id": "unique_id", "name": "Name", "attributes": {{}}, "location": null}}
+- "destroy_item": {{"item_id": "item_id"}}
+- "create_location": {{"location_id": "id", "name": "Name", "from_location": "current", "direction": "south", ...}}
+- "create_npc": {{"npc_id": "id", "name": "Name", "attributes": {{}}, "location": null}}
+- "move_npc": {{"npc_id": "id", "to_location": "location_id"}}
+- "remove_npc": {{"npc_id": "id"}}
+- "modify_attribute": {{"entity_id": "id", "attribute_path": "path", "value": value}}
+- "set_flag": {{"flag_name": "name", "value": value}}
+- "trigger_combat": {{"target_npc_id": "id", "attack_type": "melee"}}
+- "update_dm_state": {{"path": "dot.path", "value": value}}
+- "no_change": {{}} (for purely narrative actions like "look")
+
+EXAMPLES:
+
+Intent: "Player wants to move north"
+→ [
+  {{"type": "move_player", "params": {{"destination": "hall"}}}}
+]
+
+Intent: "Player wants to pick up the rusty sword"
+→ [
+  {{"type": "add_to_inventory", "params": {{"item_id": "rusty_sword"}}}}
+]
+
+Intent: "Player wants to drop the sword"
+→ [
+  {{"type": "remove_from_inventory", "params": {{"item_id": "rusty_sword"}}}}
+]
+
+Intent: "Player wants to greet the guard"
+→ [
+  {{"type": "modify_attribute", "params": {{"entity_id": "guard", "attribute_path": "state.greeted", "value": true}}}}
+]
+
+Intent: "Player wants to examine the room"
+→ [
+  {{"type": "no_change", "params": {{}}}}
+]
+
+Intent: "Player wants to eat the berries"
+→ [
+  {{"type": "consume_item", "params": {{"item_id": "berries"}}}}
+]
+
+CRITICAL RULES:
+
+🚨 IMPLEMENT THE EXACT INTENT - NO SUBSTITUTIONS:
+- Generate updates that DIRECTLY implement what the intent says
+- DO NOT creatively reinterpret or substitute related actions
+- Examples of WRONG substitutions:
+  - Intent: "open the door" → WRONG: move_player (opening ≠ moving through!)
+  - Intent: "examine sword" → WRONG: add_to_inventory (examining ≠ taking!)
+  - Intent: "talk to guard" → WRONG: trigger_combat (talking ≠ attacking!)
+- Correct approach:
+  - Intent: "open the door" → modify_attribute on door (opened: true)
+  - Intent: "examine sword" → no_change (just observation)
+  - Intent: "go through door" → move_player (explicit movement)
+
+🚨 MUST INCLUDE ALL NECESSARY UPDATES:
+- If intent explicitly involves movement → MUST include move_player
+- If intent involves picking up → MUST include add_to_inventory
+- If intent involves dropping → MUST include remove_from_inventory
+- If intent creates something → MUST include create_item or create_npc
+- If intent destroys something → MUST include destroy_item or remove_npc
+
+⚠️ EMPTY state_updates MEANS NOTHING CHANGES:
+- ONLY use empty array for pure observation actions ("look", "examine")
+- If player WANTS to do something, you MUST include updates
+- Example: Intent "remove rubble" but is_allowed=false → This step is NOT called
+- Example: Intent "look around" → [] is correct (no state change)
+
+🚨 USE ONLY VALID IDs:
+- Use IDs from the "VALID IDs" lists above
+- For movement, use destination from exit_destinations
+- Don't invent IDs that don't exist
+
+🚨 NO NARRATIVE:
+- Do NOT generate narrative text
+- Just return state updates
+- Narrative will be generated in Step 3
+
+IMPORTANT: This action has already been validated as allowed.
+Generate state updates that implement the intent accurately and completely.
+
+Return ONLY valid JSON:
+{{
+  "state_updates": [...],
+  "requires_dice_roll": false,
+  "dice_check": null,
+  "time_advancement": "1 minute",
+  "new_time": null
+}}
 """
 
         return prompt

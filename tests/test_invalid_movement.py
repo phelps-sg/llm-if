@@ -34,18 +34,19 @@ def test_invalid_movement_north_from_chamber(game_at_chamber):
     assert list(chamber.connections.keys()) == ["south"], \
         f"Chamber should only have south exit, but has: {list(chamber.connections.keys())}"
 
-    # Try to go north (invalid)
+    # Try to go north (not allowed)
     narrative, interpretation = game_loop.process_turn("go north")
 
-    # Assert: is_valid should be false
-    assert interpretation.get("is_valid") is False, \
-        f"Going north from chamber should be invalid. Interpretation: {interpretation}"
+    # Assert: is_valid should be true (it's a logically valid command)
+    # But is_allowed should be false (there's no north exit)
+    assert interpretation.get("is_valid") is True, \
+        f"'go north' is a logically valid command. Interpretation: {interpretation}"
+    assert interpretation.get("is_allowed") is False, \
+        f"Going north should not be allowed (no exit). Interpretation: {interpretation}"
 
-    # Assert: should use no_change state update
+    # Assert: should have no state updates (action not allowed)
     state_updates = interpretation.get("state_updates", [])
-    assert len(state_updates) == 1, f"Should have exactly 1 state update: {state_updates}"
-    assert state_updates[0].get("type") == "no_change", \
-        f"Should use no_change for invalid movement: {state_updates}"
+    assert len(state_updates) == 0, f"Not allowed actions should have no state updates: {state_updates}"
 
     # Assert: player should still be at chamber
     assert game_state.player_location == "chamber", \
@@ -90,9 +91,11 @@ def test_invalid_movement_multiple_directions(game_at_chamber):
 
         narrative, interpretation = game_loop.process_turn(f"go {direction}")
 
-        # Assert: should be invalid
-        assert interpretation.get("is_valid") is False, \
-            f"Going {direction} from chamber should be invalid. Interpretation: {interpretation}"
+        # Assert: should be valid command but not allowed
+        assert interpretation.get("is_valid") is True, \
+            f"'go {direction}' is a logically valid command. Interpretation: {interpretation}"
+        assert interpretation.get("is_allowed") is False, \
+            f"Going {direction} should not be allowed (no exit). Interpretation: {interpretation}"
 
         # Assert: player still at chamber
         assert game_state.player_location == "chamber", \
