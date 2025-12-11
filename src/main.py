@@ -390,7 +390,6 @@ def run_single_step_mode(args, gcp_project: str) -> None:
 
     location = result['location']
     print(f"Location: {location['name']} ({location['id']})")
-    print(f"Exits: {', '.join(result['exits']) if result['exits'] else 'none'}")
 
     if result['inventory']:
         print(f"Inventory: {', '.join(result['inventory'])}")

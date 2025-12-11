@@ -530,11 +530,6 @@ class GameLoop:
             }
         )
 
-        # Show exits
-        exits = location.get_available_exits()
-        if exits:
-            print(f"\nExits: {', '.join(exits)}")
-
     def _get_cached_descriptions_for_location(
         self, location_id: str, items: list, npcs: list
     ) -> dict:

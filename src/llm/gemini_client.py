@@ -1790,6 +1790,11 @@ CRITICAL RULES:
    - If an NPC has "wounded: true", describe them as wounded
    - Always use the CURRENT attribute values, not default/expected ones
    - Example: A deer with "has_antlers: false" should be "an antlerless white deer", not "a deer with delicate antlers"
+7. **EXITS**: Integrate available exits naturally into your description. Be creative - don't just list them.
+   - Good: "Passages lead north and south, while a narrow corridor branches east."
+   - Good: "The hallway continues to the north, and a door stands to the west."
+   - Bad: "Exits: north, south, east"
+   - You may omit hidden or secret exits if appropriate to the narrative.
 
 Write in second person (you see..., you notice..., you feel..., you hear...).
 Be concise but evocative.
@@ -2612,8 +2617,8 @@ VALIDATE ACTIONS AGAINST GAME STATE:
 - Set is_valid=false when action can't work, with clear explanation
 
 BALANCE THESE PRINCIPLES:
-✅ CREATIVE: Allow wishes, dynamic locations, clever solutions, unexpected approaches
-❌ REALISTIC: No loopholes, no duplication exploits, validate prerequisites, apply physics
+✅ CREATIVE: Allow wishes if e.g. there is a genie present, dynamic locations, clever solutions, unexpected approaches
+❌ REALISTIC: No loopholes, no duplication exploits, validate prerequisites, apply physics, no deus ex-machina solutions.
 
 📚 FEW-SHOT EXAMPLES (illustrating the general principle - NOT exhaustive rules):
 
@@ -2641,7 +2646,7 @@ Example 3b - Require In-Game Justification for Extraordinary Actions:
   Current State: No teleportation device, no genie, no magical portal, no spell scrolls
   ❌ WRONG: Allow it, use move_player to random location (player is not a wizard!)
   ✅ RIGHT: Set is_valid=false, explain "You close your eyes and concentrate, but nothing happens. You have no magical ability to teleport yourself."
-  Principle: EXTRAORDINARY ACTIONS REQUIRE IN-GAME MECHANICS - Just because player asks doesn't mean it should happen!
+  Principle: EXTRAORDINARY ACTIONS REQUIRE IN-GAME MECHANICS - Just because player asks or wishes doesn't mean it should happen!
 
   HOWEVER - IF there WAS a genie or magical item present:
   Player: "genie, teleport me somewhere"
