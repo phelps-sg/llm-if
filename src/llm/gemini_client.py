@@ -2006,6 +2006,24 @@ Be concise but evocative.
         player = context.get("player", {})
         inventory_items = player.get("inventory", [])
 
+        # Format conversation history for consistency
+        conversation_history = context.get("conversation_history", [])
+        history_text = ""
+        if conversation_history:
+            history_text = "\n📜 RECENT CONVERSATION (for consistency):\n"
+            for i, turn in enumerate(conversation_history, 1):
+                history_text += f"\nTurn -{len(conversation_history) - i + 1}:\n"
+                history_text += f"  Player: {turn.get('player_input', '')}\n"
+                narrative = turn.get('narrative', '')
+                if narrative:
+                    # Keep full narrative for consistency (no truncation)
+                    history_text += f"  You (DM): {narrative}\n"
+            history_text += "\n⚠️  MAINTAIN CONSISTENCY:\n"
+            history_text += "1. If you previously described specific details (colors, numbers, materials), keep them consistent\n"
+            history_text += "2. Don't contradict your earlier descriptions\n"
+            history_text += "3. If player asks the same question again, give the same answer\n"
+            history_text += "4. Example: If you said '5 planks' before, don't change it to '3 planks' now\n\n"
+
         # Check if this is a dialogue/conversation action
         player_input_lower = player_input.lower()
         dialogue_keywords = ['talk to', 'speak to', 'speak with', 'ask', 'greet', 'tell', 'say to', 'chat with', 'converse', 'question']
@@ -2038,7 +2056,8 @@ NPCs at this location: {[npc.get('name') for npc in npcs] if npcs else 'none'}
 NPC details: {npcs if npcs else 'none'}
 
 Player inventory (what they are carrying): {[item.get('name') for item in inventory_items] if inventory_items else 'nothing'}
-Inventory details: {inventory_items if inventory_items else 'empty'}"""
+Inventory details: {inventory_items if inventory_items else 'empty'}
+{history_text}"""
 
         # Add NPC dialogue instructions if this is a conversation action
         if is_dialogue_action and npcs:
@@ -3218,13 +3237,14 @@ Now interpret the player's action: "{player_input}"
                 history_text += f"  Player: {turn.get('player_input', '')}\n"
                 narrative = turn.get('narrative', '')
                 if narrative:
-                    # Truncate long narratives
-                    history_text += f"  DM: {narrative[:150]}...\n"
+                    # Keep full narrative for consistency (no truncation)
+                    history_text += f"  DM: {narrative}\n"
             history_text += "\n⚠️  USE THIS HISTORY TO:\n"
             history_text += "1. Understand player intent better (what they're trying to accomplish)\n"
             history_text += "2. Resolve pronouns (it, them, he, she refer to entities in PLAYER INPUT, not DM narrative)\n"
             history_text += "3. Prevent circular actions (if player keeps trying same thing that fails, explain why)\n"
-            history_text += "4. Understand context (what player was just doing)\n\n"
+            history_text += "4. Understand context (what player was just doing)\n"
+            history_text += "5. Maintain consistency with previous descriptions (same details, numbers, colors)\n\n"
 
         prompt = f"""You are a Dungeon Master interpreting a player's action.
 
