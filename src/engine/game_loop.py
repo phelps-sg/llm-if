@@ -236,6 +236,7 @@ class GameLoop:
                 intent,
                 updated_context,
                 action_metadata=action_metadata,
+                state_updates=state_updates,  # Pass state updates so LLM can narrate what changed
                 is_valid=is_valid,
                 invalid_reason=invalid_reason,
                 not_allowed_reason=not_allowed_reason
@@ -432,6 +433,7 @@ class GameLoop:
                 intent,
                 updated_context,
                 action_metadata=action_metadata,
+                state_updates=state_updates,  # Pass state updates so LLM can narrate what changed
                 is_valid=is_valid,
                 invalid_reason=invalid_reason,
                 not_allowed_reason=not_allowed_reason
@@ -932,6 +934,10 @@ You can also type natural language commands and the AI will interpret them.
                 "config": self.game_state.plot_config,
                 "dm_state": self.game_state.dm_state,
             }
+
+        # Add world context if present
+        if self.game_state.world_context:
+            context["world_context"] = self.game_state.world_context
 
         return context
 

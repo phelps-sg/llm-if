@@ -1,4 +1,22 @@
 {
+  "world_context": {
+    "title": "Zork: The Great Underground Empire",
+    "author": "Marc Blank, Dave Lebling, Tim Anderson, Bruce Daniels (Infocom, 1980)",
+    "setting": "A fantasy adventure set in and around the ruins of the Great Underground Empire. You are an intrepid adventurer exploring an abandoned white house near a mysterious forest. Beneath the surface lies a vast network of caverns, ancient ruins, and forgotten treasures - along with deadly perils lurking in the darkness.",
+    "dm_instructions": [
+      "This is a rendition of the classic Infocom game Zork I",
+      "Maintain a mysterious, atmospheric tone with occasional dry wit and clever wordplay",
+      "The 'description_hints' are minimal - EMBELLISH them into rich, evocative descriptions",
+      "Create vivid sensory details: damp stone, echoing footsteps, flickering torchlight, ancient dust",
+      "Balance adventure and danger - treasure hunting should feel rewarding but risky",
+      "The Grue is an ever-present threat in darkness - build tension around light sources",
+      "Puzzles should feel logical yet challenging - give subtle hints through environmental descriptions",
+      "The Great Underground Empire was once glorious - convey a sense of faded grandeur and mystery",
+      "Magic and fantasy are real but rare - maintain a sense of wonder when encountered",
+      "The Thief (if encountered) should be cunning, unpredictable, and occasionally mocking"
+    ],
+    "tone": "atmospheric mystery with classic fantasy adventure, clever puzzles, underlying menace in the darkness"
+  },
   "locations": {
     "west_of_house": {
       "id": "west_of_house",

@@ -15,7 +15,10 @@ class GeminiClient:
         self,
         project: Optional[str] = None,
         location: Optional[str] = None,
-        model_name: str = "gemini-2.0-flash-001",
+        # model_name: str = "gemini-2.0-flash-001",
+        # model_name: str = "gemini-2.5-pro",
+        # model_name: str = "gemini-2.0-flash-001",
+        model_name: str = "gemini-2.5-flash",
     ):
         """Initialize Gemini client with gcloud authentication.
 
@@ -143,6 +146,7 @@ class GeminiClient:
         intent: str,
         context: Dict[str, Any],
         action_metadata: Optional[Dict[str, Any]] = None,
+        state_updates: Optional[List[Dict[str, Any]]] = None,
         is_valid: bool = True,
         invalid_reason: Optional[str] = None,
         not_allowed_reason: Optional[str] = None,
@@ -157,6 +161,7 @@ class GeminiClient:
             intent: Interpreted intent from LLM
             context: Current game context (after state updates)
             action_metadata: Metadata about what changed (extracted before updates)
+            state_updates: The actual state updates that were applied (so LLM can narrate what happened)
             is_valid: Whether the action was valid (False means action failed)
             invalid_reason: If action was logically invalid, the reason to return directly
             not_allowed_reason: If action was not allowed by DM, the reason to return directly
@@ -172,7 +177,7 @@ class GeminiClient:
             return not_allowed_reason
 
         # Otherwise, generate narrative from actual state (existing behavior)
-        prompt = self._build_narrative_prompt(player_input, intent, context, action_metadata, is_valid)
+        prompt = self._build_narrative_prompt(player_input, intent, context, action_metadata, state_updates, is_valid)
         return self.generate(prompt)
 
     def describe_action_result(
@@ -1994,11 +1999,13 @@ Be concise but evocative.
     def _build_narrative_prompt(
         self, player_input: str, intent: str, context: Dict[str, Any],
         action_metadata: Optional[Dict[str, Any]] = None,
+        state_updates: Optional[List[Dict[str, Any]]] = None,
         is_valid: bool = True
     ) -> str:
         """Build prompt for generating narrative based on current state.
 
         This is called AFTER state updates, so context reflects actual current state.
+        state_updates shows WHAT CHANGED so you can narrate the transition.
         """
         location = context.get("location", {})
         items = context.get("items", [])
@@ -2030,7 +2037,7 @@ Be concise but evocative.
         is_dialogue_action = any(keyword in player_input_lower for keyword in dialogue_keywords)
 
         prompt = f"""You are a Dungeon Master narrating the outcome of a player's action.
-
+{self._build_world_context(context)}
 WHAT THE PLAYER DID: "{player_input}"
 INTERPRETED INTENT: {intent}
 
@@ -2057,7 +2064,24 @@ NPC details: {npcs if npcs else 'none'}
 
 Player inventory (what they are carrying): {[item.get('name') for item in inventory_items] if inventory_items else 'nothing'}
 Inventory details: {inventory_items if inventory_items else 'empty'}
-{history_text}"""
+"""
+
+        # Add state updates section (CRITICAL for narrating what happened)
+        if state_updates:
+            prompt += "\n🔄 WHAT CHANGED (state updates that were applied):\n"
+            prompt += "CRITICAL: Use these to understand what actually happened and narrate it!\n\n"
+            for i, update in enumerate(state_updates, 1):
+                update_type = update.get("type", "unknown")
+                params = update.get("params", {})
+                prompt += f"{i}. {update_type}: {params}\n"
+
+            prompt += "\nExamples of how to narrate state updates:\n"
+            prompt += "- 'remove_from_inventory' (garlic) → 'You eat the garlic. It's pungent but filling.'\n"
+            prompt += "- 'add_to_inventory' (sword) → 'You pick up the sword. It feels well-balanced.'\n"
+            prompt += "- 'move_item' (key, door) → 'You insert the key into the lock.'\n"
+            prompt += "- 'update_item_attribute' (door, is_open=true) → 'The door swings open.'\n\n"
+
+        prompt += history_text
 
         # Add NPC dialogue instructions if this is a conversation action
         if is_dialogue_action and npcs:
@@ -2406,6 +2430,32 @@ Generate the narrative now:"""
 
         return prompt
 
+    def _build_world_context(self, context: Dict[str, Any]) -> str:
+        """Build world context and DM instructions if present."""
+        world_ctx = context.get("world_context")
+        if not world_ctx:
+            return ""
+
+        title = world_ctx.get("title", "")
+        author = world_ctx.get("author", "")
+        setting = world_ctx.get("setting", "")
+        instructions = world_ctx.get("dm_instructions", [])
+        tone = world_ctx.get("tone", "")
+
+        instructions_text = "\n".join(f"- {inst}" for inst in instructions)
+
+        author_line = f"\nAuthor/Source: {author}" if author else ""
+        tone_line = f"\nTone: {tone}" if tone else ""
+
+        return f"""
+🌍 WORLD CONTEXT - "{title}"{author_line}
+
+Setting: {setting}{tone_line}
+
+DM INSTRUCTIONS (follow these for this world):
+{instructions_text}
+"""
+
     def _build_plot_instructions(self, context: Dict[str, Any]) -> str:
         """Build plot management instructions if a plot is active."""
         plot_info = context.get("plot")
@@ -2709,6 +2759,7 @@ Common mistakes to avoid:
 
 If narrative says player is blinded/injured/changed, MUST include modify_attribute on player!
 
+{self._build_world_context(context)}
 {self._build_plot_instructions(context)}
 {self._build_puzzle_context(context)}
 
@@ -2777,7 +2828,7 @@ Return ONLY valid JSON in this exact format:
   "is_valid": true,
   "state_updates": [
     {{
-      "type": "move_player|move_item|move_npc|remove_npc|modify_attribute|add_to_inventory|remove_from_inventory|consume_item|create_item|destroy_item|set_flag|trigger_combat|update_dm_state|no_change",
+      "type": "move_player|move_item|move_npc|remove_npc|modify_attribute|add_to_inventory|remove_from_inventory|consume_item|create_item|destroy_item|transform_item|transform_item_to_npc|transform_npc_to_item|set_flag|trigger_combat|update_dm_state|no_change",
       "target": "entity_id or null",
       "params": {{
         "key": "value"
@@ -2954,6 +3005,26 @@ STATE UPDATE TYPES AND REQUIRED PARAMS:
   * location: null means add to player inventory, otherwise use location_id for ground
   * Example: Player knocks antlers off deer -> create_item with item_id="severed_antlers", location="current_location"
 - "destroy_item": {{"item_id": "item_id"}} - Permanently remove item from game (different from consume_item)
+  * Use for permanent destruction without transformation
+  * Can combine with create_item when creating multiple new items from one (e.g., breaking staff into 2 pieces)
+- "transform_item": {{"item_id": "item_id", "new_name": "new name", "new_attributes": {{}}, "reversible": true}} - Transform item by changing properties (keeps same ID)
+  * ✅ PREFER THIS for 1-to-1 item transformations: fold leaflet→plane, break sword→broken sword, repair, reshape, etc.
+  * Keeps same item_id, preserves location and transformation history
+  * Use destroy_item + create_item when: (1) creating multiple items from one, (2) transformation needs different ID
+  * Keeps same item_id, preserves location (inventory or world location)
+  * Tracks transformation_history for DM narrative and potential reversal
+  * reversible: true if transformation can be undone (folding paper, shape-changing, etc.)
+  * Example: Fold leaflet into plane → {{"item_id": "leaflet", "new_name": "paper plane", "new_attributes": {{"description": "A crudely folded paper plane"}}, "reversible": true}}
+- "transform_item_to_npc": {{"item_id": "item_id", "npc_id": "npc_id", "npc_name": "name", "npc_attributes": {{}}, "reversible": true}} - Transform item into NPC
+  * ✅ USE THIS for animating objects: animate statue→golem, summon creature from object, etc.
+  * Deletes item, creates NPC at same location
+  * Tracks transformation_history on NPC for reversal and DM narrative
+  * Example: Animate statue → {{"item_id": "stone_statue", "npc_id": "stone_golem", "npc_name": "Stone Golem", "npc_attributes": {{"hp": 30, "armor_class": 17, "material": "stone"}}, "reversible": true}}
+- "transform_npc_to_item": {{"npc_id": "npc_id", "item_id": "item_id", "item_name": "name", "item_attributes": {{}}, "reversible": true}} - Transform NPC into item
+  * ✅ USE THIS for petrification, polymorph to object, defeat→trophy, etc.
+  * Deletes NPC, creates item at same location
+  * Tracks transformation_history on item for reversal and DM narrative
+  * Example: Petrify goblin → {{"npc_id": "goblin", "item_id": "goblin_statue", "item_name": "petrified goblin", "item_attributes": {{"description": "A goblin frozen in stone", "was_goblin": true}}, "reversible": true}}
 - "create_location": {{"location_id": "unique_id", "name": "Location Name", "attributes": {{}}, "connections": {{}}, "from_location": "current_location_id", "direction": "south", "reverse_direction": "north"}} - Dynamically create a new location
   * Use for wishes, magical effects, or world-building actions (genie creates path, earthquake reveals cave, etc.)
   * location_id must be unique (e.g., "hidden_grove", "secret_passage_1")
@@ -3247,7 +3318,7 @@ Now interpret the player's action: "{player_input}"
             history_text += "5. Maintain consistency with previous descriptions (same details, numbers, colors)\n\n"
 
         prompt = f"""You are a Dungeon Master interpreting a player's action.
-
+{self._build_world_context(context)}
 PLAYER ACTION: "{player_input}"
 
 CURRENT GAME STATE:
@@ -3523,6 +3594,9 @@ STATE UPDATE TYPES:
 - "consume_item": {{"item_id": "item_id"}} (eat/drink/destroy)
 - "create_item": {{"item_id": "unique_id", "name": "Name", "attributes": {{}}, "location": null}}
 - "destroy_item": {{"item_id": "item_id"}}
+- "transform_item": {{"item_id": "id", "new_name": "name", "new_attributes": {{}}, "reversible": true}}
+- "transform_item_to_npc": {{"item_id": "id", "npc_name": "name", "npc_attributes": {{}}}}
+- "transform_npc_to_item": {{"npc_id": "id", "item_name": "name", "item_attributes": {{}}}}
 - "create_location": {{"location_id": "id", "name": "Name", "from_location": "current", "direction": "south", ...}}
 - "create_npc": {{"npc_id": "id", "name": "Name", "attributes": {{}}, "location": null}}
 - "move_npc": {{"npc_id": "id", "to_location": "location_id"}}
@@ -3565,7 +3639,32 @@ Intent: "Player wants to eat the berries"
   {{"type": "consume_item", "params": {{"item_id": "berries"}}}}
 ]
 
+Intent: "Player wants to fold the leaflet into a paper plane"
+→ [
+  {{"type": "transform_item", "params": {{"item_id": "leaflet", "new_name": "paper plane", "new_attributes": {{"description": "A crudely folded paper plane"}}, "reversible": true}}}}
+]
+
+Intent: "Player wants to break the staff in half"
+→ [
+  {{"type": "transform_item", "params": {{"item_id": "staff", "new_name": "broken staff", "new_attributes": {{"description": "A staff broken in half", "broken": true}}, "reversible": false}}}}
+]
+
+Intent: "Player wants to animate the statue"
+→ [
+  {{"type": "transform_item_to_npc", "params": {{"item_id": "statue", "npc_name": "animated statue", "npc_attributes": {{"hp": 20, "armor_class": 15, "hostility": "passive"}}}}}}
+]
+
 CRITICAL RULES:
+
+🚨 CHOOSING BETWEEN transform_item AND destroy_item + create_item:
+- ✅ PREFER transform_item for 1-to-1 item transformations:
+  - Examples: fold leaflet→plane, break sword→broken sword, repair, reshape, cook, burn
+  - Intent: "fold leaflet" → transform_item (keeps ID, preserves history)
+  - Intent: "repair sword" → transform_item (keeps ID, tracks transformation)
+- Use destroy_item + create_item when:
+  - Creating multiple items from one: "break staff in half" → destroy staff, create 2 staff pieces
+  - Transformation is so drastic a new ID makes sense
+- Default choice: If unsure and it's 1-to-1, prefer transform_item (preserves history)
 
 🚨 IMPLEMENT THE EXACT INTENT - NO SUBSTITUTIONS:
 - Generate updates that DIRECTLY implement what the intent says

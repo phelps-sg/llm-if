@@ -1,0 +1,5403 @@
+{
+  "world_context": {
+    "title": "Zork I: The Great Underground Empire",
+    "author": "Marc Blank, Dave Lebling, Tim Anderson, Bruce Daniels (Infocom, 1980)",
+    "setting": "A fantasy adventure set in and around the ruins of the Great Underground Empire. You are an intrepid adventurer who has discovered an abandoned white house near a mysterious forest. Beneath the surface lies a vast network of caverns, ancient ruins, and forgotten treasures - along with deadly perils lurking in the darkness.",
+    "dm_instructions": [
+      "This is a conversion of the original Infocom game Zork I from authentic ZIL source code",
+      "Maintain a mysterious, atmospheric tone with occasional dry wit and clever wordplay characteristic of early Infocom",
+      "The 'description_hints' from ZIL are minimal - EMBELLISH them dramatically into rich, evocative descriptions",
+      "Create vivid sensory details: damp stone corridors, echoing footsteps, flickering torchlight casting dancing shadows, ancient dust motes in stale air",
+      "Balance adventure and danger - treasure hunting should feel rewarding but risky, with clever puzzles",
+      "The Grue is an ever-present existential threat in darkness - build tension and dread around light sources failing",
+      "Puzzles should feel logical yet challenging - give subtle environmental hints through descriptions",
+      "The Great Underground Empire was once glorious - convey faded grandeur, ancient majesty now fallen to ruin",
+      "Magic and fantasy are real but mysterious - maintain sense of wonder when encountering the supernatural",
+      "The Thief is cunning and unpredictable - he should taunt, steal, and flee strategically",
+      "The Troll is brutish but can be negotiated with - he guards his bridge jealously",
+      "The Cyclops is dim-witted and easily fooled - his treasure hoard is legendary",
+      "Use archaic and whimsical language occasionally ('leaflet', 'mailbox', 'brass lantern') to evoke the 1980s text adventure aesthetic"
+    ],
+    "tone": "atmospheric mystery with classic fantasy adventure, clever puzzles, dry humor, underlying menace in the darkness"
+  },
+  "locations": {
+    "west_of_house": {
+      "id": "west_of_house",
+      "name": "West of House",
+      "attributes": {
+        "description_hints": "West of House",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "white_house",
+          "board",
+          "forest"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "onbit",
+          "sacredbit"
+        ]
+      },
+      "connections": {
+        "north": "north_of_house",
+        "south": "south_of_house",
+        "east": "the door is boarded and you can't remove the boards.",
+        "west": "forest_1",
+        "ne": "north_of_house",
+        "se": "south_of_house",
+        "sw": "stone_barrow",
+        "in": "stone_barrow"
+      }
+    },
+    "stone_barrow": {
+      "id": "stone_barrow",
+      "name": "Stone Barrow",
+      "attributes": {
+        "description_hints": "You are standing in front of a massive barrow of stone. In the east face\nis a huge stone door which is open. You cannot see into the dark of the tomb. - Stone Barrow",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_flags": [
+          "rlandbit",
+          "onbit",
+          "sacredbit"
+        ]
+      },
+      "connections": {
+        "ne": "west_of_house",
+        "in": "rooms"
+      }
+    },
+    "north_of_house": {
+      "id": "north_of_house",
+      "name": "North of House",
+      "attributes": {
+        "description_hints": "You are facing the north side of a white house. There is no door here,\nand all the windows are boarded up. To the north a narrow path winds through\nthe trees. - North of House",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "boarded_window",
+          "board",
+          "white_house",
+          "forest"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "onbit",
+          "sacredbit"
+        ]
+      },
+      "connections": {
+        "north": "path",
+        "south": "the windows are all boarded.",
+        "east": "east_of_house",
+        "west": "west_of_house",
+        "se": "east_of_house",
+        "sw": "west_of_house",
+        "in": "rooms"
+      }
+    },
+    "south_of_house": {
+      "id": "south_of_house",
+      "name": "South of House",
+      "attributes": {
+        "description_hints": "You are facing the south side of a white house. There is no door here,\nand all the windows are boarded. - South of House",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "boarded_window",
+          "board",
+          "white_house",
+          "forest"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "onbit",
+          "sacredbit"
+        ]
+      },
+      "connections": {
+        "north": "the windows are all boarded.",
+        "south": "forest_3",
+        "east": "east_of_house",
+        "west": "west_of_house",
+        "ne": "east_of_house",
+        "nw": "west_of_house",
+        "in": "rooms"
+      }
+    },
+    "east_of_house": {
+      "id": "east_of_house",
+      "name": "Behind House",
+      "attributes": {
+        "description_hints": "Behind House",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "white_house",
+          "kitchen_window",
+          "forest"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "onbit",
+          "sacredbit"
+        ]
+      },
+      "connections": {
+        "north": "north_of_house",
+        "south": "south_of_house",
+        "east": "clearing",
+        "west": "kitchen",
+        "nw": "north_of_house",
+        "sw": "south_of_house",
+        "in": "kitchen"
+      }
+    },
+    "forest_1": {
+      "id": "forest_1",
+      "name": "Forest",
+      "attributes": {
+        "description_hints": "This is a forest, with trees in all directions. To the east,\nthere appears to be sunlight. - Forest",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "tree",
+          "songbird",
+          "white_house",
+          "forest"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "onbit",
+          "sacredbit"
+        ]
+      },
+      "connections": {
+        "north": "grating_clearing",
+        "south": "forest_3",
+        "east": "path",
+        "west": "you would need a machete to go further west.",
+        "up": "there is no tree here suitable for climbing.",
+        "in": "rooms"
+      }
+    },
+    "forest_2": {
+      "id": "forest_2",
+      "name": "Forest",
+      "attributes": {
+        "description_hints": "This is a dimly lit forest, with large trees all around. - Forest",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "tree",
+          "songbird",
+          "white_house",
+          "forest"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "onbit",
+          "sacredbit"
+        ]
+      },
+      "connections": {
+        "north": "the forest becomes impenetrable to the north.",
+        "south": "clearing",
+        "east": "mountains",
+        "west": "path",
+        "up": "there is no tree here suitable for climbing.",
+        "in": "rooms"
+      }
+    },
+    "mountains": {
+      "id": "mountains",
+      "name": "Forest",
+      "attributes": {
+        "description_hints": "The forest thins out, revealing impassable mountains. - Forest",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "tree",
+          "white_house"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "onbit",
+          "sacredbit"
+        ]
+      },
+      "connections": {
+        "north": "forest_2",
+        "south": "forest_2",
+        "east": "the mountains are impassable.",
+        "west": "forest_2",
+        "up": "the mountains are impassable.",
+        "in": "rooms"
+      }
+    },
+    "forest_3": {
+      "id": "forest_3",
+      "name": "Forest",
+      "attributes": {
+        "description_hints": "This is a dimly lit forest, with large trees all around. - Forest",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "tree",
+          "songbird",
+          "white_house",
+          "forest"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "onbit",
+          "sacredbit"
+        ]
+      },
+      "connections": {
+        "north": "clearing",
+        "south": "storm_tossed trees block your way.",
+        "east": "the rank undergrowth prevents eastward movement.",
+        "west": "forest_1",
+        "nw": "south_of_house",
+        "up": "there is no tree here suitable for climbing.",
+        "in": "rooms"
+      }
+    },
+    "path": {
+      "id": "path",
+      "name": "Forest Path",
+      "attributes": {
+        "description_hints": "This is a path winding through a dimly lit forest. The path heads\nnorth-south here. One particularly large tree with some low branches\nstands at the edge of the path. - Forest Path",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "tree",
+          "songbird",
+          "white_house",
+          "forest"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "onbit",
+          "sacredbit"
+        ]
+      },
+      "connections": {
+        "north": "grating_clearing",
+        "south": "north_of_house",
+        "east": "forest_2",
+        "west": "forest_1",
+        "up": "up_a_tree",
+        "in": "rooms"
+      }
+    },
+    "up_a_tree": {
+      "id": "up_a_tree",
+      "name": "Up a Tree",
+      "attributes": {
+        "description_hints": "Up a Tree",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "tree",
+          "forest",
+          "songbird",
+          "white_house"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "onbit",
+          "sacredbit"
+        ]
+      },
+      "connections": {
+        "up": "you cannot climb any higher.",
+        "down": "path",
+        "in": "rooms"
+      }
+    },
+    "grating_clearing": {
+      "id": "grating_clearing",
+      "name": "Clearing",
+      "attributes": {
+        "description_hints": "Clearing",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "white_house",
+          "grate"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "onbit",
+          "sacredbit"
+        ]
+      },
+      "connections": {
+        "north": "the forest becomes impenetrable to the north.",
+        "south": "path",
+        "east": "forest_2",
+        "west": "forest_1",
+        "in": "rooms"
+      }
+    },
+    "clearing": {
+      "id": "clearing",
+      "name": "Clearing",
+      "attributes": {
+        "description_hints": "You are in a small clearing in a well marked forest path that\nextends to the east and west. - Clearing",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "tree",
+          "songbird",
+          "white_house",
+          "forest"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "onbit",
+          "sacredbit"
+        ]
+      },
+      "connections": {
+        "north": "forest_2",
+        "south": "forest_3",
+        "east": "canyon_view",
+        "west": "east_of_house",
+        "up": "there is no tree here suitable for climbing.",
+        "in": "rooms"
+      }
+    },
+    "kitchen": {
+      "id": "kitchen",
+      "name": "Kitchen",
+      "attributes": {
+        "description_hints": "Kitchen",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "kitchen_window",
+          "chimney",
+          "stairs"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "onbit",
+          "sacredbit"
+        ]
+      },
+      "connections": {
+        "east": "east_of_house",
+        "west": "living_room",
+        "up": "attic",
+        "down": "studio",
+        "in": "rooms",
+        "out": "east_of_house"
+      }
+    },
+    "attic": {
+      "id": "attic",
+      "name": "Attic",
+      "attributes": {
+        "description_hints": "This is the attic. The only exit is a stairway leading down. - Attic",
+        "lighting": "variable",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "s",
+          "t",
+          "a",
+          "i",
+          "r",
+          "s"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "sacredbit"
+        ]
+      },
+      "connections": {
+        "down": "kitchen",
+        "in": "rooms"
+      }
+    },
+    "living_room": {
+      "id": "living_room",
+      "name": "Living Room",
+      "attributes": {
+        "description_hints": "Living Room",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_pseudo_objects": [
+          "NAILS",
+          "NAILS-PSEUDO",
+          "NAIL",
+          "NAILS-PSEUDO"
+        ],
+        "zil_global_objects": [
+          "s",
+          "t",
+          "a",
+          "i",
+          "r",
+          "s"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "onbit",
+          "sacredbit"
+        ]
+      },
+      "connections": {
+        "east": "kitchen",
+        "west": "strange_passage",
+        "in": "rooms"
+      }
+    },
+    "cellar": {
+      "id": "cellar",
+      "name": "Cellar",
+      "attributes": {
+        "description_hints": "Cellar",
+        "lighting": "variable",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "trap_door",
+          "slide",
+          "stairs"
+        ],
+        "zil_flags": [
+          "rlandbit"
+        ]
+      },
+      "connections": {
+        "north": "troll_room",
+        "south": "east_of_chasm",
+        "west": "you try to ascend the ramp, but it is impossible, and you slide back down.",
+        "up": "living_room",
+        "in": "rooms"
+      }
+    },
+    "troll_room": {
+      "id": "troll_room",
+      "name": "The Troll Room",
+      "attributes": {
+        "description_hints": "This is a small room with passages to the east and south and a\nforbidding hole leading west. Bloodstains and deep scratches\n(perhaps made by an axe) mar the walls. - The Troll Room",
+        "lighting": "variable",
+        "is_outdoors": false,
+        "zil_flags": [
+          "rlandbit"
+        ]
+      },
+      "connections": {
+        "south": "cellar",
+        "east": "ew_passage",
+        "west": "maze_1",
+        "in": "rooms"
+      }
+    },
+    "east_of_chasm": {
+      "id": "east_of_chasm",
+      "name": "East of Chasm",
+      "attributes": {
+        "description_hints": "You are on the east edge of a chasm, the bottom of which cannot be\nseen. A narrow passage goes north, and the path you are on continues\nto the east. - East of Chasm",
+        "lighting": "variable",
+        "is_outdoors": false,
+        "zil_pseudo_objects": [
+          "CHASM",
+          "CHASM-PSEUDO"
+        ],
+        "zil_flags": [
+          "rlandbit"
+        ]
+      },
+      "connections": {
+        "north": "cellar",
+        "east": "gallery",
+        "down": "the chasm probably leads straight to the infernal regions.",
+        "in": "rooms"
+      }
+    },
+    "gallery": {
+      "id": "gallery",
+      "name": "Gallery",
+      "attributes": {
+        "description_hints": "This is an art gallery. Most of the paintings have been stolen by\nvandals with exceptional taste. The vandals left through either the\nnorth or west exits. - Gallery",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_flags": [
+          "rlandbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "north": "studio",
+        "west": "east_of_chasm",
+        "in": "rooms"
+      }
+    },
+    "studio": {
+      "id": "studio",
+      "name": "Studio",
+      "attributes": {
+        "description_hints": "This appears to have been an artist's studio. The walls and floors are\nsplattered with paints of 69 different colors. Strangely enough, nothing\nof value is hanging here. At the south end of the room is an open door\n(also covered with paint). A dark and narrow chimney leads up from a\nfireplace; although you might be able to get up it, it seems unlikely\nyou could get back down. - Studio",
+        "lighting": "variable",
+        "is_outdoors": false,
+        "zil_pseudo_objects": [
+          "DOOR",
+          "DOOR-PSEUDO",
+          "PAINT",
+          "PAINT-PSEUDO"
+        ],
+        "zil_global_objects": [
+          "c",
+          "h",
+          "i",
+          "m",
+          "n",
+          "e",
+          "y"
+        ],
+        "zil_flags": [
+          "rlandbit"
+        ]
+      },
+      "connections": {
+        "south": "gallery",
+        "in": "rooms"
+      }
+    },
+    "maze_1": {
+      "id": "maze_1",
+      "name": "Maze",
+      "attributes": {
+        "description_hints": "This is part of a maze of twisty little passages, all alike. - Maze",
+        "lighting": "variable",
+        "is_outdoors": false,
+        "zil_flags": [
+          "rlandbit",
+          "mazebit"
+        ]
+      },
+      "connections": {
+        "north": "maze_1",
+        "south": "maze_2",
+        "east": "troll_room",
+        "west": "maze_4",
+        "in": "rooms"
+      }
+    },
+    "maze_2": {
+      "id": "maze_2",
+      "name": "Maze",
+      "attributes": {
+        "description_hints": "This is part of a maze of twisty little passages, all alike. - Maze",
+        "lighting": "variable",
+        "is_outdoors": false,
+        "zil_flags": [
+          "rlandbit",
+          "mazebit"
+        ]
+      },
+      "connections": {
+        "south": "maze_1",
+        "east": "maze_3",
+        "in": "rooms"
+      }
+    },
+    "maze_3": {
+      "id": "maze_3",
+      "name": "Maze",
+      "attributes": {
+        "description_hints": "This is part of a maze of twisty little passages, all alike. - Maze",
+        "lighting": "variable",
+        "is_outdoors": false,
+        "zil_flags": [
+          "rlandbit",
+          "mazebit"
+        ]
+      },
+      "connections": {
+        "north": "maze_4",
+        "west": "maze_2",
+        "up": "maze_5",
+        "in": "rooms"
+      }
+    },
+    "maze_4": {
+      "id": "maze_4",
+      "name": "Maze",
+      "attributes": {
+        "description_hints": "This is part of a maze of twisty little passages, all alike. - Maze",
+        "lighting": "variable",
+        "is_outdoors": false,
+        "zil_flags": [
+          "rlandbit",
+          "mazebit"
+        ]
+      },
+      "connections": {
+        "north": "maze_1",
+        "east": "dead_end_1",
+        "west": "maze_3",
+        "in": "rooms"
+      }
+    },
+    "dead_end_1": {
+      "id": "dead_end_1",
+      "name": "Dead End",
+      "attributes": {
+        "description_hints": "You have come to a dead end in the maze. - Dead End",
+        "lighting": "variable",
+        "is_outdoors": false,
+        "zil_flags": [
+          "rlandbit",
+          "mazebit"
+        ]
+      },
+      "connections": {
+        "south": "maze_4",
+        "in": "rooms"
+      }
+    },
+    "maze_5": {
+      "id": "maze_5",
+      "name": "Maze",
+      "attributes": {
+        "description_hints": "This is part of a maze of twisty little passages, all alike.\nA skeleton, probably the remains of a luckless adventurer, lies here. - Maze",
+        "lighting": "variable",
+        "is_outdoors": false,
+        "zil_flags": [
+          "rlandbit",
+          "mazebit"
+        ]
+      },
+      "connections": {
+        "north": "maze_3",
+        "east": "dead_end_2",
+        "sw": "maze_6",
+        "in": "rooms"
+      }
+    },
+    "dead_end_2": {
+      "id": "dead_end_2",
+      "name": "Dead End",
+      "attributes": {
+        "description_hints": "You have come to a dead end in the maze. - Dead End",
+        "lighting": "variable",
+        "is_outdoors": false,
+        "zil_flags": [
+          "rlandbit",
+          "mazebit"
+        ]
+      },
+      "connections": {
+        "west": "maze_5",
+        "in": "rooms"
+      }
+    },
+    "maze_6": {
+      "id": "maze_6",
+      "name": "Maze",
+      "attributes": {
+        "description_hints": "This is part of a maze of twisty little passages, all alike. - Maze",
+        "lighting": "variable",
+        "is_outdoors": false,
+        "zil_flags": [
+          "rlandbit",
+          "mazebit"
+        ]
+      },
+      "connections": {
+        "east": "maze_7",
+        "west": "maze_6",
+        "up": "maze_9",
+        "down": "maze_5",
+        "in": "rooms"
+      }
+    },
+    "maze_7": {
+      "id": "maze_7",
+      "name": "Maze",
+      "attributes": {
+        "description_hints": "This is part of a maze of twisty little passages, all alike. - Maze",
+        "lighting": "variable",
+        "is_outdoors": false,
+        "zil_flags": [
+          "rlandbit",
+          "mazebit"
+        ]
+      },
+      "connections": {
+        "south": "maze_15",
+        "east": "maze_8",
+        "west": "maze_6",
+        "up": "maze_14",
+        "in": "rooms"
+      }
+    },
+    "maze_8": {
+      "id": "maze_8",
+      "name": "Maze",
+      "attributes": {
+        "description_hints": "This is part of a maze of twisty little passages, all alike. - Maze",
+        "lighting": "variable",
+        "is_outdoors": false,
+        "zil_flags": [
+          "rlandbit",
+          "mazebit"
+        ]
+      },
+      "connections": {
+        "west": "maze_8",
+        "ne": "maze_7",
+        "se": "dead_end_3",
+        "in": "rooms"
+      }
+    },
+    "dead_end_3": {
+      "id": "dead_end_3",
+      "name": "Dead End",
+      "attributes": {
+        "description_hints": "You have come to a dead end in the maze. - Dead End",
+        "lighting": "variable",
+        "is_outdoors": false,
+        "zil_flags": [
+          "rlandbit",
+          "mazebit"
+        ]
+      },
+      "connections": {
+        "north": "maze_8",
+        "in": "rooms"
+      }
+    },
+    "maze_9": {
+      "id": "maze_9",
+      "name": "Maze",
+      "attributes": {
+        "description_hints": "This is part of a maze of twisty little passages, all alike. - Maze",
+        "lighting": "variable",
+        "is_outdoors": false,
+        "zil_flags": [
+          "rlandbit",
+          "mazebit"
+        ]
+      },
+      "connections": {
+        "north": "maze_6",
+        "south": "maze_13",
+        "east": "maze_10",
+        "west": "maze_12",
+        "nw": "maze_9",
+        "in": "rooms"
+      }
+    },
+    "maze_10": {
+      "id": "maze_10",
+      "name": "Maze",
+      "attributes": {
+        "description_hints": "This is part of a maze of twisty little passages, all alike. - Maze",
+        "lighting": "variable",
+        "is_outdoors": false,
+        "zil_flags": [
+          "rlandbit",
+          "mazebit"
+        ]
+      },
+      "connections": {
+        "east": "maze_9",
+        "west": "maze_13",
+        "up": "maze_11",
+        "in": "rooms"
+      }
+    },
+    "maze_11": {
+      "id": "maze_11",
+      "name": "Maze",
+      "attributes": {
+        "description_hints": "This is part of a maze of twisty little passages, all alike. - Maze",
+        "lighting": "variable",
+        "is_outdoors": false,
+        "zil_flags": [
+          "rlandbit",
+          "mazebit"
+        ]
+      },
+      "connections": {
+        "ne": "grating_room",
+        "nw": "maze_13",
+        "sw": "maze_12",
+        "down": "maze_10",
+        "in": "rooms"
+      }
+    },
+    "grating_room": {
+      "id": "grating_room",
+      "name": "Grating Room",
+      "attributes": {
+        "description_hints": "Grating Room",
+        "lighting": "variable",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "g",
+          "r",
+          "a",
+          "t",
+          "e"
+        ],
+        "zil_flags": [
+          "rlandbit"
+        ]
+      },
+      "connections": {
+        "sw": "maze_11",
+        "up": "grating_clearing",
+        "in": "rooms"
+      }
+    },
+    "maze_12": {
+      "id": "maze_12",
+      "name": "Maze",
+      "attributes": {
+        "description_hints": "This is part of a maze of twisty little passages, all alike. - Maze",
+        "lighting": "variable",
+        "is_outdoors": false,
+        "zil_flags": [
+          "rlandbit",
+          "mazebit"
+        ]
+      },
+      "connections": {
+        "north": "dead_end_4",
+        "east": "maze_13",
+        "sw": "maze_11",
+        "up": "maze_9",
+        "in": "rooms"
+      }
+    },
+    "dead_end_4": {
+      "id": "dead_end_4",
+      "name": "Dead End",
+      "attributes": {
+        "description_hints": "You have come to a dead end in the maze. - Dead End",
+        "lighting": "variable",
+        "is_outdoors": false,
+        "zil_flags": [
+          "rlandbit",
+          "mazebit"
+        ]
+      },
+      "connections": {
+        "south": "maze_12",
+        "in": "rooms"
+      }
+    },
+    "maze_13": {
+      "id": "maze_13",
+      "name": "Maze",
+      "attributes": {
+        "description_hints": "This is part of a maze of twisty little passages, all alike. - Maze",
+        "lighting": "variable",
+        "is_outdoors": false,
+        "zil_flags": [
+          "rlandbit",
+          "mazebit"
+        ]
+      },
+      "connections": {
+        "south": "maze_10",
+        "east": "maze_9",
+        "west": "maze_11",
+        "down": "maze_12",
+        "in": "rooms"
+      }
+    },
+    "maze_14": {
+      "id": "maze_14",
+      "name": "Maze",
+      "attributes": {
+        "description_hints": "This is part of a maze of twisty little passages, all alike. - Maze",
+        "lighting": "variable",
+        "is_outdoors": false,
+        "zil_flags": [
+          "rlandbit",
+          "mazebit"
+        ]
+      },
+      "connections": {
+        "south": "maze_7",
+        "west": "maze_15",
+        "ne": "maze_7",
+        "nw": "maze_14",
+        "in": "rooms"
+      }
+    },
+    "maze_15": {
+      "id": "maze_15",
+      "name": "Maze",
+      "attributes": {
+        "description_hints": "This is part of a maze of twisty little passages, all alike. - Maze",
+        "lighting": "variable",
+        "is_outdoors": false,
+        "zil_flags": [
+          "rlandbit",
+          "mazebit"
+        ]
+      },
+      "connections": {
+        "south": "maze_7",
+        "west": "maze_14",
+        "se": "cyclops_room",
+        "in": "rooms"
+      }
+    },
+    "cyclops_room": {
+      "id": "cyclops_room",
+      "name": "Cyclops Room",
+      "attributes": {
+        "description_hints": "Cyclops Room",
+        "lighting": "variable",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "s",
+          "t",
+          "a",
+          "i",
+          "r",
+          "s"
+        ],
+        "zil_flags": [
+          "rlandbit"
+        ]
+      },
+      "connections": {
+        "east": "strange_passage",
+        "nw": "maze_15",
+        "up": "treasure_room",
+        "in": "rooms"
+      }
+    },
+    "strange_passage": {
+      "id": "strange_passage",
+      "name": "Strange Passage",
+      "attributes": {
+        "description_hints": "This is a long passage. To the west is one entrance. On the\neast there is an old wooden door, with a large opening in it (about\ncyclops sized). - Strange Passage",
+        "lighting": "variable",
+        "is_outdoors": false,
+        "zil_flags": [
+          "rlandbit"
+        ]
+      },
+      "connections": {
+        "east": "living_room",
+        "west": "cyclops_room",
+        "in": "cyclops_room"
+      }
+    },
+    "reservoir_south": {
+      "id": "reservoir_south",
+      "name": "Reservoir South",
+      "attributes": {
+        "description_hints": "Reservoir South",
+        "lighting": "variable",
+        "is_outdoors": false,
+        "zil_pseudo_objects": [
+          "LAKE",
+          "LAKE-PSEUDO",
+          "CHASM",
+          "CHASM-PSEUDO"
+        ],
+        "zil_global_objects": [
+          "g",
+          "l",
+          "o",
+          "b",
+          "a",
+          "l",
+          "_",
+          "w",
+          "a",
+          "t",
+          "e",
+          "r"
+        ],
+        "zil_flags": [
+          "rlandbit"
+        ]
+      },
+      "connections": {
+        "north": "reservoir",
+        "east": "dam_room",
+        "west": "stream_view",
+        "se": "deep_canyon",
+        "sw": "chasm_room",
+        "in": "rooms"
+      }
+    },
+    "reservoir": {
+      "id": "reservoir",
+      "name": "Reservoir",
+      "attributes": {
+        "description_hints": "Reservoir",
+        "lighting": "variable",
+        "is_outdoors": true,
+        "zil_pseudo_objects": [
+          "STREAM",
+          "STREAM-PSEUDO"
+        ],
+        "zil_global_objects": [
+          "g",
+          "l",
+          "o",
+          "b",
+          "a",
+          "l",
+          "_",
+          "w",
+          "a",
+          "t",
+          "e",
+          "r"
+        ],
+        "zil_flags": [
+          "nonlandbit"
+        ]
+      },
+      "connections": {
+        "north": "reservoir_north",
+        "south": "reservoir_south",
+        "west": "in_stream",
+        "up": "in_stream",
+        "down": "the dam blocks your way.",
+        "in": "rooms"
+      }
+    },
+    "reservoir_north": {
+      "id": "reservoir_north",
+      "name": "Reservoir North",
+      "attributes": {
+        "description_hints": "Reservoir North",
+        "lighting": "variable",
+        "is_outdoors": false,
+        "zil_pseudo_objects": [
+          "LAKE",
+          "LAKE-PSEUDO"
+        ],
+        "zil_global_objects": [
+          "global_water",
+          "stairs"
+        ],
+        "zil_flags": [
+          "rlandbit"
+        ]
+      },
+      "connections": {
+        "north": "atlantis_room",
+        "south": "reservoir",
+        "in": "rooms"
+      }
+    },
+    "stream_view": {
+      "id": "stream_view",
+      "name": "Stream View",
+      "attributes": {
+        "description_hints": "You are standing on a path beside a gently flowing stream. The path\nfollows the stream, which flows from west to east. - Stream View",
+        "lighting": "variable",
+        "is_outdoors": false,
+        "zil_pseudo_objects": [
+          "STREAM",
+          "STREAM-PSEUDO"
+        ],
+        "zil_global_objects": [
+          "g",
+          "l",
+          "o",
+          "b",
+          "a",
+          "l",
+          "_",
+          "w",
+          "a",
+          "t",
+          "e",
+          "r"
+        ],
+        "zil_flags": [
+          "rlandbit"
+        ]
+      },
+      "connections": {
+        "east": "reservoir_south",
+        "west": "the stream emerges from a spot too small for you to enter.",
+        "in": "rooms"
+      }
+    },
+    "in_stream": {
+      "id": "in_stream",
+      "name": "Stream",
+      "attributes": {
+        "description_hints": "You are on the gently flowing stream. The upstream route is too narrow\nto navigate, and the downstream route is invisible due to twisting\nwalls. There is a narrow beach to land on. - Stream",
+        "lighting": "variable",
+        "is_outdoors": true,
+        "zil_pseudo_objects": [
+          "STREAM",
+          "STREAM-PSEUDO"
+        ],
+        "zil_global_objects": [
+          "g",
+          "l",
+          "o",
+          "b",
+          "a",
+          "l",
+          "_",
+          "w",
+          "a",
+          "t",
+          "e",
+          "r"
+        ],
+        "zil_flags": [
+          "nonlandbit"
+        ]
+      },
+      "connections": {
+        "east": "reservoir",
+        "west": "the channel is too narrow.",
+        "up": "the channel is too narrow.",
+        "down": "reservoir",
+        "in": "rooms"
+      }
+    },
+    "mirror_room_1": {
+      "id": "mirror_room_1",
+      "name": "Mirror Room",
+      "attributes": {
+        "description_hints": "Mirror Room",
+        "lighting": "variable",
+        "is_outdoors": false,
+        "zil_flags": [
+          "rlandbit"
+        ]
+      },
+      "connections": {
+        "north": "cold_passage",
+        "east": "small_cave",
+        "west": "twisting_passage",
+        "in": "rooms"
+      }
+    },
+    "mirror_room_2": {
+      "id": "mirror_room_2",
+      "name": "Mirror Room",
+      "attributes": {
+        "description_hints": "Mirror Room",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_flags": [
+          "rlandbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "north": "narrow_passage",
+        "east": "tiny_cave",
+        "west": "winding_passage",
+        "in": "rooms"
+      }
+    },
+    "small_cave": {
+      "id": "small_cave",
+      "name": "Cave",
+      "attributes": {
+        "description_hints": "This is a tiny cave with entrances west and north, and a staircase\nleading down. - Cave",
+        "lighting": "variable",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "s",
+          "t",
+          "a",
+          "i",
+          "r",
+          "s"
+        ],
+        "zil_flags": [
+          "rlandbit"
+        ]
+      },
+      "connections": {
+        "north": "mirror_room_1",
+        "south": "atlantis_room",
+        "west": "twisting_passage",
+        "down": "atlantis_room",
+        "in": "rooms"
+      }
+    },
+    "tiny_cave": {
+      "id": "tiny_cave",
+      "name": "Cave",
+      "attributes": {
+        "description_hints": "This is a tiny cave with entrances west and north, and a dark,\nforbidding staircase leading down. - Cave",
+        "lighting": "variable",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "s",
+          "t",
+          "a",
+          "i",
+          "r",
+          "s"
+        ],
+        "zil_flags": [
+          "rlandbit"
+        ]
+      },
+      "connections": {
+        "north": "mirror_room_2",
+        "west": "winding_passage",
+        "down": "entrance_to_hades",
+        "in": "rooms"
+      }
+    },
+    "cold_passage": {
+      "id": "cold_passage",
+      "name": "Cold Passage",
+      "attributes": {
+        "description_hints": "This is a cold and damp corridor where a long east-west passageway\nturns into a southward path. - Cold Passage",
+        "lighting": "variable",
+        "is_outdoors": false,
+        "zil_flags": [
+          "rlandbit"
+        ]
+      },
+      "connections": {
+        "south": "mirror_room_1",
+        "west": "slide_room",
+        "in": "rooms"
+      }
+    },
+    "narrow_passage": {
+      "id": "narrow_passage",
+      "name": "Narrow Passage",
+      "attributes": {
+        "description_hints": "This is a long and narrow corridor where a long north-south passageway\nbriefly narrows even further. - Narrow Passage",
+        "lighting": "variable",
+        "is_outdoors": false,
+        "zil_flags": [
+          "rlandbit"
+        ]
+      },
+      "connections": {
+        "north": "round_room",
+        "south": "mirror_room_2",
+        "in": "rooms"
+      }
+    },
+    "winding_passage": {
+      "id": "winding_passage",
+      "name": "Winding Passage",
+      "attributes": {
+        "description_hints": "This is a winding passage. It seems that there are only exits\non the east and north. - Winding Passage",
+        "lighting": "variable",
+        "is_outdoors": false,
+        "zil_flags": [
+          "rlandbit"
+        ]
+      },
+      "connections": {
+        "north": "mirror_room_2",
+        "east": "tiny_cave",
+        "in": "rooms"
+      }
+    },
+    "twisting_passage": {
+      "id": "twisting_passage",
+      "name": "Twisting Passage",
+      "attributes": {
+        "description_hints": "This is a winding passage. It seems that there are only exits\non the east and north. - Twisting Passage",
+        "lighting": "variable",
+        "is_outdoors": false,
+        "zil_flags": [
+          "rlandbit"
+        ]
+      },
+      "connections": {
+        "north": "mirror_room_1",
+        "east": "small_cave",
+        "in": "rooms"
+      }
+    },
+    "atlantis_room": {
+      "id": "atlantis_room",
+      "name": "Atlantis Room",
+      "attributes": {
+        "description_hints": "This is an ancient room, long under water. There is an exit to\nthe south and a staircase leading up. - Atlantis Room",
+        "lighting": "variable",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "s",
+          "t",
+          "a",
+          "i",
+          "r",
+          "s"
+        ],
+        "zil_flags": [
+          "rlandbit"
+        ]
+      },
+      "connections": {
+        "south": "reservoir_north",
+        "up": "small_cave",
+        "in": "rooms"
+      }
+    },
+    "ew_passage": {
+      "id": "ew_passage",
+      "name": "East-West Passage",
+      "attributes": {
+        "description_hints": "This is a narrow east-west passageway. There is a narrow stairway\nleading down at the north end of the room. - East-West Passage",
+        "lighting": "variable",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "s",
+          "t",
+          "a",
+          "i",
+          "r",
+          "s"
+        ],
+        "zil_flags": [
+          "rlandbit"
+        ]
+      },
+      "connections": {
+        "north": "chasm_room",
+        "east": "round_room",
+        "west": "troll_room",
+        "down": "chasm_room",
+        "in": "rooms"
+      }
+    },
+    "round_room": {
+      "id": "round_room",
+      "name": "Round Room",
+      "attributes": {
+        "description_hints": "This is a circular stone room with passages in all directions. Several\nof them have unfortunately been blocked by cave-ins. - Round Room",
+        "lighting": "variable",
+        "is_outdoors": false,
+        "zil_flags": [
+          "rlandbit"
+        ]
+      },
+      "connections": {
+        "north": "ns_passage",
+        "south": "narrow_passage",
+        "east": "loud_room",
+        "west": "ew_passage",
+        "se": "engravings_cave",
+        "in": "rooms"
+      }
+    },
+    "deep_canyon": {
+      "id": "deep_canyon",
+      "name": "Deep Canyon",
+      "attributes": {
+        "description_hints": "Deep Canyon",
+        "lighting": "variable",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "s",
+          "t",
+          "a",
+          "i",
+          "r",
+          "s"
+        ],
+        "zil_flags": [
+          "rlandbit"
+        ]
+      },
+      "connections": {
+        "east": "dam_room",
+        "nw": "reservoir_south",
+        "sw": "ns_passage",
+        "down": "loud_room",
+        "in": "rooms"
+      }
+    },
+    "damp_cave": {
+      "id": "damp_cave",
+      "name": "Damp Cave",
+      "attributes": {
+        "description_hints": "This cave has exits to the west and east, and narrows to a crack toward\nthe south. The earth is particularly damp here. - Damp Cave",
+        "lighting": "variable",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "c",
+          "r",
+          "a",
+          "c",
+          "k"
+        ],
+        "zil_flags": [
+          "rlandbit"
+        ]
+      },
+      "connections": {
+        "south": "it is too narrow for most insects.",
+        "east": "white_cliffs_north",
+        "west": "loud_room",
+        "in": "rooms"
+      }
+    },
+    "loud_room": {
+      "id": "loud_room",
+      "name": "Loud Room",
+      "attributes": {
+        "description_hints": "Loud Room",
+        "lighting": "variable",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "s",
+          "t",
+          "a",
+          "i",
+          "r",
+          "s"
+        ],
+        "zil_flags": [
+          "rlandbit"
+        ]
+      },
+      "connections": {
+        "east": "damp_cave",
+        "west": "round_room",
+        "up": "deep_canyon",
+        "in": "rooms"
+      }
+    },
+    "ns_passage": {
+      "id": "ns_passage",
+      "name": "North-South Passage",
+      "attributes": {
+        "description_hints": "This is a high north-south passage, which forks to the northeast. - North-South Passage",
+        "lighting": "variable",
+        "is_outdoors": false,
+        "zil_flags": [
+          "rlandbit"
+        ]
+      },
+      "connections": {
+        "north": "chasm_room",
+        "south": "round_room",
+        "ne": "deep_canyon",
+        "in": "rooms"
+      }
+    },
+    "chasm_room": {
+      "id": "chasm_room",
+      "name": "Chasm",
+      "attributes": {
+        "description_hints": "A chasm runs southwest to northeast and the path follows it. You are\non the south side of the chasm, where a crack opens into a passage. - Chasm",
+        "lighting": "variable",
+        "is_outdoors": false,
+        "zil_pseudo_objects": [
+          "CHASM",
+          "CHASM-PSEUDO"
+        ],
+        "zil_global_objects": [
+          "crack",
+          "stairs"
+        ],
+        "zil_flags": [
+          "rlandbit"
+        ]
+      },
+      "connections": {
+        "south": "ns_passage",
+        "ne": "reservoir_south",
+        "sw": "ew_passage",
+        "up": "ew_passage",
+        "down": "are you out of your mind?",
+        "in": "rooms"
+      }
+    },
+    "entrance_to_hades": {
+      "id": "entrance_to_hades",
+      "name": "Entrance to Hades",
+      "attributes": {
+        "description_hints": "Entrance to Hades",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_pseudo_objects": [
+          "GATE",
+          "GATE-PSEUDO",
+          "GATES",
+          "GATE-PSEUDO"
+        ],
+        "zil_global_objects": [
+          "b",
+          "o",
+          "d",
+          "i",
+          "e",
+          "s"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "south": "land_of_living_dead",
+        "up": "tiny_cave",
+        "in": "land_of_living_dead"
+      }
+    },
+    "land_of_living_dead": {
+      "id": "land_of_living_dead",
+      "name": "Land of the Dead",
+      "attributes": {
+        "description_hints": "You have entered the Land of the Living Dead. Thousands of lost souls\ncan be heard weeping and moaning. In the corner are stacked the remains\nof dozens of previous adventurers less fortunate than yourself.\nA passage exits to the north. - Land of the Dead",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "b",
+          "o",
+          "d",
+          "i",
+          "e",
+          "s"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "north": "entrance_to_hades",
+        "in": "rooms",
+        "out": "entrance_to_hades"
+      }
+    },
+    "engravings_cave": {
+      "id": "engravings_cave",
+      "name": "Engravings Cave",
+      "attributes": {
+        "description_hints": "You have entered a low cave with passages leading northwest and east. - Engravings Cave",
+        "lighting": "variable",
+        "is_outdoors": false,
+        "zil_flags": [
+          "rlandbit"
+        ]
+      },
+      "connections": {
+        "east": "dome_room",
+        "nw": "round_room",
+        "in": "rooms"
+      }
+    },
+    "egypt_room": {
+      "id": "egypt_room",
+      "name": "Egyptian Room",
+      "attributes": {
+        "description_hints": "This is a room which looks like an Egyptian tomb. There is an\nascending staircase to the west. - Egyptian Room",
+        "lighting": "variable",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "s",
+          "t",
+          "a",
+          "i",
+          "r",
+          "s"
+        ],
+        "zil_flags": [
+          "rlandbit"
+        ]
+      },
+      "connections": {
+        "west": "north_temple",
+        "up": "north_temple",
+        "in": "rooms"
+      }
+    },
+    "dome_room": {
+      "id": "dome_room",
+      "name": "Dome Room",
+      "attributes": {
+        "description_hints": "Dome Room",
+        "lighting": "variable",
+        "is_outdoors": false,
+        "zil_pseudo_objects": [
+          "DOME",
+          "DOME-PSEUDO"
+        ],
+        "zil_flags": [
+          "rlandbit"
+        ]
+      },
+      "connections": {
+        "west": "engravings_cave",
+        "down": "torch_room",
+        "in": "rooms"
+      }
+    },
+    "torch_room": {
+      "id": "torch_room",
+      "name": "Torch Room",
+      "attributes": {
+        "description_hints": "Torch Room",
+        "lighting": "variable",
+        "is_outdoors": false,
+        "zil_pseudo_objects": [
+          "DOME",
+          "DOME-PSEUDO"
+        ],
+        "zil_global_objects": [
+          "s",
+          "t",
+          "a",
+          "i",
+          "r",
+          "s"
+        ],
+        "zil_flags": [
+          "rlandbit"
+        ]
+      },
+      "connections": {
+        "south": "north_temple",
+        "up": "you cannot reach the rope.",
+        "down": "north_temple",
+        "in": "rooms"
+      }
+    },
+    "north_temple": {
+      "id": "north_temple",
+      "name": "Temple",
+      "attributes": {
+        "description_hints": "This is the north end of a large temple. On the east wall is an\nancient inscription, probably a prayer in a long-forgotten language.\nBelow the prayer is a staircase leading down. The west wall is solid\ngranite. The exit to the north end of the room is through huge\nmarble pillars. - Temple",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "s",
+          "t",
+          "a",
+          "i",
+          "r",
+          "s"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "onbit",
+          "sacredbit"
+        ]
+      },
+      "connections": {
+        "north": "torch_room",
+        "south": "south_temple",
+        "east": "egypt_room",
+        "up": "torch_room",
+        "down": "egypt_room",
+        "in": "rooms",
+        "out": "torch_room"
+      }
+    },
+    "south_temple": {
+      "id": "south_temple",
+      "name": "Altar",
+      "attributes": {
+        "description_hints": "This is the south end of a large temple. In front of you is what\nappears to be an altar. In one corner is a small hole in the floor\nwhich leads into darkness. You probably could not get back up it. - Altar",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_flags": [
+          "rlandbit",
+          "onbit",
+          "sacredbit"
+        ]
+      },
+      "connections": {
+        "north": "north_temple",
+        "down": "tiny_cave",
+        "in": "rooms"
+      }
+    },
+    "dam_room": {
+      "id": "dam_room",
+      "name": "Dam",
+      "attributes": {
+        "description_hints": "Dam",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "g",
+          "l",
+          "o",
+          "b",
+          "a",
+          "l",
+          "_",
+          "w",
+          "a",
+          "t",
+          "e",
+          "r"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "north": "dam_lobby",
+        "south": "deep_canyon",
+        "east": "dam_base",
+        "west": "reservoir_south",
+        "down": "dam_base",
+        "in": "rooms"
+      }
+    },
+    "dam_lobby": {
+      "id": "dam_lobby",
+      "name": "Dam Lobby",
+      "attributes": {
+        "description_hints": "This room appears to have been the waiting room for groups touring\nthe dam. There are open doorways here to the north and east marked\n\"Private\", and there is a path leading south over the top of the dam. - Dam Lobby",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_flags": [
+          "rlandbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "north": "maintenance_room",
+        "south": "dam_room",
+        "east": "maintenance_room",
+        "in": "rooms"
+      }
+    },
+    "maintenance_room": {
+      "id": "maintenance_room",
+      "name": "Maintenance Room",
+      "attributes": {
+        "description_hints": "This is what appears to have been the maintenance room for Flood\nControl Dam #3. Apparently, this room has been ransacked recently, for\nmost of the valuable equipment is gone. On the wall in front of you is a\ngroup of buttons colored blue, yellow, brown, and red. There are doorways to\nthe west and south. - Maintenance Room",
+        "lighting": "variable",
+        "is_outdoors": false,
+        "zil_flags": [
+          "rlandbit"
+        ]
+      },
+      "connections": {
+        "south": "dam_lobby",
+        "west": "dam_lobby",
+        "in": "rooms"
+      }
+    },
+    "dam_base": {
+      "id": "dam_base",
+      "name": "Dam Base",
+      "attributes": {
+        "description_hints": "You are at the base of Flood Control Dam #3, which looms above you\nand to the north. The river Frigid is flowing by here. Along the\nriver are the White Cliffs which seem to form giant walls stretching\nfrom north to south along the shores of the river as it winds its\nway downstream. - Dam Base",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "global_water",
+          "river"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "onbit",
+          "sacredbit"
+        ]
+      },
+      "connections": {
+        "north": "dam_room",
+        "up": "dam_room",
+        "in": "rooms"
+      }
+    },
+    "river_1": {
+      "id": "river_1",
+      "name": "Frigid River",
+      "attributes": {
+        "description_hints": "You are on the Frigid River in the vicinity of the Dam. The river\nflows quietly here. There is a landing on the west shore. - Frigid River",
+        "lighting": "bright",
+        "is_outdoors": true,
+        "zil_global_objects": [
+          "global_water",
+          "river"
+        ],
+        "zil_flags": [
+          "nonlandbit",
+          "sacredbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "east": "the white cliffs prevent your landing here.",
+        "west": "dam_base",
+        "up": "you cannot go upstream due to strong currents.",
+        "down": "river_2",
+        "in": "rooms"
+      }
+    },
+    "river_2": {
+      "id": "river_2",
+      "name": "Frigid River",
+      "attributes": {
+        "description_hints": "The river turns a corner here making it impossible to see the\nDam. The White Cliffs loom on the east bank and large rocks prevent\nlanding on the west. - Frigid River",
+        "lighting": "variable",
+        "is_outdoors": true,
+        "zil_global_objects": [
+          "global_water",
+          "river"
+        ],
+        "zil_flags": [
+          "nonlandbit",
+          "sacredbit"
+        ]
+      },
+      "connections": {
+        "east": "the white cliffs prevent your landing here.",
+        "west": "just in time you steer away from the rocks.",
+        "up": "you cannot go upstream due to strong currents.",
+        "down": "river_3",
+        "in": "rooms"
+      }
+    },
+    "river_3": {
+      "id": "river_3",
+      "name": "Frigid River",
+      "attributes": {
+        "description_hints": "The river descends here into a valley. There is a narrow beach on the\nwest shore below the cliffs. In the distance a faint rumbling can be\nheard. - Frigid River",
+        "lighting": "variable",
+        "is_outdoors": true,
+        "zil_global_objects": [
+          "global_water",
+          "river"
+        ],
+        "zil_flags": [
+          "nonlandbit",
+          "sacredbit"
+        ]
+      },
+      "connections": {
+        "west": "white_cliffs_north",
+        "up": "you cannot go upstream due to strong currents.",
+        "down": "river_4",
+        "in": "rooms"
+      }
+    },
+    "white_cliffs_north": {
+      "id": "white_cliffs_north",
+      "name": "White Cliffs Beach",
+      "attributes": {
+        "description_hints": "You are on a narrow strip of beach which runs along the base of the\nWhite Cliffs. There is a narrow path heading south along the Cliffs\nand a tight passage leading west into the cliffs themselves. - White Cliffs Beach",
+        "lighting": "variable",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "global_water",
+          "white_cliff",
+          "river"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "sacredbit"
+        ]
+      },
+      "connections": {
+        "south": "white_cliffs_south",
+        "west": "damp_cave",
+        "in": "rooms"
+      }
+    },
+    "white_cliffs_south": {
+      "id": "white_cliffs_south",
+      "name": "White Cliffs Beach",
+      "attributes": {
+        "description_hints": "You are on a rocky, narrow strip of beach beside the Cliffs. A\nnarrow path leads north along the shore. - White Cliffs Beach",
+        "lighting": "variable",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "global_water",
+          "white_cliff",
+          "river"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "sacredbit"
+        ]
+      },
+      "connections": {
+        "north": "white_cliffs_north",
+        "in": "rooms"
+      }
+    },
+    "river_4": {
+      "id": "river_4",
+      "name": "Frigid River",
+      "attributes": {
+        "description_hints": "The river is running faster here and the sound ahead appears to be\nthat of rushing water. On the east shore is a sandy beach. A small\narea of beach can also be seen below the cliffs on the west shore. - Frigid River",
+        "lighting": "variable",
+        "is_outdoors": true,
+        "zil_global_objects": [
+          "global_water",
+          "river"
+        ],
+        "zil_flags": [
+          "nonlandbit",
+          "sacredbit"
+        ]
+      },
+      "connections": {
+        "east": "sandy_beach",
+        "west": "white_cliffs_south",
+        "up": "you cannot go upstream due to strong currents.",
+        "down": "river_5",
+        "in": "rooms"
+      }
+    },
+    "river_5": {
+      "id": "river_5",
+      "name": "Frigid River",
+      "attributes": {
+        "description_hints": "The sound of rushing water is nearly unbearable here. On the east\nshore is a large landing area. - Frigid River",
+        "lighting": "bright",
+        "is_outdoors": true,
+        "zil_global_objects": [
+          "global_water",
+          "river"
+        ],
+        "zil_flags": [
+          "nonlandbit",
+          "sacredbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "east": "shore",
+        "up": "you cannot go upstream due to strong currents.",
+        "in": "rooms"
+      }
+    },
+    "shore": {
+      "id": "shore",
+      "name": "Shore",
+      "attributes": {
+        "description_hints": "You are on the east shore of the river. The water here seems somewhat\ntreacherous. A path travels from north to south here, the south end\nquickly turning around a sharp corner. - Shore",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "global_water",
+          "river"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "sacredbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "north": "sandy_beach",
+        "south": "aragain_falls",
+        "in": "rooms"
+      }
+    },
+    "sandy_beach": {
+      "id": "sandy_beach",
+      "name": "Sandy Beach",
+      "attributes": {
+        "description_hints": "You are on a large sandy beach on the east shore of the river, which is\nflowing quickly by. A path runs beside the river to the south here, and\na passage is partially buried in sand to the northeast. - Sandy Beach",
+        "lighting": "variable",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "global_water",
+          "river"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "sacredbit"
+        ]
+      },
+      "connections": {
+        "south": "shore",
+        "ne": "sandy_cave",
+        "in": "rooms"
+      }
+    },
+    "sandy_cave": {
+      "id": "sandy_cave",
+      "name": "Sandy Cave",
+      "attributes": {
+        "description_hints": "This is a sand-filled cave whose exit is to the southwest. - Sandy Cave",
+        "lighting": "variable",
+        "is_outdoors": false,
+        "zil_flags": [
+          "rlandbit"
+        ]
+      },
+      "connections": {
+        "sw": "sandy_beach",
+        "in": "rooms"
+      }
+    },
+    "aragain_falls": {
+      "id": "aragain_falls",
+      "name": "Aragain Falls",
+      "attributes": {
+        "description_hints": "Aragain Falls",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "global_water",
+          "river",
+          "rainbow"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "sacredbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "north": "shore",
+        "west": "on_rainbow",
+        "up": "on_rainbow",
+        "down": "it's a long way...",
+        "in": "rooms"
+      }
+    },
+    "on_rainbow": {
+      "id": "on_rainbow",
+      "name": "On the Rainbow",
+      "attributes": {
+        "description_hints": "You are on top of a rainbow (I bet you never thought you would walk\non a rainbow), with a magnificent view of the Falls. The rainbow\ntravels east-west here. - On the Rainbow",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "r",
+          "a",
+          "i",
+          "n",
+          "b",
+          "o",
+          "w"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "onbit",
+          "sacredbit"
+        ]
+      },
+      "connections": {
+        "east": "aragain_falls",
+        "west": "end_of_rainbow",
+        "in": "rooms"
+      }
+    },
+    "end_of_rainbow": {
+      "id": "end_of_rainbow",
+      "name": "End of Rainbow",
+      "attributes": {
+        "description_hints": "You are on a small, rocky beach on the continuation of the Frigid\nRiver past the Falls. The beach is narrow due to the presence of the\nWhite Cliffs. The river canyon opens here and sunlight shines in\nfrom above. A rainbow crosses over the falls to the east and a narrow\npath continues to the southwest. - End of Rainbow",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "global_water",
+          "rainbow",
+          "river"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "east": "on_rainbow",
+        "ne": "on_rainbow",
+        "sw": "canyon_bottom",
+        "up": "on_rainbow",
+        "in": "rooms"
+      }
+    },
+    "canyon_bottom": {
+      "id": "canyon_bottom",
+      "name": "Canyon Bottom",
+      "attributes": {
+        "description_hints": "You are beneath the walls of the river canyon which may be climbable\nhere. The lesser part of the runoff of Aragain Falls flows by below.\nTo the north is a narrow path. - Canyon Bottom",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "global_water",
+          "climbable_cliff",
+          "river"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "onbit",
+          "sacredbit"
+        ]
+      },
+      "connections": {
+        "north": "end_of_rainbow",
+        "up": "cliff_middle",
+        "in": "rooms"
+      }
+    },
+    "cliff_middle": {
+      "id": "cliff_middle",
+      "name": "Rocky Ledge",
+      "attributes": {
+        "description_hints": "You are on a ledge about halfway up the wall of the river canyon.\nYou can see from here that the main flow from Aragain Falls twists\nalong a passage which it is impossible for you to enter. Below you is the\ncanyon bottom. Above you is more cliff, which appears\nclimbable. - Rocky Ledge",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "climbable_cliff",
+          "river"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "onbit",
+          "sacredbit"
+        ]
+      },
+      "connections": {
+        "up": "canyon_view",
+        "down": "canyon_bottom",
+        "in": "rooms"
+      }
+    },
+    "canyon_view": {
+      "id": "canyon_view",
+      "name": "Canyon View",
+      "attributes": {
+        "description_hints": "You are at the top of the Great Canyon on its west wall. From here\nthere is a marvelous view of the canyon and parts of the Frigid River\nupstream. Across the canyon, the walls of the White Cliffs join the\nmighty ramparts of the Flathead Mountains to the east. Following the\nCanyon upstream to the north, Aragain Falls may be seen, complete with\nrainbow. The mighty Frigid River flows out from a great dark cavern. To\nthe west and south can be seen an immense forest, stretching for miles\naround. A path leads northwest. It is possible to climb down into\nthe canyon from here. - Canyon View",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "climbable_cliff",
+          "river",
+          "rainbow"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "onbit",
+          "sacredbit"
+        ]
+      },
+      "connections": {
+        "south": "storm_tossed trees block your way.",
+        "east": "cliff_middle",
+        "west": "forest_3",
+        "nw": "clearing",
+        "down": "cliff_middle",
+        "in": "rooms"
+      }
+    },
+    "mine_entrance": {
+      "id": "mine_entrance",
+      "name": "Mine Entrance",
+      "attributes": {
+        "description_hints": "You are standing at the entrance of what might have been a coal mine.\nThe shaft enters the west wall, and there is another exit on the south\nend of the room. - Mine Entrance",
+        "lighting": "variable",
+        "is_outdoors": false,
+        "zil_flags": [
+          "rlandbit"
+        ]
+      },
+      "connections": {
+        "south": "slide_room",
+        "west": "squeeky_room",
+        "in": "squeeky_room"
+      }
+    },
+    "squeeky_room": {
+      "id": "squeeky_room",
+      "name": "Squeaky Room",
+      "attributes": {
+        "description_hints": "You are in a small room. Strange squeaky sounds may be heard coming\nfrom the passage at the north end. You may also escape to the east. - Squeaky Room",
+        "lighting": "variable",
+        "is_outdoors": false,
+        "zil_flags": [
+          "rlandbit"
+        ]
+      },
+      "connections": {
+        "north": "bat_room",
+        "east": "mine_entrance",
+        "in": "rooms"
+      }
+    },
+    "bat_room": {
+      "id": "bat_room",
+      "name": "Bat Room",
+      "attributes": {
+        "description_hints": "Bat Room",
+        "lighting": "variable",
+        "is_outdoors": false,
+        "zil_flags": [
+          "rlandbit",
+          "sacredbit"
+        ]
+      },
+      "connections": {
+        "south": "squeeky_room",
+        "east": "shaft_room",
+        "in": "rooms"
+      }
+    },
+    "shaft_room": {
+      "id": "shaft_room",
+      "name": "Shaft Room",
+      "attributes": {
+        "description_hints": "This is a large room, in the middle of which is a small shaft\ndescending through the floor into darkness below. To the west and\nthe north are exits from this room. Constructed over the top of the\nshaft is a metal framework to which a heavy iron chain is attached. - Shaft Room",
+        "lighting": "variable",
+        "is_outdoors": false,
+        "zil_pseudo_objects": [
+          "CHAIN",
+          "CHAIN-PSEUDO"
+        ],
+        "zil_flags": [
+          "rlandbit"
+        ]
+      },
+      "connections": {
+        "north": "smelly_room",
+        "west": "bat_room",
+        "down": "you wouldn't fit and would die if you could.",
+        "in": "rooms"
+      }
+    },
+    "smelly_room": {
+      "id": "smelly_room",
+      "name": "Smelly Room",
+      "attributes": {
+        "description_hints": "This is a small nondescript room. However, from the direction\nof a small descending staircase a foul odor can be detected. To the\nsouth is a narrow tunnel. - Smelly Room",
+        "lighting": "variable",
+        "is_outdoors": false,
+        "zil_pseudo_objects": [
+          "ODOR",
+          "GAS-PSEUDO",
+          "GAS",
+          "GAS-PSEUDO"
+        ],
+        "zil_global_objects": [
+          "s",
+          "t",
+          "a",
+          "i",
+          "r",
+          "s"
+        ],
+        "zil_flags": [
+          "rlandbit"
+        ]
+      },
+      "connections": {
+        "south": "shaft_room",
+        "down": "gas_room",
+        "in": "rooms"
+      }
+    },
+    "gas_room": {
+      "id": "gas_room",
+      "name": "Gas Room",
+      "attributes": {
+        "description_hints": "This is a small room which smells strongly of coal gas. There is a\nshort climb up some stairs and a narrow tunnel leading east. - Gas Room",
+        "lighting": "variable",
+        "is_outdoors": false,
+        "zil_pseudo_objects": [
+          "GAS",
+          "GAS-PSEUDO",
+          "ODOR",
+          "GAS-PSEUDO"
+        ],
+        "zil_global_objects": [
+          "s",
+          "t",
+          "a",
+          "i",
+          "r",
+          "s"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "sacredbit"
+        ]
+      },
+      "connections": {
+        "east": "mine_1",
+        "up": "smelly_room",
+        "in": "rooms"
+      }
+    },
+    "ladder_top": {
+      "id": "ladder_top",
+      "name": "Ladder Top",
+      "attributes": {
+        "description_hints": "This is a very small room. In the corner is a rickety wooden\nladder, leading downward. It might be safe to descend. There is\nalso a staircase leading upward. - Ladder Top",
+        "lighting": "variable",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "ladder",
+          "stairs"
+        ],
+        "zil_flags": [
+          "rlandbit"
+        ]
+      },
+      "connections": {
+        "up": "mine_4",
+        "down": "ladder_bottom",
+        "in": "rooms"
+      }
+    },
+    "ladder_bottom": {
+      "id": "ladder_bottom",
+      "name": "Ladder Bottom",
+      "attributes": {
+        "description_hints": "This is a rather wide room. On one side is the bottom of a\nnarrow wooden ladder. To the west and the south are passages\nleaving the room. - Ladder Bottom",
+        "lighting": "variable",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "l",
+          "a",
+          "d",
+          "d",
+          "e",
+          "r"
+        ],
+        "zil_flags": [
+          "rlandbit"
+        ]
+      },
+      "connections": {
+        "south": "dead_end_5",
+        "west": "timber_room",
+        "up": "ladder_top",
+        "in": "rooms"
+      }
+    },
+    "dead_end_5": {
+      "id": "dead_end_5",
+      "name": "Dead End",
+      "attributes": {
+        "description_hints": "You have come to a dead end in the mine. - Dead End",
+        "lighting": "variable",
+        "is_outdoors": false,
+        "zil_flags": [
+          "rlandbit"
+        ]
+      },
+      "connections": {
+        "north": "ladder_bottom",
+        "in": "rooms"
+      }
+    },
+    "timber_room": {
+      "id": "timber_room",
+      "name": "Timber Room",
+      "attributes": {
+        "description_hints": "This is a long and narrow passage, which is cluttered with broken\ntimbers. A wide passage comes from the east and turns at the\nwest end of the room into a very narrow passageway. From the west\ncomes a strong draft. - Timber Room",
+        "lighting": "variable",
+        "is_outdoors": false,
+        "zil_flags": [
+          "rlandbit",
+          "sacredbit"
+        ]
+      },
+      "connections": {
+        "east": "ladder_bottom",
+        "west": "lower_shaft",
+        "in": "rooms"
+      }
+    },
+    "lower_shaft": {
+      "id": "lower_shaft",
+      "name": "Drafty Room",
+      "attributes": {
+        "description_hints": "This is a small drafty room in which is the bottom of a long\nshaft. To the south is a passageway and to the east a very narrow\npassage. In the shaft can be seen a heavy iron chain. - Drafty Room",
+        "lighting": "variable",
+        "is_outdoors": false,
+        "zil_pseudo_objects": [
+          "CHAIN",
+          "CHAIN-PSEUDO"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "sacredbit"
+        ]
+      },
+      "connections": {
+        "south": "machine_room",
+        "east": "timber_room",
+        "in": "rooms",
+        "out": "timber_room"
+      }
+    },
+    "machine_room": {
+      "id": "machine_room",
+      "name": "Machine Room",
+      "attributes": {
+        "description_hints": "Machine Room",
+        "lighting": "variable",
+        "is_outdoors": false,
+        "zil_flags": [
+          "rlandbit"
+        ]
+      },
+      "connections": {
+        "north": "lower_shaft",
+        "in": "rooms"
+      }
+    },
+    "mine_1": {
+      "id": "mine_1",
+      "name": "Coal Mine",
+      "attributes": {
+        "description_hints": "This is a nondescript part of a coal mine. - Coal Mine",
+        "lighting": "variable",
+        "is_outdoors": false,
+        "zil_flags": [
+          "rlandbit"
+        ]
+      },
+      "connections": {
+        "north": "gas_room",
+        "east": "mine_1",
+        "ne": "mine_2",
+        "in": "rooms"
+      }
+    },
+    "mine_2": {
+      "id": "mine_2",
+      "name": "Coal Mine",
+      "attributes": {
+        "description_hints": "This is a nondescript part of a coal mine. - Coal Mine",
+        "lighting": "variable",
+        "is_outdoors": false,
+        "zil_flags": [
+          "rlandbit"
+        ]
+      },
+      "connections": {
+        "north": "mine_2",
+        "south": "mine_1",
+        "se": "mine_3",
+        "in": "rooms"
+      }
+    },
+    "mine_3": {
+      "id": "mine_3",
+      "name": "Coal Mine",
+      "attributes": {
+        "description_hints": "This is a nondescript part of a coal mine. - Coal Mine",
+        "lighting": "variable",
+        "is_outdoors": false,
+        "zil_flags": [
+          "rlandbit"
+        ]
+      },
+      "connections": {
+        "south": "mine_3",
+        "east": "mine_2",
+        "sw": "mine_4",
+        "in": "rooms"
+      }
+    },
+    "mine_4": {
+      "id": "mine_4",
+      "name": "Coal Mine",
+      "attributes": {
+        "description_hints": "This is a nondescript part of a coal mine. - Coal Mine",
+        "lighting": "variable",
+        "is_outdoors": false,
+        "zil_flags": [
+          "rlandbit"
+        ]
+      },
+      "connections": {
+        "north": "mine_3",
+        "west": "mine_4",
+        "down": "ladder_top",
+        "in": "rooms"
+      }
+    },
+    "slide_room": {
+      "id": "slide_room",
+      "name": "Slide Room",
+      "attributes": {
+        "description_hints": "This is a small chamber, which appears to have been part of a\ncoal mine. On the south wall of the chamber the letters \"Granite\nWall\" are etched in the rock. To the east is a long passage, and\nthere is a steep metal slide twisting downward. To the north is\na small opening. - Slide Room",
+        "lighting": "variable",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "s",
+          "l",
+          "i",
+          "d",
+          "e"
+        ],
+        "zil_flags": [
+          "rlandbit"
+        ]
+      },
+      "connections": {
+        "north": "mine_entrance",
+        "east": "cold_passage",
+        "down": "cellar",
+        "in": "rooms"
+      }
+    }
+  },
+  "items": {
+    "board": {
+      "id": "board",
+      "name": "board",
+      "attributes": {
+        "description_hints": "board",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "BOARDS",
+          "BOARD"
+        ],
+        "zil_flags": [
+          "ndescbit"
+        ]
+      }
+    },
+    "teeth": {
+      "id": "teeth",
+      "name": "set of teeth",
+      "attributes": {
+        "description_hints": "set of teeth",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "OVERBOARD",
+          "TEETH"
+        ],
+        "zil_flags": [
+          "ndescbit"
+        ]
+      }
+    },
+    "wall": {
+      "id": "wall",
+      "name": "surrounding wall",
+      "attributes": {
+        "description_hints": "surrounding wall",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "WALL",
+          "WALLS"
+        ],
+        "zil_adjectives": [
+          "SURROUNDING"
+        ]
+      }
+    },
+    "granite_wall": {
+      "id": "granite_wall",
+      "name": "granite wall",
+      "attributes": {
+        "description_hints": "granite wall",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "WALL"
+        ],
+        "zil_adjectives": [
+          "GRANITE"
+        ]
+      }
+    },
+    "songbird": {
+      "id": "songbird",
+      "name": "songbird",
+      "attributes": {
+        "description_hints": "songbird",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "BIRD",
+          "SONGBIRD"
+        ],
+        "zil_adjectives": [
+          "SONG"
+        ],
+        "zil_flags": [
+          "ndescbit"
+        ]
+      }
+    },
+    "white_house": {
+      "id": "white_house",
+      "name": "white house",
+      "attributes": {
+        "description_hints": "white house",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "HOUSE"
+        ],
+        "zil_adjectives": [
+          "WHITE",
+          "BEAUTI",
+          "COLONI"
+        ],
+        "zil_flags": [
+          "ndescbit"
+        ]
+      }
+    },
+    "forest": {
+      "id": "forest",
+      "name": "forest",
+      "attributes": {
+        "description_hints": "forest",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "FOREST",
+          "TREES",
+          "PINES",
+          "HEMLOCKS"
+        ],
+        "zil_flags": [
+          "ndescbit"
+        ]
+      }
+    },
+    "mountain_range": {
+      "id": "mountain_range",
+      "name": "mountain range",
+      "attributes": {
+        "description_hints": "mountain range",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "MOUNTAIN",
+          "RANGE"
+        ],
+        "zil_adjectives": [
+          "IMPASSABLE",
+          "FLATHEAD"
+        ],
+        "zil_flags": [
+          "ndescbit",
+          "climbbit"
+        ]
+      }
+    },
+    "global_water": {
+      "id": "global_water",
+      "name": "water",
+      "attributes": {
+        "description_hints": "water",
+        "type": "consumable",
+        "takeable": false,
+        "zil_synonyms": [
+          "WATER",
+          "QUANTITY"
+        ],
+        "zil_flags": [
+          "drinkbit"
+        ]
+      }
+    },
+    "water": {
+      "id": "water",
+      "name": "quantity of water",
+      "attributes": {
+        "description_hints": "quantity of water",
+        "type": "consumable",
+        "takeable": true,
+        "zil_synonyms": [
+          "WATER",
+          "QUANTITY",
+          "LIQUID",
+          "H2O"
+        ],
+        "size": 4,
+        "zil_flags": [
+          "trytakebit",
+          "takebit",
+          "drinkbit"
+        ]
+      }
+    },
+    "chimney": {
+      "id": "chimney",
+      "name": "chimney",
+      "attributes": {
+        "description_hints": "chimney",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "CHIMNEY"
+        ],
+        "zil_adjectives": [
+          "DARK",
+          "NARROW"
+        ],
+        "zil_flags": [
+          "climbbit",
+          "ndescbit"
+        ]
+      }
+    },
+    "skull": {
+      "id": "skull",
+      "name": "crystal skull",
+      "attributes": {
+        "description_hints": "Lying in one corner of the room is a beautifully carved crystal skull.\nIt appears to be grinning at you rather nastily.",
+        "type": "generic",
+        "takeable": true,
+        "zil_synonyms": [
+          "SKULL",
+          "HEAD",
+          "TREASURE"
+        ],
+        "zil_adjectives": [
+          "CRYSTAL"
+        ],
+        "zil_flags": [
+          "takebit"
+        ]
+      }
+    },
+    "lowered_basket": {
+      "id": "lowered_basket",
+      "name": "basket",
+      "attributes": {
+        "description_hints": "basket",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "CAGE",
+          "DUMBWAITER",
+          "BASKET"
+        ],
+        "zil_adjectives": [
+          "LOWERED"
+        ],
+        "zil_flags": [
+          "trytakebit"
+        ]
+      }
+    },
+    "raised_basket": {
+      "id": "raised_basket",
+      "name": "basket",
+      "attributes": {
+        "description_hints": "basket",
+        "type": "container",
+        "container": true,
+        "open": true,
+        "capacity": 50,
+        "takeable": false,
+        "zil_synonyms": [
+          "CAGE",
+          "DUMBWAITER",
+          "BASKET"
+        ],
+        "zil_flags": [
+          "transbit",
+          "trytakebit",
+          "contbit",
+          "openbit"
+        ]
+      }
+    },
+    "lunch": {
+      "id": "lunch",
+      "name": "lunch",
+      "attributes": {
+        "description_hints": "lunch",
+        "type": "consumable",
+        "takeable": true,
+        "zil_synonyms": [
+          "FOOD",
+          "SANDWICH",
+          "LUNCH",
+          "DINNER"
+        ],
+        "zil_adjectives": [
+          "HOT",
+          "PEPPER"
+        ],
+        "zil_flags": [
+          "takebit",
+          "foodbit"
+        ]
+      }
+    },
+    "bell": {
+      "id": "bell",
+      "name": "brass bell",
+      "attributes": {
+        "description_hints": "brass bell",
+        "type": "generic",
+        "takeable": true,
+        "zil_synonyms": [
+          "BELL"
+        ],
+        "zil_adjectives": [
+          "SMALL",
+          "BRASS"
+        ],
+        "zil_flags": [
+          "takebit"
+        ]
+      }
+    },
+    "hot_bell": {
+      "id": "hot_bell",
+      "name": "red hot brass bell",
+      "attributes": {
+        "description_hints": "red hot brass bell",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "BELL"
+        ],
+        "zil_adjectives": [
+          "BRASS",
+          "HOT",
+          "RED",
+          "SMALL"
+        ],
+        "zil_flags": [
+          "trytakebit"
+        ]
+      }
+    },
+    "axe": {
+      "id": "axe",
+      "name": "bloody axe",
+      "attributes": {
+        "description_hints": "bloody axe",
+        "type": "weapon",
+        "takeable": true,
+        "weapon": true,
+        "zil_synonyms": [
+          "AXE",
+          "AX"
+        ],
+        "zil_adjectives": [
+          "BLOODY"
+        ],
+        "size": 25,
+        "zil_flags": [
+          "weaponbit",
+          "trytakebit",
+          "takebit",
+          "ndescbit"
+        ]
+      }
+    },
+    "bolt": {
+      "id": "bolt",
+      "name": "bolt",
+      "attributes": {
+        "description_hints": "bolt",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "BOLT",
+          "NUT"
+        ],
+        "zil_adjectives": [
+          "METAL",
+          "LARGE"
+        ],
+        "zil_flags": [
+          "ndescbit",
+          "turnbit",
+          "trytakebit"
+        ]
+      }
+    },
+    "bubble": {
+      "id": "bubble",
+      "name": "green bubble",
+      "attributes": {
+        "description_hints": "green bubble",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "BUBBLE"
+        ],
+        "zil_adjectives": [
+          "SMALL",
+          "GREEN",
+          "PLASTIC"
+        ],
+        "zil_flags": [
+          "ndescbit",
+          "trytakebit"
+        ]
+      }
+    },
+    "altar": {
+      "id": "altar",
+      "name": "altar",
+      "attributes": {
+        "description_hints": "altar",
+        "type": "container",
+        "container": true,
+        "open": true,
+        "capacity": 50,
+        "takeable": false,
+        "zil_synonyms": [
+          "ALTAR"
+        ],
+        "zil_flags": [
+          "ndescbit",
+          "surfacebit",
+          "contbit",
+          "openbit"
+        ]
+      }
+    },
+    "book": {
+      "id": "book",
+      "name": "black book",
+      "attributes": {
+        "description_hints": "On the altar is a large black book, open to page 569.",
+        "type": "readable",
+        "container": true,
+        "open": false,
+        "text": "Commandment #12592|\n|\nOh ye who go about saying unto each:  \"Hello sailor\":|\nDost thou know the magnitude of thy sin before the gods?|\nYea, verily, thou shalt be ground between two stones.|\nShall the angry gods cast thy body into the whirlpool?|\nSurely, thy eye shall be put out with a sharp stick!|\nEven unto the ends of the earth shalt thou wander and|\nUnto the land of the dead shalt thou be sent at last.|\nSurely thou shalt repent of thy cunning.",
+        "takeable": true,
+        "zil_synonyms": [
+          "BOOK",
+          "PRAYER",
+          "PAGE",
+          "BOOKS"
+        ],
+        "zil_adjectives": [
+          "LARGE",
+          "BLACK"
+        ],
+        "size": 10,
+        "zil_flags": [
+          "readbit",
+          "takebit",
+          "contbit",
+          "burnbit",
+          "turnbit"
+        ]
+      }
+    },
+    "broken_lamp": {
+      "id": "broken_lamp",
+      "name": "broken lantern",
+      "attributes": {
+        "description_hints": "broken lantern",
+        "type": "generic",
+        "takeable": true,
+        "zil_synonyms": [
+          "LAMP",
+          "LANTERN"
+        ],
+        "zil_adjectives": [
+          "BROKEN"
+        ],
+        "zil_flags": [
+          "takebit"
+        ]
+      }
+    },
+    "sceptre": {
+      "id": "sceptre",
+      "name": "sceptre",
+      "attributes": {
+        "description_hints": "A sceptre, possibly that of ancient Egypt itself, is in the coffin. The\nsceptre is ornamented with colored enamel, and tapers to a sharp point.",
+        "type": "weapon",
+        "takeable": true,
+        "weapon": true,
+        "zil_synonyms": [
+          "SCEPTRE",
+          "SCEPTER",
+          "TREASURE"
+        ],
+        "zil_adjectives": [
+          "SHARP",
+          "EGYPTIAN",
+          "ANCIENT",
+          "ENAMELED"
+        ],
+        "size": 3,
+        "zil_flags": [
+          "takebit",
+          "weaponbit"
+        ]
+      }
+    },
+    "timbers": {
+      "id": "timbers",
+      "name": "broken timber",
+      "attributes": {
+        "description_hints": "broken timber",
+        "type": "generic",
+        "takeable": true,
+        "zil_synonyms": [
+          "TIMBERS",
+          "PILE"
+        ],
+        "zil_adjectives": [
+          "WOODEN",
+          "BROKEN"
+        ],
+        "size": 50,
+        "zil_flags": [
+          "takebit"
+        ]
+      }
+    },
+    "kitchen_table": {
+      "id": "kitchen_table",
+      "name": "kitchen table",
+      "attributes": {
+        "description_hints": "kitchen table",
+        "type": "container",
+        "container": true,
+        "open": true,
+        "capacity": 50,
+        "takeable": false,
+        "zil_synonyms": [
+          "TABLE"
+        ],
+        "zil_adjectives": [
+          "KITCHEN"
+        ],
+        "zil_flags": [
+          "ndescbit",
+          "contbit",
+          "openbit",
+          "surfacebit"
+        ]
+      }
+    },
+    "attic_table": {
+      "id": "attic_table",
+      "name": "table",
+      "attributes": {
+        "description_hints": "table",
+        "type": "container",
+        "container": true,
+        "open": true,
+        "capacity": 40,
+        "takeable": false,
+        "zil_synonyms": [
+          "TABLE"
+        ],
+        "zil_flags": [
+          "ndescbit",
+          "contbit",
+          "openbit",
+          "surfacebit"
+        ]
+      }
+    },
+    "sandwich_bag": {
+      "id": "sandwich_bag",
+      "name": "brown sack",
+      "attributes": {
+        "description_hints": "On the table is an elongated brown sack, smelling of hot peppers.",
+        "type": "container",
+        "container": true,
+        "open": false,
+        "capacity": 9,
+        "takeable": true,
+        "zil_synonyms": [
+          "BAG",
+          "SACK"
+        ],
+        "zil_adjectives": [
+          "BROWN",
+          "ELONGATED",
+          "SMELLY"
+        ],
+        "size": 9,
+        "zil_flags": [
+          "takebit",
+          "contbit",
+          "burnbit"
+        ]
+      }
+    },
+    "tool_chest": {
+      "id": "tool_chest",
+      "name": "group of tool chests",
+      "attributes": {
+        "description_hints": "group of tool chests",
+        "type": "container",
+        "container": true,
+        "open": true,
+        "takeable": false,
+        "zil_synonyms": [
+          "CHEST",
+          "CHESTS",
+          "GROUP",
+          "TOOLCHESTS"
+        ],
+        "zil_adjectives": [
+          "TOOL"
+        ],
+        "zil_flags": [
+          "contbit",
+          "openbit",
+          "trytakebit",
+          "sacredbit"
+        ]
+      }
+    },
+    "yellow_button": {
+      "id": "yellow_button",
+      "name": "yellow button",
+      "attributes": {
+        "description_hints": "yellow button",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "BUTTON",
+          "SWITCH"
+        ],
+        "zil_adjectives": [
+          "YELLOW"
+        ],
+        "zil_flags": [
+          "ndescbit"
+        ]
+      }
+    },
+    "brown_button": {
+      "id": "brown_button",
+      "name": "brown button",
+      "attributes": {
+        "description_hints": "brown button",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "BUTTON",
+          "SWITCH"
+        ],
+        "zil_adjectives": [
+          "BROWN"
+        ],
+        "zil_flags": [
+          "ndescbit"
+        ]
+      }
+    },
+    "red_button": {
+      "id": "red_button",
+      "name": "red button",
+      "attributes": {
+        "description_hints": "red button",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "BUTTON",
+          "SWITCH"
+        ],
+        "zil_adjectives": [
+          "RED"
+        ],
+        "zil_flags": [
+          "ndescbit"
+        ]
+      }
+    },
+    "blue_button": {
+      "id": "blue_button",
+      "name": "blue button",
+      "attributes": {
+        "description_hints": "blue button",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "BUTTON",
+          "SWITCH"
+        ],
+        "zil_adjectives": [
+          "BLUE"
+        ],
+        "zil_flags": [
+          "ndescbit"
+        ]
+      }
+    },
+    "trophy_case": {
+      "id": "trophy_case",
+      "name": "trophy case",
+      "attributes": {
+        "description_hints": "trophy case",
+        "type": "container",
+        "container": true,
+        "open": false,
+        "capacity": 10000,
+        "takeable": false,
+        "zil_synonyms": [
+          "CASE"
+        ],
+        "zil_adjectives": [
+          "TROPHY"
+        ],
+        "zil_flags": [
+          "transbit",
+          "contbit",
+          "ndescbit",
+          "trytakebit",
+          "searchbit"
+        ]
+      }
+    },
+    "rug": {
+      "id": "rug",
+      "name": "carpet",
+      "attributes": {
+        "description_hints": "carpet",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "RUG",
+          "CARPET"
+        ],
+        "zil_adjectives": [
+          "LARGE",
+          "ORIENTAL"
+        ],
+        "zil_flags": [
+          "ndescbit",
+          "trytakebit"
+        ]
+      }
+    },
+    "chalice": {
+      "id": "chalice",
+      "name": "chalice",
+      "attributes": {
+        "description_hints": "chalice",
+        "type": "container",
+        "container": true,
+        "open": false,
+        "capacity": 5,
+        "takeable": true,
+        "zil_synonyms": [
+          "CHALICE",
+          "CUP",
+          "SILVER",
+          "TREASURE"
+        ],
+        "zil_adjectives": [
+          "SILVER",
+          "ENGRAVINGS"
+        ],
+        "size": 10,
+        "zil_flags": [
+          "takebit",
+          "trytakebit",
+          "contbit"
+        ]
+      }
+    },
+    "garlic": {
+      "id": "garlic",
+      "name": "clove of garlic",
+      "attributes": {
+        "description_hints": "clove of garlic",
+        "type": "consumable",
+        "takeable": true,
+        "zil_synonyms": [
+          "GARLIC",
+          "CLOVE"
+        ],
+        "size": 4,
+        "zil_flags": [
+          "takebit",
+          "foodbit"
+        ]
+      }
+    },
+    "trident": {
+      "id": "trident",
+      "name": "crystal trident",
+      "attributes": {
+        "description_hints": "On the shore lies Poseidon's own crystal trident.",
+        "type": "generic",
+        "takeable": true,
+        "zil_synonyms": [
+          "TRIDENT",
+          "FORK",
+          "TREASURE"
+        ],
+        "zil_adjectives": [
+          "POSEIDON",
+          "OWN",
+          "CRYSTAL"
+        ],
+        "size": 20,
+        "zil_flags": [
+          "takebit"
+        ]
+      }
+    },
+    "dam": {
+      "id": "dam",
+      "name": "dam",
+      "attributes": {
+        "description_hints": "dam",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "DAM",
+          "GATE",
+          "GATES",
+          "FCD#3"
+        ],
+        "zil_flags": [
+          "ndescbit",
+          "trytakebit"
+        ]
+      }
+    },
+    "trap_door": {
+      "id": "trap_door",
+      "name": "trap door",
+      "attributes": {
+        "description_hints": "trap door",
+        "type": "entrance",
+        "is_door": true,
+        "is_open": false,
+        "is_locked": false,
+        "takeable": false,
+        "zil_synonyms": [
+          "DOOR",
+          "TRAPDOOR",
+          "TRAP-DOOR",
+          "COVER"
+        ],
+        "zil_adjectives": [
+          "TRAP",
+          "DUSTY"
+        ],
+        "zil_flags": [
+          "doorbit",
+          "ndescbit",
+          "invisible"
+        ]
+      }
+    },
+    "boarded_window": {
+      "id": "boarded_window",
+      "name": "boarded window",
+      "attributes": {
+        "description_hints": "boarded window",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "WINDOW"
+        ],
+        "zil_adjectives": [
+          "BOARDED"
+        ],
+        "zil_flags": [
+          "ndescbit"
+        ]
+      }
+    },
+    "front_door": {
+      "id": "front_door",
+      "name": "door",
+      "attributes": {
+        "description_hints": "door",
+        "type": "entrance",
+        "is_door": true,
+        "is_open": false,
+        "is_locked": false,
+        "takeable": false,
+        "zil_synonyms": [
+          "DOOR"
+        ],
+        "zil_adjectives": [
+          "FRONT",
+          "BOARDED"
+        ],
+        "zil_flags": [
+          "doorbit",
+          "ndescbit"
+        ]
+      }
+    },
+    "barrow_door": {
+      "id": "barrow_door",
+      "name": "stone door",
+      "attributes": {
+        "description_hints": "stone door",
+        "type": "entrance",
+        "is_door": true,
+        "is_open": true,
+        "is_locked": false,
+        "takeable": false,
+        "zil_synonyms": [
+          "DOOR"
+        ],
+        "zil_adjectives": [
+          "HUGE",
+          "STONE"
+        ],
+        "zil_flags": [
+          "doorbit",
+          "ndescbit",
+          "openbit"
+        ]
+      }
+    },
+    "barrow": {
+      "id": "barrow",
+      "name": "stone barrow",
+      "attributes": {
+        "description_hints": "stone barrow",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "BARROW",
+          "TOMB"
+        ],
+        "zil_adjectives": [
+          "MASSIVE",
+          "STONE"
+        ],
+        "zil_flags": [
+          "ndescbit"
+        ]
+      }
+    },
+    "bottle": {
+      "id": "bottle",
+      "name": "glass bottle",
+      "attributes": {
+        "description_hints": "A bottle is sitting on the table.",
+        "type": "container",
+        "container": true,
+        "open": false,
+        "capacity": 4,
+        "takeable": true,
+        "zil_synonyms": [
+          "BOTTLE",
+          "CONTAINER"
+        ],
+        "zil_adjectives": [
+          "CLEAR",
+          "GLASS"
+        ],
+        "zil_flags": [
+          "takebit",
+          "transbit",
+          "contbit"
+        ]
+      }
+    },
+    "crack": {
+      "id": "crack",
+      "name": "crack",
+      "attributes": {
+        "description_hints": "crack",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "CRACK"
+        ],
+        "zil_adjectives": [
+          "NARROW"
+        ],
+        "zil_flags": [
+          "ndescbit"
+        ]
+      }
+    },
+    "coffin": {
+      "id": "coffin",
+      "name": "gold coffin",
+      "attributes": {
+        "description_hints": "gold coffin",
+        "type": "container",
+        "container": true,
+        "open": false,
+        "capacity": 35,
+        "takeable": true,
+        "zil_synonyms": [
+          "COFFIN",
+          "CASKET",
+          "TREASURE"
+        ],
+        "zil_adjectives": [
+          "SOLID",
+          "GOLD"
+        ],
+        "size": 55,
+        "zil_flags": [
+          "takebit",
+          "contbit",
+          "sacredbit",
+          "searchbit"
+        ]
+      }
+    },
+    "grate": {
+      "id": "grate",
+      "name": "grating",
+      "attributes": {
+        "description_hints": "grating",
+        "type": "entrance",
+        "is_door": true,
+        "is_open": false,
+        "is_locked": false,
+        "takeable": false,
+        "zil_synonyms": [
+          "GRATE",
+          "GRATING"
+        ],
+        "zil_flags": [
+          "doorbit",
+          "ndescbit",
+          "invisible"
+        ]
+      }
+    },
+    "pump": {
+      "id": "pump",
+      "name": "hand-held air pump",
+      "attributes": {
+        "description_hints": "hand-held air pump",
+        "type": "weapon",
+        "takeable": true,
+        "weapon": true,
+        "zil_synonyms": [
+          "PUMP",
+          "AIR-PUMP",
+          "TOOL",
+          "TOOLS"
+        ],
+        "zil_adjectives": [
+          "SMALL",
+          "HAND-HELD"
+        ],
+        "zil_flags": [
+          "takebit",
+          "toolbit"
+        ]
+      }
+    },
+    "diamond": {
+      "id": "diamond",
+      "name": "huge diamond",
+      "attributes": {
+        "description_hints": "huge diamond",
+        "type": "generic",
+        "takeable": true,
+        "zil_synonyms": [
+          "DIAMOND",
+          "TREASURE"
+        ],
+        "zil_adjectives": [
+          "HUGE",
+          "ENORMOUS"
+        ],
+        "zil_flags": [
+          "takebit"
+        ]
+      }
+    },
+    "jade": {
+      "id": "jade",
+      "name": "jade figurine",
+      "attributes": {
+        "description_hints": "jade figurine",
+        "type": "generic",
+        "takeable": true,
+        "zil_synonyms": [
+          "FIGURINE",
+          "TREASURE"
+        ],
+        "zil_adjectives": [
+          "EXQUISITE",
+          "JADE"
+        ],
+        "size": 10,
+        "zil_flags": [
+          "takebit"
+        ]
+      }
+    },
+    "knife": {
+      "id": "knife",
+      "name": "nasty knife",
+      "attributes": {
+        "description_hints": "On a table is a nasty-looking knife.",
+        "type": "weapon",
+        "takeable": true,
+        "weapon": true,
+        "zil_synonyms": [
+          "KNIVES",
+          "KNIFE",
+          "BLADE"
+        ],
+        "zil_adjectives": [
+          "NASTY",
+          "UNRUSTY"
+        ],
+        "zil_flags": [
+          "takebit",
+          "weaponbit",
+          "trytakebit"
+        ]
+      }
+    },
+    "bones": {
+      "id": "bones",
+      "name": "skeleton",
+      "attributes": {
+        "description_hints": "skeleton",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "BONES",
+          "SKELETON",
+          "BODY"
+        ],
+        "zil_flags": [
+          "trytakebit",
+          "ndescbit"
+        ]
+      }
+    },
+    "burned_out_lantern": {
+      "id": "burned_out_lantern",
+      "name": "burned-out lantern",
+      "attributes": {
+        "description_hints": "The deceased adventurer's useless lantern is here.",
+        "type": "generic",
+        "takeable": true,
+        "zil_synonyms": [
+          "LANTERN",
+          "LAMP"
+        ],
+        "zil_adjectives": [
+          "RUSTY",
+          "BURNED",
+          "DEAD",
+          "USELESS"
+        ],
+        "size": 20,
+        "zil_flags": [
+          "takebit"
+        ]
+      }
+    },
+    "bag_of_coins": {
+      "id": "bag_of_coins",
+      "name": "leather bag of coins",
+      "attributes": {
+        "description_hints": "leather bag of coins",
+        "type": "generic",
+        "takeable": true,
+        "zil_synonyms": [
+          "BAG",
+          "COINS",
+          "TREASURE"
+        ],
+        "zil_adjectives": [
+          "OLD",
+          "LEATHER"
+        ],
+        "size": 15,
+        "zil_flags": [
+          "takebit"
+        ]
+      }
+    },
+    "lamp": {
+      "id": "lamp",
+      "name": "brass lantern",
+      "attributes": {
+        "description_hints": "A battery-powered brass lantern is on the trophy case.",
+        "type": "light_source",
+        "takeable": true,
+        "provides_light": true,
+        "is_lit": false,
+        "zil_synonyms": [
+          "LAMP",
+          "LANTERN",
+          "LIGHT"
+        ],
+        "zil_adjectives": [
+          "BRASS"
+        ],
+        "size": 15,
+        "zil_flags": [
+          "takebit",
+          "lightbit"
+        ]
+      }
+    },
+    "emerald": {
+      "id": "emerald",
+      "name": "large emerald",
+      "attributes": {
+        "description_hints": "large emerald",
+        "type": "generic",
+        "takeable": true,
+        "zil_synonyms": [
+          "EMERALD",
+          "TREASURE"
+        ],
+        "zil_adjectives": [
+          "LARGE"
+        ],
+        "zil_flags": [
+          "takebit"
+        ]
+      }
+    },
+    "advertisement": {
+      "id": "advertisement",
+      "name": "leaflet",
+      "attributes": {
+        "description_hints": "leaflet",
+        "type": "readable",
+        "text": "\"WELCOME TO ZORK!|\n|\nZORK is a game of adventure, danger, and low cunning. In it you\nwill explore some of the most amazing territory ever seen by mortals.\nNo computer should be without one!\"",
+        "takeable": true,
+        "zil_synonyms": [
+          "ADVERTISEMENT",
+          "LEAFLET",
+          "BOOKLET",
+          "MAIL"
+        ],
+        "zil_adjectives": [
+          "SMALL"
+        ],
+        "size": 2,
+        "zil_flags": [
+          "readbit",
+          "takebit",
+          "burnbit"
+        ]
+      }
+    },
+    "leak": {
+      "id": "leak",
+      "name": "leak",
+      "attributes": {
+        "description_hints": "leak",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "LEAK",
+          "DRIP",
+          "PIPE"
+        ],
+        "zil_flags": [
+          "ndescbit",
+          "invisible"
+        ]
+      }
+    },
+    "machine": {
+      "id": "machine",
+      "name": "machine",
+      "attributes": {
+        "description_hints": "machine",
+        "type": "container",
+        "container": true,
+        "open": false,
+        "capacity": 50,
+        "takeable": false,
+        "zil_synonyms": [
+          "MACHINE",
+          "PDP10",
+          "DRYER",
+          "LID"
+        ],
+        "zil_flags": [
+          "contbit",
+          "ndescbit",
+          "trytakebit"
+        ]
+      }
+    },
+    "inflated_boat": {
+      "id": "inflated_boat",
+      "name": "magic boat",
+      "attributes": {
+        "description_hints": "magic boat",
+        "type": "generic",
+        "takeable": true,
+        "zil_synonyms": [
+          "BOAT",
+          "RAFT"
+        ],
+        "zil_adjectives": [
+          "INFLAT",
+          "MAGIC",
+          "PLASTIC",
+          "SEAWORTHY"
+        ],
+        "size": 20,
+        "zil_flags": [
+          "takebit",
+          "burnbit",
+          "vehbit",
+          "openbit",
+          "searchbit"
+        ]
+      }
+    },
+    "mailbox": {
+      "id": "mailbox",
+      "name": "small mailbox",
+      "attributes": {
+        "description_hints": "small mailbox",
+        "type": "container",
+        "container": true,
+        "open": false,
+        "capacity": 10,
+        "takeable": false,
+        "zil_synonyms": [
+          "MAILBOX",
+          "BOX"
+        ],
+        "zil_adjectives": [
+          "SMALL"
+        ],
+        "zil_flags": [
+          "contbit",
+          "trytakebit"
+        ]
+      }
+    },
+    "match": {
+      "id": "match",
+      "name": "matchbook",
+      "attributes": {
+        "description_hints": "matchbook",
+        "type": "readable",
+        "text": "|\n(Close cover before striking)|\n|\nYOU too can make BIG MONEY in the exciting field of PAPER SHUFFLING!|\n|\nMr. Anderson of Muddle, Mass. says: \"Before I took this course I\nwas a lowly bit twiddler. Now with what I learned at GUE Tech\nI feel really important and can obfuscate and confuse with the best.\"|\n|\nDr. Blank had this to say: \"Ten short days ago all I could look\nforward to was a dead-end job as a doctor. Now I have a promising\nfuture and make really big Zorkmids.\"|\n|\nGUE Tech can't promise these fantastic results to everyone. But when\nyou earn your degree from GUE Tech, your future will be brighter.",
+        "takeable": true,
+        "zil_synonyms": [
+          "MATCH",
+          "MATCHES",
+          "MATCHBOOK"
+        ],
+        "zil_adjectives": [
+          "MATCH"
+        ],
+        "size": 2,
+        "zil_flags": [
+          "readbit",
+          "takebit"
+        ]
+      }
+    },
+    "mirror_2": {
+      "id": "mirror_2",
+      "name": "mirror",
+      "attributes": {
+        "description_hints": "mirror",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "REFLECTION",
+          "MIRROR",
+          "ENORMOUS"
+        ],
+        "zil_flags": [
+          "trytakebit",
+          "ndescbit"
+        ]
+      }
+    },
+    "mirror_1": {
+      "id": "mirror_1",
+      "name": "mirror",
+      "attributes": {
+        "description_hints": "mirror",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "REFLECTION",
+          "MIRROR",
+          "ENORMOUS"
+        ],
+        "zil_flags": [
+          "trytakebit",
+          "ndescbit"
+        ]
+      }
+    },
+    "painting": {
+      "id": "painting",
+      "name": "painting",
+      "attributes": {
+        "description_hints": "Fortunately, there is still one chance for you to be a vandal, for on\nthe far wall is a painting of unparalleled beauty.",
+        "type": "generic",
+        "takeable": true,
+        "zil_synonyms": [
+          "PAINTING",
+          "ART",
+          "CANVAS",
+          "TREASURE"
+        ],
+        "zil_adjectives": [
+          "BEAUTI"
+        ],
+        "size": 15,
+        "zil_flags": [
+          "takebit",
+          "burnbit"
+        ]
+      }
+    },
+    "candles": {
+      "id": "candles",
+      "name": "pair of candles",
+      "attributes": {
+        "description_hints": "On the two ends of the altar are burning candles.",
+        "type": "light_source",
+        "takeable": true,
+        "provides_light": true,
+        "is_lit": true,
+        "zil_synonyms": [
+          "CANDLES",
+          "PAIR"
+        ],
+        "zil_adjectives": [
+          "BURNING"
+        ],
+        "size": 10,
+        "zil_flags": [
+          "takebit",
+          "flamebit",
+          "onbit",
+          "lightbit"
+        ]
+      }
+    },
+    "gunk": {
+      "id": "gunk",
+      "name": "small piece of vitreous slag",
+      "attributes": {
+        "description_hints": "small piece of vitreous slag",
+        "type": "generic",
+        "takeable": true,
+        "zil_synonyms": [
+          "GUNK",
+          "PIECE",
+          "SLAG"
+        ],
+        "zil_adjectives": [
+          "SMALL",
+          "VITREOUS"
+        ],
+        "size": 10,
+        "zil_flags": [
+          "takebit",
+          "trytakebit"
+        ]
+      }
+    },
+    "bodies": {
+      "id": "bodies",
+      "name": "pile of bodies",
+      "attributes": {
+        "description_hints": "pile of bodies",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "BODIES",
+          "BODY",
+          "REMAINS",
+          "PILE"
+        ],
+        "zil_adjectives": [
+          "MANGLED"
+        ],
+        "zil_flags": [
+          "ndescbit",
+          "trytakebit"
+        ]
+      }
+    },
+    "leaves": {
+      "id": "leaves",
+      "name": "pile of leaves",
+      "attributes": {
+        "description_hints": "pile of leaves",
+        "type": "generic",
+        "takeable": true,
+        "zil_synonyms": [
+          "LEAVES",
+          "LEAF",
+          "PILE"
+        ],
+        "size": 25,
+        "zil_flags": [
+          "takebit",
+          "burnbit",
+          "trytakebit"
+        ]
+      }
+    },
+    "punctured_boat": {
+      "id": "punctured_boat",
+      "name": "punctured boat",
+      "attributes": {
+        "description_hints": "punctured boat",
+        "type": "generic",
+        "takeable": true,
+        "zil_synonyms": [
+          "BOAT",
+          "PILE",
+          "PLASTIC"
+        ],
+        "zil_adjectives": [
+          "PLASTIC",
+          "PUNCTURE",
+          "LARGE"
+        ],
+        "size": 20,
+        "zil_flags": [
+          "takebit",
+          "burnbit"
+        ]
+      }
+    },
+    "inflatable_boat": {
+      "id": "inflatable_boat",
+      "name": "pile of plastic",
+      "attributes": {
+        "description_hints": "pile of plastic",
+        "type": "generic",
+        "takeable": true,
+        "zil_synonyms": [
+          "BOAT",
+          "PILE",
+          "PLASTIC",
+          "VALVE"
+        ],
+        "zil_adjectives": [
+          "PLASTIC",
+          "INFLAT"
+        ],
+        "size": 20,
+        "zil_flags": [
+          "takebit",
+          "burnbit"
+        ]
+      }
+    },
+    "bar": {
+      "id": "bar",
+      "name": "platinum bar",
+      "attributes": {
+        "description_hints": "platinum bar",
+        "type": "generic",
+        "takeable": true,
+        "zil_synonyms": [
+          "BAR",
+          "PLATINUM",
+          "TREASURE"
+        ],
+        "zil_adjectives": [
+          "PLATINUM",
+          "LARGE"
+        ],
+        "size": 20,
+        "zil_flags": [
+          "takebit",
+          "sacredbit"
+        ]
+      }
+    },
+    "pot_of_gold": {
+      "id": "pot_of_gold",
+      "name": "pot of gold",
+      "attributes": {
+        "description_hints": "At the end of the rainbow is a pot of gold.",
+        "type": "generic",
+        "takeable": true,
+        "zil_synonyms": [
+          "POT",
+          "GOLD",
+          "TREASURE"
+        ],
+        "zil_adjectives": [
+          "GOLD"
+        ],
+        "size": 15,
+        "zil_flags": [
+          "takebit",
+          "invisible"
+        ]
+      }
+    },
+    "prayer": {
+      "id": "prayer",
+      "name": "prayer",
+      "attributes": {
+        "description_hints": "prayer",
+        "type": "readable",
+        "text": "The prayer is inscribed in an ancient script, rarely used today. It seems\nto be a philippic against small insects, absent-mindedness, and the picking\nup and dropping of small objects. The final verse consigns trespassers to\nthe land of the dead. All evidence indicates that the beliefs of the ancient\nZorkers were obscure.",
+        "takeable": false,
+        "zil_synonyms": [
+          "PRAYER",
+          "INSCRIPTION"
+        ],
+        "zil_adjectives": [
+          "ANCIENT",
+          "OLD"
+        ],
+        "zil_flags": [
+          "readbit",
+          "sacredbit",
+          "ndescbit"
+        ]
+      }
+    },
+    "railing": {
+      "id": "railing",
+      "name": "wooden railing",
+      "attributes": {
+        "description_hints": "wooden railing",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "RAILING",
+          "RAIL"
+        ],
+        "zil_adjectives": [
+          "WOODEN"
+        ],
+        "zil_flags": [
+          "ndescbit"
+        ]
+      }
+    },
+    "rainbow": {
+      "id": "rainbow",
+      "name": "rainbow",
+      "attributes": {
+        "description_hints": "rainbow",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "RAINBOW"
+        ],
+        "zil_flags": [
+          "ndescbit",
+          "climbbit"
+        ]
+      }
+    },
+    "river": {
+      "id": "river",
+      "name": "river",
+      "attributes": {
+        "description_hints": "river",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "RIVER"
+        ],
+        "zil_adjectives": [
+          "FRIGID"
+        ],
+        "zil_flags": [
+          "ndescbit"
+        ]
+      }
+    },
+    "buoy": {
+      "id": "buoy",
+      "name": "red buoy",
+      "attributes": {
+        "description_hints": "There is a red buoy here (probably a warning).",
+        "type": "container",
+        "container": true,
+        "open": false,
+        "capacity": 20,
+        "takeable": true,
+        "zil_synonyms": [
+          "BUOY"
+        ],
+        "zil_adjectives": [
+          "RED"
+        ],
+        "size": 10,
+        "zil_flags": [
+          "takebit",
+          "contbit"
+        ]
+      }
+    },
+    "rope": {
+      "id": "rope",
+      "name": "rope",
+      "attributes": {
+        "description_hints": "A large coil of rope is lying in the corner.",
+        "type": "generic",
+        "takeable": true,
+        "zil_synonyms": [
+          "ROPE",
+          "HEMP",
+          "COIL"
+        ],
+        "zil_adjectives": [
+          "LARGE"
+        ],
+        "size": 10,
+        "zil_flags": [
+          "takebit",
+          "sacredbit",
+          "trytakebit"
+        ]
+      }
+    },
+    "rusty_knife": {
+      "id": "rusty_knife",
+      "name": "rusty knife",
+      "attributes": {
+        "description_hints": "Beside the skeleton is a rusty knife.",
+        "type": "weapon",
+        "takeable": true,
+        "weapon": true,
+        "zil_synonyms": [
+          "KNIVES",
+          "KNIFE"
+        ],
+        "zil_adjectives": [
+          "RUSTY"
+        ],
+        "size": 20,
+        "zil_flags": [
+          "takebit",
+          "trytakebit",
+          "weaponbit",
+          "toolbit"
+        ]
+      }
+    },
+    "sand": {
+      "id": "sand",
+      "name": "sand",
+      "attributes": {
+        "description_hints": "sand",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "SAND"
+        ],
+        "zil_flags": [
+          "ndescbit"
+        ]
+      }
+    },
+    "bracelet": {
+      "id": "bracelet",
+      "name": "sapphire-encrusted bracelet",
+      "attributes": {
+        "description_hints": "sapphire-encrusted bracelet",
+        "type": "generic",
+        "takeable": true,
+        "zil_synonyms": [
+          "BRACELET",
+          "JEWEL",
+          "SAPPHIRE",
+          "TREASURE"
+        ],
+        "zil_adjectives": [
+          "SAPPHIRE"
+        ],
+        "size": 10,
+        "zil_flags": [
+          "takebit"
+        ]
+      }
+    },
+    "screwdriver": {
+      "id": "screwdriver",
+      "name": "screwdriver",
+      "attributes": {
+        "description_hints": "screwdriver",
+        "type": "weapon",
+        "takeable": true,
+        "weapon": true,
+        "zil_synonyms": [
+          "SCREWDRIVER",
+          "TOOL",
+          "TOOLS",
+          "DRIVER"
+        ],
+        "zil_adjectives": [
+          "SCREW"
+        ],
+        "zil_flags": [
+          "takebit",
+          "toolbit"
+        ]
+      }
+    },
+    "keys": {
+      "id": "keys",
+      "name": "skeleton key",
+      "attributes": {
+        "description_hints": "skeleton key",
+        "type": "weapon",
+        "takeable": true,
+        "weapon": true,
+        "zil_synonyms": [
+          "KEY"
+        ],
+        "zil_adjectives": [
+          "SKELETON"
+        ],
+        "size": 10,
+        "zil_flags": [
+          "takebit",
+          "toolbit"
+        ]
+      }
+    },
+    "shovel": {
+      "id": "shovel",
+      "name": "shovel",
+      "attributes": {
+        "description_hints": "shovel",
+        "type": "weapon",
+        "takeable": true,
+        "weapon": true,
+        "zil_synonyms": [
+          "SHOVEL",
+          "TOOL",
+          "TOOLS"
+        ],
+        "size": 15,
+        "zil_flags": [
+          "takebit",
+          "toolbit"
+        ]
+      }
+    },
+    "coal": {
+      "id": "coal",
+      "name": "small pile of coal",
+      "attributes": {
+        "description_hints": "small pile of coal",
+        "type": "generic",
+        "takeable": true,
+        "zil_synonyms": [
+          "COAL",
+          "PILE",
+          "HEAP"
+        ],
+        "zil_adjectives": [
+          "SMALL"
+        ],
+        "size": 20,
+        "zil_flags": [
+          "takebit",
+          "burnbit"
+        ]
+      }
+    },
+    "ladder": {
+      "id": "ladder",
+      "name": "wooden ladder",
+      "attributes": {
+        "description_hints": "wooden ladder",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "LADDER"
+        ],
+        "zil_adjectives": [
+          "WOODEN",
+          "RICKETY",
+          "NARROW"
+        ],
+        "zil_flags": [
+          "ndescbit",
+          "climbbit"
+        ]
+      }
+    },
+    "scarab": {
+      "id": "scarab",
+      "name": "beautiful jeweled scarab",
+      "attributes": {
+        "description_hints": "beautiful jeweled scarab",
+        "type": "generic",
+        "takeable": true,
+        "zil_synonyms": [
+          "SCARAB",
+          "BUG",
+          "BEETLE",
+          "TREASURE"
+        ],
+        "zil_adjectives": [
+          "BEAUTI",
+          "CARVED",
+          "JEWELED"
+        ],
+        "size": 8,
+        "zil_flags": [
+          "takebit",
+          "invisible"
+        ]
+      }
+    },
+    "large_bag": {
+      "id": "large_bag",
+      "name": "large bag",
+      "attributes": {
+        "description_hints": "large bag",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "BAG"
+        ],
+        "zil_adjectives": [
+          "LARGE",
+          "THIEFS"
+        ],
+        "zil_flags": [
+          "trytakebit",
+          "ndescbit"
+        ]
+      }
+    },
+    "stiletto": {
+      "id": "stiletto",
+      "name": "stiletto",
+      "attributes": {
+        "description_hints": "stiletto",
+        "type": "weapon",
+        "takeable": true,
+        "weapon": true,
+        "zil_synonyms": [
+          "STILETTO"
+        ],
+        "zil_adjectives": [
+          "VICIOUS"
+        ],
+        "size": 10,
+        "zil_flags": [
+          "weaponbit",
+          "trytakebit",
+          "takebit",
+          "ndescbit"
+        ]
+      }
+    },
+    "machine_switch": {
+      "id": "machine_switch",
+      "name": "switch",
+      "attributes": {
+        "description_hints": "switch",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "SWITCH"
+        ],
+        "zil_flags": [
+          "ndescbit",
+          "turnbit"
+        ]
+      }
+    },
+    "wooden_door": {
+      "id": "wooden_door",
+      "name": "wooden door",
+      "attributes": {
+        "description_hints": "wooden door",
+        "type": "readable",
+        "is_door": true,
+        "is_open": false,
+        "is_locked": false,
+        "text": "The engravings translate to \"This space intentionally left blank.\"",
+        "takeable": false,
+        "zil_synonyms": [
+          "DOOR",
+          "LETTERING",
+          "WRITING"
+        ],
+        "zil_adjectives": [
+          "WOODEN",
+          "GOTHIC",
+          "STRANGE",
+          "WEST"
+        ],
+        "zil_flags": [
+          "readbit",
+          "doorbit",
+          "ndescbit",
+          "transbit"
+        ]
+      }
+    },
+    "sword": {
+      "id": "sword",
+      "name": "sword",
+      "attributes": {
+        "description_hints": "Above the trophy case hangs an elvish sword of great antiquity.",
+        "type": "weapon",
+        "takeable": true,
+        "weapon": true,
+        "zil_synonyms": [
+          "SWORD",
+          "ORCRIST",
+          "GLAMDRING",
+          "BLADE"
+        ],
+        "zil_adjectives": [
+          "ELVISH",
+          "OLD",
+          "ANTIQUE"
+        ],
+        "size": 30,
+        "zil_flags": [
+          "takebit",
+          "weaponbit",
+          "trytakebit"
+        ]
+      }
+    },
+    "map": {
+      "id": "map",
+      "name": "ancient map",
+      "attributes": {
+        "description_hints": "In the trophy case is an ancient parchment which appears to be a map.",
+        "type": "readable",
+        "text": "The map shows a forest with three clearings. The largest clearing contains\na house. Three paths leave the large clearing. One of these paths, leading\nsouthwest, is marked \"To Stone Barrow\".",
+        "takeable": true,
+        "zil_synonyms": [
+          "PARCHMENT",
+          "MAP"
+        ],
+        "zil_adjectives": [
+          "ANTIQUE",
+          "OLD",
+          "ANCIENT"
+        ],
+        "size": 2,
+        "zil_flags": [
+          "invisible",
+          "readbit",
+          "takebit"
+        ]
+      }
+    },
+    "boat_label": {
+      "id": "boat_label",
+      "name": "tan label",
+      "attributes": {
+        "description_hints": "tan label",
+        "type": "readable",
+        "text": "  !!!!FROBOZZ MAGIC BOAT COMPANY!!!!|\n|\nHello, Sailor!|\n|\nInstructions for use:|\n|\n   To get into a body of water, say \"Launch\".|\n   To get to shore, say \"Land\" or the direction in which you want\nto maneuver the boat.|\n|\nWarranty:|\n|\n  This boat is guaranteed against all defects for a period of 76\nmilliseconds from date of purchase or until first used, whichever comes first.|\n|\nWarning:|\n   This boat is made of thin plastic.|\n   Good Luck!",
+        "takeable": true,
+        "zil_synonyms": [
+          "LABEL",
+          "FINEPRINT",
+          "PRINT"
+        ],
+        "zil_adjectives": [
+          "TAN",
+          "FINE"
+        ],
+        "size": 2,
+        "zil_flags": [
+          "readbit",
+          "takebit",
+          "burnbit"
+        ]
+      }
+    },
+    "pedestal": {
+      "id": "pedestal",
+      "name": "pedestal",
+      "attributes": {
+        "description_hints": "pedestal",
+        "type": "container",
+        "container": true,
+        "open": true,
+        "capacity": 30,
+        "takeable": false,
+        "zil_synonyms": [
+          "PEDESTAL"
+        ],
+        "zil_adjectives": [
+          "WHITE",
+          "MARBLE"
+        ],
+        "zil_flags": [
+          "ndescbit",
+          "contbit",
+          "openbit",
+          "surfacebit"
+        ]
+      }
+    },
+    "torch": {
+      "id": "torch",
+      "name": "torch",
+      "attributes": {
+        "description_hints": "Sitting on the pedestal is a flaming torch, made of ivory.",
+        "type": "light_source",
+        "takeable": true,
+        "provides_light": true,
+        "is_lit": true,
+        "zil_synonyms": [
+          "TORCH",
+          "IVORY",
+          "TREASURE"
+        ],
+        "zil_adjectives": [
+          "FLAMING",
+          "IVORY"
+        ],
+        "size": 20,
+        "zil_flags": [
+          "takebit",
+          "flamebit",
+          "onbit",
+          "lightbit"
+        ]
+      }
+    },
+    "guide": {
+      "id": "guide",
+      "name": "tour guidebook",
+      "attributes": {
+        "description_hints": "Some guidebooks entitled \"Flood Control Dam #3\" are on the reception\ndesk.",
+        "type": "readable",
+        "text": "\"\tFlood Control Dam #3|\n|\nFCD#3 was constructed in year 783 of the Great Underground Empire to\nharness the mighty Frigid River. This work was supported by a grant of\n37 million zorkmids from your omnipotent local tyrant Lord Dimwit\nFlathead the Excessive. This impressive structure is composed of\n370,000 cubic feet of concrete, is 256 feet tall at the center, and 193\nfeet wide at the top. The lake created behind the dam has a volume\nof 1.7 billion cubic feet, an area of 12 million square feet, and a\nshore line of 36 thousand feet.|\n|\nThe construction of FCD#3 took 112 days from ground breaking to\nthe dedication. It required a work force of 384 slaves, 34 slave\ndrivers, 12 engineers, 2 turtle doves, and a partridge in a pear\ntree. The work was managed by a command team composed of 2345\nbureaucrats, 2347 secretaries (at least two of whom could type),\n12,256 paper shufflers, 52,469 rubber stampers, 245,193 red tape\nprocessors, and nearly one million dead trees.|\n|\nWe will now point out some of the more interesting features\nof FCD#3 as we conduct you on a guided tour of the facilities:|\n|\n        1) You start your tour here in the Dam Lobby. You will notice\non your right that....",
+        "takeable": true,
+        "zil_synonyms": [
+          "GUIDE",
+          "BOOK",
+          "BOOKS",
+          "GUIDEBOOKS"
+        ],
+        "zil_adjectives": [
+          "TOUR",
+          "GUIDE"
+        ],
+        "zil_flags": [
+          "readbit",
+          "takebit",
+          "burnbit"
+        ]
+      }
+    },
+    "trunk": {
+      "id": "trunk",
+      "name": "trunk of jewels",
+      "attributes": {
+        "description_hints": "Lying half buried in the mud is an old trunk, bulging with jewels.",
+        "type": "generic",
+        "takeable": true,
+        "zil_synonyms": [
+          "TRUNK",
+          "CHEST",
+          "JEWELS",
+          "TREASURE"
+        ],
+        "zil_adjectives": [
+          "OLD"
+        ],
+        "size": 35,
+        "zil_flags": [
+          "takebit",
+          "invisible"
+        ]
+      }
+    },
+    "putty": {
+      "id": "putty",
+      "name": "viscous material",
+      "attributes": {
+        "description_hints": "viscous material",
+        "type": "weapon",
+        "takeable": true,
+        "weapon": true,
+        "zil_synonyms": [
+          "MATERIAL",
+          "GUNK"
+        ],
+        "zil_adjectives": [
+          "VISCOUS"
+        ],
+        "size": 6,
+        "zil_flags": [
+          "takebit",
+          "toolbit"
+        ]
+      }
+    },
+    "engravings": {
+      "id": "engravings",
+      "name": "wall with engravings",
+      "attributes": {
+        "description_hints": "wall with engravings",
+        "type": "readable",
+        "text": "The engravings were incised in the living rock of the cave wall by\nan unknown hand. They depict, in symbolic form, the beliefs of the\nancient Zorkers. Skillfully interwoven with the bas reliefs are excerpts\nillustrating the major religious tenets of that time. Unfortunately, a\nlater age seems to have considered them blasphemous and just as skillfully\nexcised them.",
+        "takeable": false,
+        "zil_synonyms": [
+          "WALL",
+          "ENGRAVINGS",
+          "INSCRIPTION"
+        ],
+        "zil_adjectives": [
+          "OLD",
+          "ANCIENT"
+        ],
+        "zil_flags": [
+          "readbit",
+          "sacredbit"
+        ]
+      }
+    },
+    "owners_manual": {
+      "id": "owners_manual",
+      "name": "ZORK owner's manual",
+      "attributes": {
+        "description_hints": "Loosely attached to a wall is a small piece of paper.",
+        "type": "readable",
+        "text": "Congratulations!|\n|\nYou are the privileged owner of ZORK I: The Great Underground Empire,\na self-contained and self-maintaining universe. If used and maintained\nin accordance with normal operating practices for small universes, ZORK\nwill provide many months of trouble-free operation.",
+        "takeable": true,
+        "zil_synonyms": [
+          "MANUAL",
+          "PIECE",
+          "PAPER"
+        ],
+        "zil_adjectives": [
+          "ZORK",
+          "OWNERS",
+          "SMALL"
+        ],
+        "zil_flags": [
+          "readbit",
+          "takebit"
+        ]
+      }
+    },
+    "climbable_cliff": {
+      "id": "climbable_cliff",
+      "name": "cliff",
+      "attributes": {
+        "description_hints": "cliff",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "WALL",
+          "CLIFF",
+          "WALLS",
+          "LEDGE"
+        ],
+        "zil_adjectives": [
+          "ROCKY",
+          "SHEER"
+        ],
+        "zil_flags": [
+          "ndescbit",
+          "climbbit"
+        ]
+      }
+    },
+    "white_cliff": {
+      "id": "white_cliff",
+      "name": "white cliffs",
+      "attributes": {
+        "description_hints": "white cliffs",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "CLIFF",
+          "CLIFFS"
+        ],
+        "zil_adjectives": [
+          "WHITE"
+        ],
+        "zil_flags": [
+          "ndescbit",
+          "climbbit"
+        ]
+      }
+    },
+    "wrench": {
+      "id": "wrench",
+      "name": "wrench",
+      "attributes": {
+        "description_hints": "wrench",
+        "type": "weapon",
+        "takeable": true,
+        "weapon": true,
+        "zil_synonyms": [
+          "WRENCH",
+          "TOOL",
+          "TOOLS"
+        ],
+        "size": 10,
+        "zil_flags": [
+          "takebit",
+          "toolbit"
+        ]
+      }
+    },
+    "control_panel": {
+      "id": "control_panel",
+      "name": "control panel",
+      "attributes": {
+        "description_hints": "control panel",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "PANEL"
+        ],
+        "zil_adjectives": [
+          "CONTROL"
+        ],
+        "zil_flags": [
+          "ndescbit"
+        ]
+      }
+    },
+    "nest": {
+      "id": "nest",
+      "name": "bird's nest",
+      "attributes": {
+        "description_hints": "Beside you on the branch is a small bird's nest.",
+        "type": "container",
+        "container": true,
+        "open": true,
+        "capacity": 20,
+        "takeable": true,
+        "zil_synonyms": [
+          "NEST"
+        ],
+        "zil_adjectives": [
+          "BIRDS"
+        ],
+        "zil_flags": [
+          "takebit",
+          "burnbit",
+          "contbit",
+          "openbit",
+          "searchbit"
+        ]
+      }
+    },
+    "egg": {
+      "id": "egg",
+      "name": "jewel-encrusted egg",
+      "attributes": {
+        "description_hints": "In the bird's nest is a large egg encrusted with precious jewels,\napparently scavenged by a childless songbird. The egg is covered with\nfine gold inlay, and ornamented in lapis lazuli and mother-of-pearl.\nUnlike most eggs, this one is hinged and closed with a delicate looking\nclasp. The egg appears extremely fragile.",
+        "type": "container",
+        "container": true,
+        "open": false,
+        "capacity": 6,
+        "takeable": true,
+        "zil_synonyms": [
+          "EGG",
+          "TREASURE"
+        ],
+        "zil_adjectives": [
+          "BIRDS",
+          "ENCRUSTED",
+          "JEWELED"
+        ],
+        "zil_flags": [
+          "takebit",
+          "contbit",
+          "searchbit"
+        ]
+      }
+    },
+    "broken_egg": {
+      "id": "broken_egg",
+      "name": "broken jewel-encrusted egg",
+      "attributes": {
+        "description_hints": "broken jewel-encrusted egg",
+        "type": "container",
+        "container": true,
+        "open": true,
+        "capacity": 6,
+        "takeable": true,
+        "zil_synonyms": [
+          "EGG",
+          "TREASURE"
+        ],
+        "zil_adjectives": [
+          "BROKEN",
+          "BIRDS",
+          "ENCRUSTED",
+          "JEWEL"
+        ],
+        "zil_flags": [
+          "takebit",
+          "contbit",
+          "openbit"
+        ]
+      }
+    },
+    "bauble": {
+      "id": "bauble",
+      "name": "beautiful brass bauble",
+      "attributes": {
+        "description_hints": "beautiful brass bauble",
+        "type": "generic",
+        "takeable": true,
+        "zil_synonyms": [
+          "BAUBLE",
+          "TREASURE"
+        ],
+        "zil_adjectives": [
+          "BRASS",
+          "BEAUTI"
+        ],
+        "zil_flags": [
+          "takebit"
+        ]
+      }
+    },
+    "canary": {
+      "id": "canary",
+      "name": "golden clockwork canary",
+      "attributes": {
+        "description_hints": "There is a golden clockwork canary nestled in the egg. It has ruby\neyes and a silver beak. Through a crystal window below its left\nwing you can see intricate machinery inside. It appears to have\nwound down.",
+        "type": "generic",
+        "takeable": true,
+        "zil_synonyms": [
+          "CANARY",
+          "TREASURE"
+        ],
+        "zil_adjectives": [
+          "CLOCKWORK",
+          "GOLD",
+          "GOLDEN"
+        ],
+        "zil_flags": [
+          "takebit",
+          "searchbit"
+        ]
+      }
+    },
+    "broken_canary": {
+      "id": "broken_canary",
+      "name": "broken clockwork canary",
+      "attributes": {
+        "description_hints": "There is a golden clockwork canary nestled in the egg. It seems to\nhave recently had a bad experience. The mountings for its jewel-like\neyes are empty, and its silver beak is crumpled. Through a cracked\ncrystal window below its left wing you can see the remains of\nintricate machinery. It is not clear what result winding it would\nhave, as the mainspring seems sprung.",
+        "type": "generic",
+        "takeable": true,
+        "zil_synonyms": [
+          "CANARY",
+          "TREASURE"
+        ],
+        "zil_adjectives": [
+          "BROKEN",
+          "CLOCKWORK",
+          "GOLD",
+          "GOLDEN"
+        ],
+        "zil_flags": [
+          "takebit"
+        ]
+      }
+    },
+    "global_objects": {
+      "id": "global_objects",
+      "name": "GLOBAL-OBJECTS",
+      "attributes": {
+        "description_hints": "GLOBAL-OBJECTS",
+        "type": "generic",
+        "takeable": false,
+        "zil_flags": [
+          "rmungbit",
+          "invisible",
+          "touchbit",
+          "surfacebit",
+          "trytakebit",
+          "openbit",
+          "searchbit",
+          "transbit",
+          "onbit",
+          "rlandbit",
+          "fightbit",
+          "staggered",
+          "wearbit"
+        ]
+      }
+    },
+    "local_globals": {
+      "id": "local_globals",
+      "name": "LOCAL-GLOBALS",
+      "attributes": {
+        "description_hints": "F",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "ZZMGCK"
+        ]
+      }
+    },
+    "rooms": {
+      "id": "rooms",
+      "name": "ROOMS",
+      "attributes": {
+        "description_hints": "ROOMS",
+        "type": "generic",
+        "takeable": false
+      }
+    },
+    "intnum": {
+      "id": "intnum",
+      "name": "number",
+      "attributes": {
+        "description_hints": "number",
+        "type": "weapon",
+        "takeable": false,
+        "weapon": true,
+        "zil_synonyms": [
+          "INTNUM"
+        ],
+        "zil_flags": [
+          "toolbit"
+        ]
+      }
+    },
+    "pseudo_object": {
+      "id": "pseudo_object",
+      "name": "pseudo",
+      "attributes": {
+        "description_hints": "pseudo",
+        "type": "generic",
+        "takeable": false
+      }
+    },
+    "it": {
+      "id": "it",
+      "name": "random object",
+      "attributes": {
+        "description_hints": "random object",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "IT",
+          "THEM",
+          "HER",
+          "HIM"
+        ],
+        "zil_flags": [
+          "ndescbit",
+          "touchbit"
+        ]
+      }
+    },
+    "blessings": {
+      "id": "blessings",
+      "name": "blessings",
+      "attributes": {
+        "description_hints": "blessings",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "BLESSINGS",
+          "GRACES"
+        ],
+        "zil_flags": [
+          "ndescbit"
+        ]
+      }
+    },
+    "stairs": {
+      "id": "stairs",
+      "name": "stairs",
+      "attributes": {
+        "description_hints": "stairs",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "STAIRS",
+          "STEPS",
+          "STAIRCASE",
+          "STAIRWAY"
+        ],
+        "zil_adjectives": [
+          "STONE",
+          "DARK",
+          "MARBLE",
+          "FORBIDDING",
+          "STEEP"
+        ],
+        "zil_flags": [
+          "ndescbit",
+          "climbbit"
+        ]
+      }
+    },
+    "sailor": {
+      "id": "sailor",
+      "name": "sailor",
+      "attributes": {
+        "description_hints": "sailor",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "SAILOR",
+          "FOOTPAD",
+          "AVIATOR"
+        ],
+        "zil_flags": [
+          "ndescbit"
+        ]
+      }
+    },
+    "ground": {
+      "id": "ground",
+      "name": "ground",
+      "attributes": {
+        "description_hints": "ground",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "GROUND",
+          "SAND",
+          "DIRT",
+          "FLOOR"
+        ]
+      }
+    },
+    "grue": {
+      "id": "grue",
+      "name": "lurking grue",
+      "attributes": {
+        "description_hints": "lurking grue",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "GRUE"
+        ],
+        "zil_adjectives": [
+          "LURKING",
+          "SINISTER",
+          "HUNGRY",
+          "SILENT"
+        ]
+      }
+    },
+    "lungs": {
+      "id": "lungs",
+      "name": "blast of air",
+      "attributes": {
+        "description_hints": "blast of air",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "LUNGS",
+          "AIR",
+          "MOUTH",
+          "BREATH"
+        ],
+        "zil_flags": [
+          "ndescbit"
+        ]
+      }
+    },
+    "pathobj": {
+      "id": "pathobj",
+      "name": "passage",
+      "attributes": {
+        "description_hints": "passage",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "TRAIL",
+          "PATH"
+        ],
+        "zil_adjectives": [
+          "FOREST",
+          "NARROW",
+          "LONG",
+          "WINDING"
+        ],
+        "zil_flags": [
+          "ndescbit"
+        ]
+      }
+    },
+    "zorkmid": {
+      "id": "zorkmid",
+      "name": "zorkmid",
+      "attributes": {
+        "description_hints": "zorkmid",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "ZORKMID"
+        ]
+      }
+    },
+    "hands": {
+      "id": "hands",
+      "name": "pair of hands",
+      "attributes": {
+        "description_hints": "pair of hands",
+        "type": "weapon",
+        "takeable": false,
+        "weapon": true,
+        "zil_synonyms": [
+          "PAIR",
+          "HANDS",
+          "HAND"
+        ],
+        "zil_adjectives": [
+          "BARE"
+        ],
+        "zil_flags": [
+          "ndescbit",
+          "toolbit"
+        ]
+      }
+    }
+  },
+  "npcs": {
+    "ghosts": {
+      "id": "ghosts",
+      "name": "number of ghosts",
+      "attributes": {
+        "description_hints": "number of ghosts",
+        "creature_type": "humanoid",
+        "hostility": "unknown",
+        "personality": "number of ghosts from Planetfall",
+        "special_behavior": "Complex behavior defined in ZIL routine: GHOSTS-F",
+        "zil_flags": [
+          "actorbit",
+          "ndescbit"
+        ]
+      }
+    },
+    "bat": {
+      "id": "bat",
+      "name": "bat",
+      "attributes": {
+        "description_hints": "bat",
+        "creature_type": "humanoid",
+        "hostility": "unknown",
+        "personality": "bat from Planetfall",
+        "special_behavior": "Complex behavior defined in ZIL routine: BAT-F",
+        "zil_flags": [
+          "actorbit",
+          "trytakebit"
+        ]
+      }
+    },
+    "cyclops": {
+      "id": "cyclops",
+      "name": "cyclops",
+      "attributes": {
+        "description_hints": "cyclops",
+        "creature_type": "humanoid",
+        "hostility": "unknown",
+        "personality": "cyclops from Planetfall",
+        "special_behavior": "Complex behavior defined in ZIL routine: CYCLOPS-FCN",
+        "zil_flags": [
+          "actorbit",
+          "ndescbit",
+          "trytakebit"
+        ]
+      }
+    },
+    "thief": {
+      "id": "thief",
+      "name": "thief",
+      "attributes": {
+        "description_hints": "thief",
+        "creature_type": "humanoid",
+        "hostility": "unknown",
+        "personality": "thief from Planetfall",
+        "special_behavior": "Complex behavior defined in ZIL routine: ROBBER-FUNCTION",
+        "zil_flags": [
+          "actorbit",
+          "invisible",
+          "contbit",
+          "openbit",
+          "trytakebit"
+        ]
+      }
+    },
+    "troll": {
+      "id": "troll",
+      "name": "troll",
+      "attributes": {
+        "description_hints": "troll",
+        "creature_type": "humanoid",
+        "hostility": "unknown",
+        "personality": "troll from Planetfall",
+        "special_behavior": "Complex behavior defined in ZIL routine: TROLL-FCN",
+        "zil_flags": [
+          "actorbit",
+          "openbit",
+          "trytakebit"
+        ]
+      }
+    },
+    "me": {
+      "id": "me",
+      "name": "you",
+      "attributes": {
+        "description_hints": "you",
+        "creature_type": "humanoid",
+        "hostility": "unknown",
+        "personality": "you from Planetfall",
+        "special_behavior": "Complex behavior defined in ZIL routine: CRETIN-FCN",
+        "zil_flags": [
+          "actorbit"
+        ]
+      }
+    },
+    "adventurer": {
+      "id": "adventurer",
+      "name": "cretin",
+      "attributes": {
+        "description_hints": "cretin",
+        "creature_type": "humanoid",
+        "hostility": "unknown",
+        "personality": "cretin from Planetfall",
+        "zil_flags": [
+          "ndescbit",
+          "invisible",
+          "sacredbit",
+          "actorbit"
+        ]
+      }
+    }
+  },
+  "item_locations": {
+    "mailbox": "west_of_house",
+    "advertisement": "mailbox"
+  },
+  "npc_locations": {},
+  "player_location": "west_of_house",
+  "flags": {},
+  "puzzles": {}
+}

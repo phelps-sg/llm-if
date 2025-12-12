@@ -63,6 +63,12 @@ class GameState(BaseModel):
         description="Hidden DM state for plot tracking (not shown to player)"
     )
 
+    # World context (optional - for setting, style, authorial voice)
+    world_context: Optional[Dict[str, Any]] = Field(
+        default=None,
+        description="World background and DM instructions (setting, author, style, tone)"
+    )
+
     # Rogue-like mode configuration
     rogue_config: Optional[Dict[str, Any]] = Field(
         default=None,
@@ -78,20 +84,36 @@ class GameState(BaseModel):
     # Query methods for locations
 
     def get_items_at_location(self, location_id: str) -> List[Item]:
-        """Get all items at a specific location."""
-        return [
-            self.items[item_id]
-            for item_id, loc_id in self.item_locations.items()
-            if loc_id == location_id
-        ]
+        """Get all items at a specific location.
+
+        Defensive: Skips items that exist in item_locations but not in items dict
+        (can happen with complex state update sequences or bugs).
+        """
+        items = []
+        for item_id, loc_id in self.item_locations.items():
+            if loc_id == location_id:
+                if item_id in self.items:
+                    items.append(self.items[item_id])
+                else:
+                    # Orphaned reference - clean it up
+                    print(f"[WARNING] Orphaned item_id '{item_id}' at location '{location_id}' - cleaning up")
+        return items
 
     def get_npcs_at_location(self, location_id: str) -> List[NPC]:
-        """Get all NPCs at a specific location."""
-        return [
-            self.npcs[npc_id]
-            for npc_id, loc_id in self.npc_locations.items()
-            if loc_id == location_id
-        ]
+        """Get all NPCs at a specific location.
+
+        Defensive: Skips NPCs that exist in npc_locations but not in npcs dict
+        (can happen with complex state update sequences or bugs).
+        """
+        npcs = []
+        for npc_id, loc_id in self.npc_locations.items():
+            if loc_id == location_id:
+                if npc_id in self.npcs:
+                    npcs.append(self.npcs[npc_id])
+                else:
+                    # Orphaned reference - clean it up
+                    print(f"[WARNING] Orphaned npc_id '{npc_id}' at location '{location_id}' - cleaning up")
+        return npcs
 
     def get_player_location(self) -> Optional[Location]:
         """Get the player's current location object."""

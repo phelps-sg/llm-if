@@ -182,6 +182,157 @@ class ActionProcessor:
                             # Default to player's current location if invalid
                             game_state.item_locations[item_id] = game_state.player_location
 
+            elif update_type == "transform_item":
+                # Transform an item by changing its properties (e.g., fold leaflet into paper plane)
+                # Keeps same item ID, tracks transformation history for reversibility and DM narrative
+                item_id = params.get("item_id") or target
+                new_name = params.get("new_name")
+                new_attributes = params.get("new_attributes", {})
+                reversible = params.get("reversible", False)
+
+                if item_id and new_name:
+                    item = game_state.items.get(item_id)
+                    if not item:
+                        print(f"[WARNING] Cannot transform '{item_id}' - item doesn't exist")
+                        continue
+
+                    # Initialize transformation_history if not present
+                    if "transformation_history" not in item.attributes:
+                        item.attributes["transformation_history"] = []
+
+                    # Record this transformation
+                    transformation_record = {
+                        "turn": game_state.turn_count,
+                        "from_type": "item",
+                        "from_name": item.name,
+                        "from_attributes": item.attributes.copy(),  # Preserve old state
+                        "to_name": new_name,
+                        "to_attributes": new_attributes.copy(),
+                        "reversible": reversible
+                    }
+
+                    # Store in new attributes (so it carries forward)
+                    transformation_history = item.attributes["transformation_history"].copy()
+                    transformation_history.append(transformation_record)
+                    new_attributes["transformation_history"] = transformation_history
+
+                    # Update item in-place
+                    item.name = new_name
+                    item.attributes = new_attributes
+
+            elif update_type == "transform_item_to_npc":
+                # Transform an item into an NPC (e.g., animate statue spell)
+                # Deletes item, creates NPC, preserves transformation history
+                item_id = params.get("item_id") or target
+                npc_id = params.get("npc_id", item_id)  # Default to same ID
+                npc_name = params.get("npc_name")
+                npc_attributes = params.get("npc_attributes", {})
+                reversible = params.get("reversible", False)
+
+                if item_id and npc_name:
+                    item = game_state.items.get(item_id)
+                    if not item:
+                        print(f"[WARNING] Cannot transform '{item_id}' to NPC - item doesn't exist")
+                        continue
+
+                    # Get item's current location (inventory or world location)
+                    npc_location = None
+                    if item_id in game_state.player.inventory:
+                        npc_location = game_state.player_location  # Spawn at player's location
+                    elif item_id in game_state.item_locations:
+                        npc_location = game_state.item_locations[item_id]
+
+                    # Record transformation history
+                    transformation_record = {
+                        "turn": game_state.turn_count,
+                        "from_type": "item",
+                        "from_id": item_id,
+                        "from_name": item.name,
+                        "from_attributes": item.attributes.copy(),
+                        "to_type": "npc",
+                        "to_name": npc_name,
+                        "to_attributes": npc_attributes.copy(),
+                        "reversible": reversible
+                    }
+
+                    # Add transformation history to NPC attributes
+                    if "transformation_history" not in npc_attributes:
+                        npc_attributes["transformation_history"] = []
+                    npc_attributes["transformation_history"].append(transformation_record)
+
+                    # Create NPC
+                    new_npc = NPC(
+                        id=npc_id,
+                        name=npc_name,
+                        attributes=npc_attributes
+                    )
+                    game_state.npcs[npc_id] = new_npc
+
+                    # Place NPC at item's location
+                    if npc_location:
+                        game_state.npc_locations[npc_id] = npc_location
+
+                    # Remove item completely
+                    if item_id in game_state.player.inventory:
+                        game_state.player.remove_item(item_id)
+                    if item_id in game_state.item_locations:
+                        del game_state.item_locations[item_id]
+                    if item_id in game_state.items:
+                        del game_state.items[item_id]
+
+            elif update_type == "transform_npc_to_item":
+                # Transform an NPC into an item (e.g., petrify spell)
+                # Deletes NPC, creates item, preserves transformation history
+                npc_id = params.get("npc_id") or target
+                item_id = params.get("item_id", npc_id)  # Default to same ID
+                item_name = params.get("item_name")
+                item_attributes = params.get("item_attributes", {})
+                reversible = params.get("reversible", False)
+
+                if npc_id and item_name:
+                    npc = game_state.npcs.get(npc_id)
+                    if not npc:
+                        print(f"[WARNING] Cannot transform '{npc_id}' to item - NPC doesn't exist")
+                        continue
+
+                    # Get NPC's current location
+                    item_location = game_state.npc_locations.get(npc_id, game_state.player_location)
+
+                    # Record transformation history
+                    transformation_record = {
+                        "turn": game_state.turn_count,
+                        "from_type": "npc",
+                        "from_id": npc_id,
+                        "from_name": npc.name,
+                        "from_attributes": npc.attributes.copy(),
+                        "to_type": "item",
+                        "to_name": item_name,
+                        "to_attributes": item_attributes.copy(),
+                        "reversible": reversible
+                    }
+
+                    # Add transformation history to item attributes
+                    if "transformation_history" not in item_attributes:
+                        item_attributes["transformation_history"] = []
+                    item_attributes["transformation_history"].append(transformation_record)
+
+                    # Create item
+                    new_item = Item(
+                        id=item_id,
+                        name=item_name,
+                        attributes=item_attributes
+                    )
+                    game_state.items[item_id] = new_item
+
+                    # Place item at NPC's location
+                    game_state.item_locations[item_id] = item_location
+
+                    # Remove NPC completely
+                    if npc_id in game_state.npc_locations:
+                        del game_state.npc_locations[npc_id]
+                    if npc_id in game_state.npcs:
+                        del game_state.npcs[npc_id]
+
             elif update_type == "destroy_item":
                 # Permanently remove an item from the game world
                 item_id = params.get("item_id") or target

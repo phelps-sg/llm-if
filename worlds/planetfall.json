@@ -1,0 +1,6150 @@
+{
+  "world_context": {
+    "title": "Planetfall",
+    "author": "Steve Meretzky (Infocom, 1983)",
+    "setting": "A science fiction adventure set on a mysterious abandoned planet. You are a lowly Ensign Seventh Class who has crash-landed in an escape pod on the forsaken world of Resida, once a thriving colony. The massive complex before you holds secrets of a terrible plague that wiped out the population.",
+    "dm_instructions": [
+      "This is a rendition of the classic Infocom game Planetfall by Steve Meretzky",
+      "Embrace the humorous, irreverent tone of Meretzky's writing - mix danger with wit and absurdity",
+      "The 'description_hints' in locations/items are from old ZIL files - use them as creative inspiration, NOT literal descriptions",
+      "EMBELLISH descriptions generously - make them vivid, atmospheric, and engaging with sensory details",
+      "Maintain the retro 1980s sci-fi aesthetic: chunky computer terminals, clunky robots, beeping machinery",
+      "Keep the sense of isolation and mystery - this planet has dark secrets waiting to be uncovered",
+      "The player is a hapless low-ranking ensign - maintain their underdog status and use humor to contrast with danger",
+      "Floyd the robot (if encountered) should be endearing, childlike, and comedic - he's a beloved character"
+    ],
+    "tone": "humorous yet ominous, accessible retro sci-fi, Meretzky-style wit and wordplay"
+  },
+  "locations": {
+    "underwater": {
+      "id": "underwater",
+      "name": "Underwater",
+      "attributes": {
+        "description_hints": "You are momentarily disoriented as you enter the turbulent waters.\nCurrents buffet you against the sharp rocks of an underwater\ncliff. A dim light filters down from above. - Underwater",
+        "lighting": "bright",
+        "is_outdoors": true,
+        "zil_flags": [
+          "onbit",
+          "rwaterbit"
+        ]
+      },
+      "connections": {
+        "north": "underwater",
+        "south": "underwater",
+        "west": "underwater",
+        "up": "crag",
+        "down": "underwater"
+      }
+    },
+    "crag": {
+      "id": "crag",
+      "name": "Crag",
+      "attributes": {
+        "description_hints": "You have reached a cleft in the cliff wall where the island rises from the\nwater. The edge of the cleft displays recently exposed rock where it collapsed\nunder the weight of the escape pod. About two meters below, turbulent waters\nswirl against sharp rocks. A small structure clings to the face of the cliff\nabout eight meters above you. Even an out-of-shape Ensign Seventh Class could\nprobably climb up to it. - Crag",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_pseudo_objects": [
+          "STRUCTURE",
+          "STRUCTURE-PSEUDO",
+          "CLEFT",
+          "CLEFT-PSEUDO"
+        ],
+        "zil_global_objects": [
+          "cliff",
+          "ocean"
+        ],
+        "zil_flags": [
+          "onbit",
+          "rlandbit"
+        ]
+      },
+      "connections": {
+        "up": "balcony",
+        "down": "underwater"
+      }
+    },
+    "balcony": {
+      "id": "balcony",
+      "name": "Balcony",
+      "attributes": {
+        "description_hints": "Balcony",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_pseudo_objects": [
+          "PLAQUE",
+          "PLAQUE-PSEUDO"
+        ],
+        "zil_global_objects": [
+          "cliff",
+          "ocean",
+          "stairs",
+          "window"
+        ],
+        "zil_flags": [
+          "onbit",
+          "rlandbit"
+        ]
+      },
+      "connections": {
+        "up": "winding_stair"
+      }
+    },
+    "winding_stair": {
+      "id": "winding_stair",
+      "name": "Winding Stair",
+      "attributes": {
+        "description_hints": "Winding Stair",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "cliff",
+          "stairs"
+        ],
+        "zil_flags": [
+          "onbit",
+          "rlandbit"
+        ]
+      },
+      "connections": {
+        "up": "courtyard"
+      }
+    },
+    "courtyard": {
+      "id": "courtyard",
+      "name": "Courtyard",
+      "attributes": {
+        "description_hints": "Courtyard",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_pseudo_objects": [
+          "CASTLE",
+          "CASTLE-PSEUDO",
+          "RUBBLE",
+          "RUBBLE-PSEUDO"
+        ],
+        "zil_global_objects": [
+          "s",
+          "t",
+          "a",
+          "i",
+          "r",
+          "s"
+        ],
+        "zil_flags": [
+          "onbit",
+          "rlandbit",
+          "floydbit"
+        ]
+      },
+      "connections": {
+        "north": "plain_hall",
+        "south": "winding_stair",
+        "west": "west_wing",
+        "down": "winding_stair"
+      }
+    },
+    "west_wing": {
+      "id": "west_wing",
+      "name": "West Wing",
+      "attributes": {
+        "description_hints": "This was once the west wing of the castle, but the walls are now mostly\nrubble, allowing a view of the cliff and ocean below. Rubble blocks all exits\nsave one, eastward to the courtyard. - West Wing",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_pseudo_objects": [
+          "CASTLE",
+          "CASTLE-PSEUDO",
+          "RUBBLE",
+          "RUBBLE-PSEUDO"
+        ],
+        "zil_global_objects": [
+          "cliff",
+          "ocean"
+        ],
+        "zil_flags": [
+          "onbit",
+          "rlandbit",
+          "floydbit"
+        ]
+      },
+      "connections": {
+        "east": "courtyard"
+      }
+    },
+    "plain_hall": {
+      "id": "plain_hall",
+      "name": "Plain Hall",
+      "attributes": {
+        "description_hints": "This is a featureless hall leading north and south. Although the hallway is\nold and dusty, the construction is of a much more modern style than the\ncastle to the south. A similar hall branches off to the northeast. - Plain Hall",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_flags": [
+          "onbit",
+          "rlandbit"
+        ]
+      },
+      "connections": {
+        "north": "rec_area",
+        "south": "courtyard",
+        "ne": "rec_corridor"
+      }
+    },
+    "rec_area": {
+      "id": "rec_area",
+      "name": "Rec Area",
+      "attributes": {
+        "description_hints": "Rec Area",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_pseudo_objects": [
+          "GAMES",
+          "GAMES-PSEUDO",
+          "TAPES",
+          "TAPES-PSEUDO"
+        ],
+        "zil_global_objects": [
+          "c",
+          "o",
+          "n",
+          "f",
+          "e",
+          "r",
+          "e",
+          "n",
+          "c",
+          "e",
+          "_",
+          "d",
+          "o",
+          "o",
+          "r"
+        ],
+        "zil_flags": [
+          "onbit",
+          "rlandbit",
+          "floydbit"
+        ]
+      },
+      "connections": {
+        "north": "conference_room",
+        "south": "plain_hall",
+        "east": "rec_corridor"
+      }
+    },
+    "conference_room": {
+      "id": "conference_room",
+      "name": "Conference Room",
+      "attributes": {
+        "description_hints": "Conference Room",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_pseudo_objects": [
+          "BOOTH",
+          "NEAR-BOOTH-PSEUDO"
+        ],
+        "zil_global_objects": [
+          "conference_door",
+          "tables"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "north": "booth_1",
+        "south": "rec_area",
+        "in": "booth_1",
+        "out": "rec_area"
+      }
+    },
+    "booth_1": {
+      "id": "booth_1",
+      "name": "Booth 1",
+      "attributes": {
+        "description_hints": "This is a tiny room with a large \"1\" painted on the wall. A panel contains\na slot about ten centimeters wide, a beige button labelled \"2\" and a tan\nbutton labelled \"3.\" - Booth 1",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_pseudo_objects": [
+          "BOOTH",
+          "IN-BOOTH-PSEUDO"
+        ],
+        "zil_global_objects": [
+          "controls",
+          "slot",
+          "teleportation_button_2",
+          "teleportation_button_3"
+        ],
+        "zil_flags": [
+          "onbit",
+          "rlandbit"
+        ]
+      },
+      "connections": {
+        "south": "conference_room",
+        "out": "conference_room"
+      }
+    },
+    "rec_corridor": {
+      "id": "rec_corridor",
+      "name": "Rec Corridor",
+      "attributes": {
+        "description_hints": "This is a wide, east-west hallway. Portals lead north and south, and another\ncorridor branches southwest. - Rec Corridor",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_flags": [
+          "onbit",
+          "rlandbit"
+        ]
+      },
+      "connections": {
+        "north": "dorm_b",
+        "south": "dorm_a",
+        "east": "mess_corridor",
+        "west": "rec_area",
+        "sw": "plain_hall"
+      }
+    },
+    "dorm_a": {
+      "id": "dorm_a",
+      "name": "Dorm A",
+      "attributes": {
+        "description_hints": "This is a very long room lined with multi-tiered bunks. Flimsy partitions\nbetween the tiers may have provided a modicum of privacy. These spartan\nliving quarters could have once housed many hundreds, but it seems quite\ndeserted now. There are openings at the north and south ends of the room. - Dorm A",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_pseudo_objects": [
+          "PARTITION",
+          "PARTITION-PSEUDO"
+        ],
+        "zil_global_objects": [
+          "b",
+          "e",
+          "d"
+        ],
+        "zil_flags": [
+          "floydbit",
+          "onbit",
+          "rlandbit"
+        ]
+      },
+      "connections": {
+        "north": "rec_corridor",
+        "south": "sanfac_a"
+      }
+    },
+    "sanfac_a": {
+      "id": "sanfac_a",
+      "name": "SanFac A",
+      "attributes": {
+        "description_hints": "This must be the sanitary facility for the adjacent dormitory. The fixtures\nare dry and dusty, the room dead and deserted. You marvel at how little the\nmillenia and cultural gulfs have changed toilet bowl design. The only exit is\nnorth. - SanFac A",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_pseudo_objects": [
+          "FIXTURES",
+          "TOILET-PSEUDO",
+          "TOILET",
+          "TOILET-PSEUDO"
+        ],
+        "zil_flags": [
+          "onbit",
+          "rlandbit",
+          "floydbit"
+        ]
+      },
+      "connections": {
+        "north": "dorm_a"
+      }
+    },
+    "dorm_b": {
+      "id": "dorm_b",
+      "name": "Dorm B",
+      "attributes": {
+        "description_hints": "This is a very long room lined with multi-tiered bunks. Flimsy partitions\nbetween the tiers may have provided a modicum of privacy. These spartan\nliving quarters could have once housed many hundreds, but it seems quite\ndeserted now. There are openings at the north and south ends of the room. - Dorm B",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_pseudo_objects": [
+          "PARTITION",
+          "PARTITION-PSEUDO"
+        ],
+        "zil_global_objects": [
+          "b",
+          "e",
+          "d"
+        ],
+        "zil_flags": [
+          "floydbit",
+          "onbit",
+          "rlandbit"
+        ]
+      },
+      "connections": {
+        "north": "sanfac_b",
+        "south": "rec_corridor"
+      }
+    },
+    "sanfac_b": {
+      "id": "sanfac_b",
+      "name": "SanFac B",
+      "attributes": {
+        "description_hints": "This must be the sanitary facility for the adjacent dormitory. The fixtures\nare dry and dusty, the room dead and deserted. You marvel at how little the\nmillenia and cultural gulfs have changed toilet bowl design. The only exit is\nsouth. - SanFac B",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_pseudo_objects": [
+          "FIXTURES",
+          "TOILET-PSEUDO",
+          "TOILET",
+          "TOILET-PSEUDO"
+        ],
+        "zil_flags": [
+          "floydbit",
+          "onbit",
+          "rlandbit"
+        ]
+      },
+      "connections": {
+        "south": "dorm_b"
+      }
+    },
+    "dorm_c": {
+      "id": "dorm_c",
+      "name": "Dorm C",
+      "attributes": {
+        "description_hints": "This is a very long room lined with multi-tiered bunks. Flimsy partitions\nbetween the tiers may have provided a modicum of privacy. These spartan\nliving quarters could have once housed many hundreds, but it seems quite\ndeserted now. There are openings at the north and south ends of the room. - Dorm C",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_pseudo_objects": [
+          "PARTITION",
+          "PARTITION-PSEUDO"
+        ],
+        "zil_global_objects": [
+          "b",
+          "e",
+          "d"
+        ],
+        "zil_flags": [
+          "onbit",
+          "floydbit",
+          "rlandbit"
+        ]
+      },
+      "connections": {
+        "north": "dorm_corridor",
+        "south": "sanfac_c"
+      }
+    },
+    "sanfac_c": {
+      "id": "sanfac_c",
+      "name": "SanFac C",
+      "attributes": {
+        "description_hints": "This must be the sanitary facility for the adjacent dormitory. The fixtures\nare dry and dusty, the room dead and deserted. You marvel at how little the\nmillenia and cultural gulfs have changed toilet bowl design. The only exit is\nnorth. - SanFac C",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_pseudo_objects": [
+          "FIXTURES",
+          "TOILET-PSEUDO",
+          "TOILET",
+          "TOILET-PSEUDO"
+        ],
+        "zil_flags": [
+          "floydbit",
+          "onbit",
+          "rlandbit"
+        ]
+      },
+      "connections": {
+        "north": "dorm_c"
+      }
+    },
+    "dorm_d": {
+      "id": "dorm_d",
+      "name": "Dorm D",
+      "attributes": {
+        "description_hints": "This is a very long room lined with multi-tiered bunks. Flimsy partitions\nbetween the tiers may have provided a modicum of privacy. These spartan\nliving quarters could have once housed many hundreds, but it seems quite\ndeserted now. There are openings at the north and south ends of the room. - Dorm D",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_pseudo_objects": [
+          "PARTITION",
+          "PARTITION-PSEUDO"
+        ],
+        "zil_global_objects": [
+          "b",
+          "e",
+          "d"
+        ],
+        "zil_flags": [
+          "floydbit",
+          "onbit",
+          "rlandbit"
+        ]
+      },
+      "connections": {
+        "north": "sanfac_d",
+        "south": "dorm_corridor"
+      }
+    },
+    "sanfac_d": {
+      "id": "sanfac_d",
+      "name": "SanFac D",
+      "attributes": {
+        "description_hints": "This must be the sanitary facility for the adjacent dormitory. The fixtures\nare dry and dusty, the room dead and deserted. You marvel at how little the\nmillenia and cultural gulfs have changed toilet bowl design. The only exit is\nsouth. - SanFac D",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_pseudo_objects": [
+          "FIXTURES",
+          "TOILET-PSEUDO",
+          "TOILET",
+          "TOILET-PSEUDO"
+        ],
+        "zil_flags": [
+          "onbit",
+          "floydbit",
+          "rlandbit"
+        ]
+      },
+      "connections": {
+        "south": "dorm_d"
+      }
+    },
+    "mess_corridor": {
+      "id": "mess_corridor",
+      "name": "Mess Corridor",
+      "attributes": {
+        "description_hints": "Mess Corridor",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "s",
+          "t",
+          "o",
+          "r",
+          "a",
+          "g",
+          "e",
+          "_",
+          "w",
+          "e",
+          "s",
+          "t",
+          "_",
+          "d",
+          "o",
+          "o",
+          "r"
+        ],
+        "zil_flags": [
+          "onbit",
+          "rlandbit"
+        ]
+      },
+      "connections": {
+        "north": "storage_west",
+        "south": "mess_hall",
+        "east": "dorm_corridor",
+        "west": "rec_corridor"
+      }
+    },
+    "storage_west": {
+      "id": "storage_west",
+      "name": "Storage West",
+      "attributes": {
+        "description_hints": "This is a small room obviously intended as a storage area. - Storage West",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "shelves",
+          "storage_west_door"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "south": "mess_corridor",
+        "out": "mess_corridor"
+      }
+    },
+    "dorm_corridor": {
+      "id": "dorm_corridor",
+      "name": "Dorm Corridor",
+      "attributes": {
+        "description_hints": "This is a wide, east-west hallway with openings to the north and south.\nTo the east, the corridor stretches off into the distance. That section of\nthe hallway is lined with a motorized walkway (no longer running) that\nwas probably intended to transport people or cargo down that tremendously\nlong hall. - Dorm Corridor",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_pseudo_objects": [
+          "WALKWAY",
+          "WALKWAY-PSEUDO"
+        ],
+        "zil_flags": [
+          "onbit",
+          "rlandbit"
+        ]
+      },
+      "connections": {
+        "north": "dorm_d",
+        "south": "dorm_c",
+        "west": "mess_corridor"
+      }
+    },
+    "mess_hall": {
+      "id": "mess_hall",
+      "name": "Mess Hall",
+      "attributes": {
+        "description_hints": "Mess Hall",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_pseudo_objects": [
+          "BENCH",
+          "BENCH-PSEUDO",
+          "BENCHES",
+          "BENCH-PSEUDO"
+        ],
+        "zil_global_objects": [
+          "tables",
+          "kitchen_door",
+          "slot"
+        ],
+        "zil_flags": [
+          "onbit",
+          "floydbit",
+          "rlandbit"
+        ]
+      },
+      "connections": {
+        "north": "mess_corridor",
+        "south": "kitchen",
+        "in": "kitchen",
+        "out": "mess_corridor"
+      }
+    },
+    "kitchen": {
+      "id": "kitchen",
+      "name": "Kitchen",
+      "attributes": {
+        "description_hints": "This is the food production and dispensary area for the dining hall to the\nnorth. Of particular interest is a machine near the door. You should probably\nexamine it more closely. - Kitchen",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_pseudo_objects": [
+          "SPOUT",
+          "SPOUT-PSEUDO",
+          "BUTTON",
+          "BUTTON-PSEUDO"
+        ],
+        "zil_global_objects": [
+          "k",
+          "i",
+          "t",
+          "c",
+          "h",
+          "e",
+          "n",
+          "_",
+          "d",
+          "o",
+          "o",
+          "r"
+        ],
+        "zil_flags": [
+          "onbit",
+          "rlandbit"
+        ]
+      },
+      "connections": {
+        "north": "mess_hall",
+        "out": "mess_hall"
+      }
+    },
+    "corridor_junction": {
+      "id": "corridor_junction",
+      "name": "Corridor Junction",
+      "attributes": {
+        "description_hints": "A north-south corridor intersects the main corridor here. To the west, the\nmain corridor extends as far as you can see; a nonworking walkway from\nthat direction ends here. To the east, the corridor widens into a well-lit\narea. - Corridor Junction",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_pseudo_objects": [
+          "WALKWAY",
+          "WALKWAY-PSEUDO"
+        ],
+        "zil_flags": [
+          "floydbit",
+          "rlandbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "north": "admin_corridor_s",
+        "south": "mech_corridor_n",
+        "east": "elevator_lobby"
+      }
+    },
+    "admin_corridor_s": {
+      "id": "admin_corridor_s",
+      "name": "Admin Corridor South",
+      "attributes": {
+        "description_hints": "This section of hallway seems to have suffered some minor structural\ndamage. The walls are cracked, and a jagged crevice crosses the floor.\nAn opening leads east and the corridor heads north and south. - Admin Corridor South",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_flags": [
+          "rlandbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "north": "admin_corridor",
+        "south": "corridor_junction",
+        "east": "sanfac_e"
+      }
+    },
+    "admin_corridor": {
+      "id": "admin_corridor",
+      "name": "Admin Corridor",
+      "attributes": {
+        "description_hints": "Admin Corridor",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_pseudo_objects": [
+          "RUBBLE",
+          "RUBBLE-PSEUDO"
+        ],
+        "zil_global_objects": [
+          "r",
+          "i",
+          "f",
+          "t"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "south": "admin_corridor_s",
+        "west": "systems_monitors"
+      }
+    },
+    "admin_corridor_n": {
+      "id": "admin_corridor_n",
+      "name": "Admin Corridor North",
+      "attributes": {
+        "description_hints": "Admin Corridor North",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "r",
+          "i",
+          "f",
+          "t"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "north": "transportation_supply",
+        "east": "plan_room",
+        "west": "small_office"
+      }
+    },
+    "sanfac_e": {
+      "id": "sanfac_e",
+      "name": "SanFac E",
+      "attributes": {
+        "description_hints": "Here is another sanitary facility. Like the others, it is dusty and\nnonfunctional. - SanFac E",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_pseudo_objects": [
+          "FIXTURES",
+          "TOILET-PSEUDO",
+          "TOILET",
+          "TOILET-PSEUDO"
+        ],
+        "zil_flags": [
+          "floydbit",
+          "rlandbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "west": "admin_corridor_s",
+        "out": "admin_corridor_s"
+      }
+    },
+    "systems_monitors": {
+      "id": "systems_monitors",
+      "name": "Systems Monitors",
+      "attributes": {
+        "description_hints": "Systems Monitors",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_pseudo_objects": [
+          "MONITORS",
+          "MONITORS-PSEUDO",
+          "EQUIPMENT",
+          "EQUIPMENT-PSEUDO"
+        ],
+        "zil_global_objects": [
+          "t",
+          "a",
+          "b",
+          "l",
+          "e",
+          "s"
+        ],
+        "zil_flags": [
+          "floydbit",
+          "rlandbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "east": "admin_corridor",
+        "out": "admin_corridor"
+      }
+    },
+    "plan_room": {
+      "id": "plan_room",
+      "name": "Plan Room",
+      "attributes": {
+        "description_hints": "This is a small room whose far wall is covered with many small cubbyholes,\nall empty. The left wall is covered with an enormous map, labelled\n\"Kalamontee Kompleks\", showing two installations connected by a long\nhallway. Near the upper part of this map is a red arrow saying \"Yuu ar\nheer.\" The right wall is covered with a similar map, labelled \"Lawanda\nKompleks\", showing two installations, one apparently buried deep\nunderground. - Plan Room",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_pseudo_objects": [
+          "CUBBYHOLE",
+          "CUBBYHOLE-PSEUDO",
+          "MAPS",
+          "MAPS-PSEUDO"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "onbit",
+          "floydbit"
+        ]
+      },
+      "connections": {
+        "west": "admin_corridor_n"
+      }
+    },
+    "transportation_supply": {
+      "id": "transportation_supply",
+      "name": "Transportation Supply",
+      "attributes": {
+        "description_hints": "You have just located a serious bug. - Transportation Supply",
+        "lighting": "variable",
+        "is_outdoors": false,
+        "zil_flags": [
+          "rlandbit"
+        ]
+      },
+      "connections": {
+        "north": "transportation_supply",
+        "south": "admin_corridor_n",
+        "east": "transportation_supply",
+        "west": "transportation_supply",
+        "out": "admin_corridor_n"
+      }
+    },
+    "small_office": {
+      "id": "small_office",
+      "name": "Small Office",
+      "attributes": {
+        "description_hints": "You have entered a small office of some sort. A small desk faces the main\ndoorway which lies to the east. Another exit leads west. - Small Office",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_flags": [
+          "rlandbit",
+          "floydbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "east": "admin_corridor_n",
+        "west": "large_office"
+      }
+    },
+    "large_office": {
+      "id": "large_office",
+      "name": "Large Office",
+      "attributes": {
+        "description_hints": "This is a large, plush office. The far wall is one large picture window,\nscratched but unbroken, offering a view of this installation and the ocean\nbeyond. In front of the window is a wide wooden desk. The only exit is east. - Large Office",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "window",
+          "ocean"
+        ],
+        "zil_flags": [
+          "floydbit",
+          "rlandbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "east": "small_office"
+      }
+    },
+    "mech_corridor_n": {
+      "id": "mech_corridor_n",
+      "name": "Mech Corridor North",
+      "attributes": {
+        "description_hints": "Entrances to rooms lie to the east and west from this north-south hall. - Mech Corridor North",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_flags": [
+          "rlandbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "north": "corridor_junction",
+        "south": "mech_corridor",
+        "east": "storage_east",
+        "west": "physical_plant"
+      }
+    },
+    "mech_corridor": {
+      "id": "mech_corridor",
+      "name": "Mech Corridor",
+      "attributes": {
+        "description_hints": "Entrances to rooms lie to the east and west from this north-south hall. - Mech Corridor",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_flags": [
+          "rlandbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "north": "mech_corridor_n",
+        "south": "mech_corridor_s",
+        "east": "reactor_control",
+        "west": "physical_plant"
+      }
+    },
+    "mech_corridor_s": {
+      "id": "mech_corridor_s",
+      "name": "Mech Corridor South",
+      "attributes": {
+        "description_hints": "The corridor ends here with doorways to the southwest, south, and southeast. - Mech Corridor South",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_flags": [
+          "rlandbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "north": "mech_corridor",
+        "south": "machine_shop",
+        "se": "robot_shop",
+        "sw": "tool_room"
+      }
+    },
+    "storage_east": {
+      "id": "storage_east",
+      "name": "Storage East",
+      "attributes": {
+        "description_hints": "A small room for storage. The exit is to the west. - Storage East",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "s",
+          "h",
+          "e",
+          "l",
+          "v",
+          "e",
+          "s"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "floydbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "west": "mech_corridor_n"
+      }
+    },
+    "physical_plant": {
+      "id": "physical_plant",
+      "name": "Physical Plant",
+      "attributes": {
+        "description_hints": "This is a huge, dim room with exits in the northeast and southeast\ncorners. The room is criss-crossed with catwalks and is filled with\nheavy equipment presumably intended to heat and ventilate this complex.\nHardly any of the equipment is still operating. - Physical Plant",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_pseudo_objects": [
+          "EQUIPMENT",
+          "EQUIPMENT-PSEUDO",
+          "CATWALK",
+          "CATWALK-PSEUDO"
+        ],
+        "zil_flags": [
+          "floydbit",
+          "rlandbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "ne": "mech_corridor_n",
+        "se": "mech_corridor"
+      }
+    },
+    "reactor_control": {
+      "id": "reactor_control",
+      "name": "Reactor Control",
+      "attributes": {
+        "description_hints": "This room contains many dials and gauges for controlling a massive planetary\npower reactor which, according to a diagram on the wall, must be buried far\nbelow this very complex. The exit is to the west. To the east is a metal door,\nand next to it, a button. A dark stairway winds downward. - Reactor Control",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_pseudo_objects": [
+          "BUTTON",
+          "REACTOR-BUTTON-PSEUDO",
+          "DIAGRAM",
+          "DIAGRAM-PSEUDO"
+        ],
+        "zil_global_objects": [
+          "controls",
+          "stairs",
+          "reactor_elevator_door"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "floydbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "east": "reactor_elevator",
+        "west": "mech_corridor",
+        "down": "reactor_access_stairs",
+        "in": "reactor_elevator"
+      }
+    },
+    "reactor_access_stairs": {
+      "id": "reactor_access_stairs",
+      "name": "Reactor Access Stairs",
+      "attributes": {
+        "description_hints": "You have just located a serious bug. - Reactor Access Stairs",
+        "lighting": "variable",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "s",
+          "t",
+          "a",
+          "i",
+          "r",
+          "s"
+        ],
+        "zil_flags": [
+          "rlandbit"
+        ]
+      },
+      "connections": {
+        "up": "reactor_control",
+        "down": "reactor_access_stairs"
+      }
+    },
+    "reactor_elevator": {
+      "id": "reactor_elevator",
+      "name": "Reactor Elevator",
+      "attributes": {
+        "description_hints": "This is an elevator with a door to the west, currently open. A control panel\ncontains an Up button, a Down button, and a small slot. - Reactor Elevator",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "reactor_elevator_door",
+          "slot",
+          "elevator_button",
+          "controls"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "west": "reactor_control",
+        "out": "reactor_control"
+      }
+    },
+    "tool_room": {
+      "id": "tool_room",
+      "name": "Tool Room",
+      "attributes": {
+        "description_hints": "This is apparently a storage room for tools. Exits lead northeast and east. - Tool Room",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "s",
+          "h",
+          "e",
+          "l",
+          "v",
+          "e",
+          "s"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "floydbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "east": "machine_shop",
+        "ne": "mech_corridor_s"
+      }
+    },
+    "machine_shop": {
+      "id": "machine_shop",
+      "name": "Machine Shop",
+      "attributes": {
+        "description_hints": "Machine Shop",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_pseudo_objects": [
+          "SPOUT",
+          "CHEM-SPOUT-PSEUDO"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "floydbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "north": "mech_corridor_s",
+        "east": "robot_shop",
+        "west": "tool_room"
+      }
+    },
+    "robot_shop": {
+      "id": "robot_shop",
+      "name": "Robot Shop",
+      "attributes": {
+        "description_hints": "This room, with exits west and northwest, is filled with robot-like\ndevices of every conceivable description, all in various states of\ndisassembly. - Robot Shop",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_pseudo_objects": [
+          "DEVICE",
+          "DEVICES-PSEUDO"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "floydbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "west": "machine_shop",
+        "nw": "mech_corridor_s"
+      }
+    },
+    "elevator_lobby": {
+      "id": "elevator_lobby",
+      "name": "Elevator Lobby",
+      "attributes": {
+        "description_hints": "Elevator Lobby",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_pseudo_objects": [
+          "BOOTH",
+          "NEAR-BOOTH-PSEUDO"
+        ],
+        "zil_global_objects": [
+          "upper_elevator_door",
+          "lower_elevator_door"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "floydbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "east": "booth_2",
+        "west": "corridor_junction",
+        "in": "booth_2"
+      }
+    },
+    "upper_elevator": {
+      "id": "upper_elevator",
+      "name": "Upper Elevator",
+      "attributes": {
+        "description_hints": "Upper Elevator",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "lights",
+          "controls",
+          "slot",
+          "elevator_button",
+          "upper_elevator_door"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "onbit"
+        ]
+      },
+      "connections": {}
+    },
+    "lower_elevator": {
+      "id": "lower_elevator",
+      "name": "Lower Elevator",
+      "attributes": {
+        "description_hints": "Lower Elevator",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "lights",
+          "controls",
+          "slot",
+          "elevator_button",
+          "lower_elevator_door"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "onbit"
+        ]
+      },
+      "connections": {}
+    },
+    "booth_2": {
+      "id": "booth_2",
+      "name": "Booth 2",
+      "attributes": {
+        "description_hints": "This is a tiny room with a large \"2\" painted on the wall. A panel contains\na slot about ten centimeters wide, a brown button labelled \"1\" and a tan\nbutton labelled \"3.\" - Booth 2",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_pseudo_objects": [
+          "BOOTH",
+          "IN-BOOTH-PSEUDO"
+        ],
+        "zil_global_objects": [
+          "controls",
+          "slot",
+          "teleportation_button_1",
+          "teleportation_button_3"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "west": "elevator_lobby",
+        "out": "elevator_lobby"
+      }
+    },
+    "tower_core": {
+      "id": "tower_core",
+      "name": "Tower Core",
+      "attributes": {
+        "description_hints": "This is a small, circular room. A sliding door leads north, and a spiral\nstaircase heads upwards. Other exits lie to the northeast and southwest. - Tower Core",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "stairs",
+          "upper_elevator_door"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "north": "upper_elevator",
+        "ne": "comm_room",
+        "sw": "observation_deck",
+        "up": "helipad"
+      }
+    },
+    "helipad": {
+      "id": "helipad",
+      "name": "Helipad",
+      "attributes": {
+        "description_hints": "You are at the center of a wide, flat area atop the tower. A fence\nprevents you from approaching the perimeter, so your view is limited to\ncloud-filled sky. A large vehicle, severely weathered and topped with rotor\nblades, lies nearby. A spiral staircase leads down into the tower. - Helipad",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_pseudo_objects": [
+          "FENCE",
+          "FENCE-PSEUDO"
+        ],
+        "zil_global_objects": [
+          "stairs",
+          "helicopter_object"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "down": "tower_core",
+        "in": "helicopter"
+      }
+    },
+    "helicopter": {
+      "id": "helicopter",
+      "name": "Helicopter",
+      "attributes": {
+        "description_hints": "This is a large vehicle with a lot of cargo space. A complex control panel\nis closed and locked. Everything is covered with a thick layer of rust.\nThrough the windows of the vehicle you can see a wide Helipad, and beyond\nthat, endless ocean far below. Several doors lead out to the Helipad. - Helicopter",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_pseudo_objects": [
+          "LOCK",
+          "LOCK-PSEUDO"
+        ],
+        "zil_global_objects": [
+          "ocean",
+          "controls",
+          "window",
+          "helicopter_object"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "out": "helipad"
+      }
+    },
+    "comm_room": {
+      "id": "comm_room",
+      "name": "Comm Room",
+      "attributes": {
+        "description_hints": "Comm Room",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_pseudo_objects": [
+          "CABLES",
+          "CABLES-PSEUDO",
+          "ENUNCIATOR",
+          "ENUNCIATOR-PSEUDO"
+        ],
+        "zil_global_objects": [
+          "l",
+          "i",
+          "g",
+          "h",
+          "t",
+          "s"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "sw": "tower_core"
+      }
+    },
+    "observation_deck": {
+      "id": "observation_deck",
+      "name": "Observation Deck",
+      "attributes": {
+        "description_hints": "This is a balcony girdling the tower. The view is breathtaking; the tower\nmust be half a kilometer tall. From here it is clear that you are on an\nisland. The dormitory section of the complex is visible on the other side\nof the island, and the rest of the complex sprawls out directly below. In\nthe distance, about 20 kilometers to the east, you can spot another island\nsimilar to this one. The only exit is a doorway leading northeast. - Observation Deck",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "o",
+          "c",
+          "e",
+          "a",
+          "n"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "ne": "tower_core"
+      }
+    },
+    "waiting_area": {
+      "id": "waiting_area",
+      "name": "Waiting Area",
+      "attributes": {
+        "description_hints": "This is a concrete platform sparsely furnished with benches. The platform\ncontinues to the east, and to the south is a metal door. - Waiting Area",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_pseudo_objects": [
+          "BENCH",
+          "BENCH-PSEUDO",
+          "BENCHES",
+          "BENCH-PSEUDO"
+        ],
+        "zil_global_objects": [
+          "l",
+          "o",
+          "w",
+          "e",
+          "r",
+          "_",
+          "e",
+          "l",
+          "e",
+          "v",
+          "a",
+          "t",
+          "o",
+          "r",
+          "_",
+          "d",
+          "o",
+          "o",
+          "r"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "east": "kalamontee_platform"
+      }
+    },
+    "kalamontee_platform": {
+      "id": "kalamontee_platform",
+      "name": "Kalamontee Platform",
+      "attributes": {
+        "description_hints": "Kalamontee Platform",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "g",
+          "l",
+          "o",
+          "b",
+          "a",
+          "l",
+          "_",
+          "s",
+          "h",
+          "u",
+          "t",
+          "t",
+          "l",
+          "e"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "west": "waiting_area"
+      }
+    },
+    "brig": {
+      "id": "brig",
+      "name": "Brig",
+      "attributes": {
+        "description_hints": "You are in the Feinstein's brig. Graffiti cover\nthe walls. The cell door to the south is locked. - Brig",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_pseudo_objects": [
+          "GRAFFITI",
+          "GRAFFITI-PSEUDO",
+          "DOOR",
+          "DOOR-PSEUDO"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "onbit"
+        ]
+      },
+      "connections": {}
+    },
+    "deck_nine": {
+      "id": "deck_nine",
+      "name": "Deck Nine",
+      "attributes": {
+        "description_hints": "Deck Nine",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_pseudo_objects": [
+          "TRANSL",
+          "TRANSLATOR-PSEUDO",
+          "SLIME",
+          "SLIME-PSEUDO"
+        ],
+        "zil_global_objects": [
+          "pod_door",
+          "corridor_door",
+          "gangway_door",
+          "stairs",
+          "global_pod"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "east": "reactor_lobby",
+        "west": "escape_pod",
+        "up": "gangway",
+        "in": "escape_pod"
+      }
+    },
+    "reactor_lobby": {
+      "id": "reactor_lobby",
+      "name": "Reactor Lobby",
+      "attributes": {
+        "description_hints": "The corridor widens here as it nears the main drive area. To starboard is\nthe Ion Reactor that powers the vessel, and aft of here is the Auxiliary\nControl Room. The corridor continues to port. - Reactor Lobby",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "c",
+          "o",
+          "r",
+          "r",
+          "i",
+          "d",
+          "o",
+          "r",
+          "_",
+          "d",
+          "o",
+          "o",
+          "r"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "west": "deck_nine"
+      }
+    },
+    "gangway": {
+      "id": "gangway",
+      "name": "Gangway",
+      "attributes": {
+        "description_hints": "This is a steep metal gangway connecting Deck Eight, above, and Deck\nNine, below. - Gangway",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "gangway_door",
+          "stairs"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "up": "deck_eight",
+        "down": "deck_nine"
+      }
+    },
+    "deck_eight": {
+      "id": "deck_eight",
+      "name": "Deck Eight",
+      "attributes": {
+        "description_hints": "This is a featureless corridor leading port and starboard. A gangway leads\ndown, and to fore is the Hyperspatial Jump Machinery Room. - Deck Eight",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "s",
+          "t",
+          "a",
+          "i",
+          "r",
+          "s"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "down": "gangway"
+      }
+    },
+    "escape_pod": {
+      "id": "escape_pod",
+      "name": "Escape Pod",
+      "attributes": {
+        "description_hints": "Escape Pod",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "pod_door",
+          "controls",
+          "lights",
+          "global_pod",
+          "window"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "onbit"
+        ]
+      },
+      "connections": {}
+    },
+    "shuttle_car_alfie": {
+      "id": "shuttle_car_alfie",
+      "name": "Shuttle Car Alfie",
+      "attributes": {
+        "description_hints": "Shuttle Car Alfie",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "global_shuttle",
+          "shuttle_door"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "east": "alfie_control_east",
+        "west": "alfie_control_west"
+      }
+    },
+    "alfie_control_east": {
+      "id": "alfie_control_east",
+      "name": "Alfie Control East",
+      "attributes": {
+        "description_hints": "Alfie Control East",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "slot",
+          "window",
+          "lever",
+          "shuttle_door",
+          "global_shuttle"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "west": "shuttle_car_alfie"
+      }
+    },
+    "alfie_control_west": {
+      "id": "alfie_control_west",
+      "name": "Alfie Control West",
+      "attributes": {
+        "description_hints": "Alfie Control West",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "slot",
+          "lever",
+          "window",
+          "shuttle_door",
+          "global_shuttle"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "east": "shuttle_car_alfie"
+      }
+    },
+    "shuttle_car_betty": {
+      "id": "shuttle_car_betty",
+      "name": "Shuttle Car Betty",
+      "attributes": {
+        "description_hints": "Shuttle Car Betty",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "global_shuttle",
+          "shuttle_door"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "east": "betty_control_east",
+        "west": "betty_control_west"
+      }
+    },
+    "betty_control_east": {
+      "id": "betty_control_east",
+      "name": "Betty Control East",
+      "attributes": {
+        "description_hints": "Betty Control East",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "global_shuttle",
+          "slot",
+          "window",
+          "lever",
+          "shuttle_door"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "west": "shuttle_car_betty"
+      }
+    },
+    "betty_control_west": {
+      "id": "betty_control_west",
+      "name": "Betty Control West",
+      "attributes": {
+        "description_hints": "Betty Control West",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "global_shuttle",
+          "slot",
+          "lever",
+          "window",
+          "shuttle_door"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "east": "shuttle_car_betty"
+      }
+    },
+    "lawanda_platform": {
+      "id": "lawanda_platform",
+      "name": "Lawanda Platform",
+      "attributes": {
+        "description_hints": "Lawanda Platform",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_pseudo_objects": [
+          "ESCALATOR",
+          "ESCALATOR-PSEUDO"
+        ],
+        "zil_global_objects": [
+          "global_shuttle",
+          "stairs"
+        ],
+        "zil_flags": [
+          "floydbit",
+          "rlandbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "east": "escalator",
+        "up": "escalator"
+      }
+    },
+    "escalator": {
+      "id": "escalator",
+      "name": "Escalator",
+      "attributes": {
+        "description_hints": "You are in the middle of a long mechanical stairway. It is not running,\nand seems to be in disrepair. - Escalator",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_pseudo_objects": [
+          "ESCALATOR",
+          "ESCALATOR-PSEUDO"
+        ],
+        "zil_global_objects": [
+          "s",
+          "t",
+          "a",
+          "i",
+          "r",
+          "s"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "floydbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "east": "fork",
+        "west": "lawanda_platform",
+        "up": "fork",
+        "down": "lawanda_platform"
+      }
+    },
+    "fork": {
+      "id": "fork",
+      "name": "Fork",
+      "attributes": {
+        "description_hints": "This is a hallway which forks to the northeast and southeast. To the west\nis the top of a long escalator. - Fork",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_pseudo_objects": [
+          "ESCALATOR",
+          "ESCALATOR-PSEUDO"
+        ],
+        "zil_global_objects": [
+          "s",
+          "t",
+          "a",
+          "i",
+          "r",
+          "s"
+        ],
+        "zil_flags": [
+          "floydbit",
+          "rlandbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "west": "escalator",
+        "ne": "systems_corridor_west",
+        "se": "project_corridor_west",
+        "down": "escalator"
+      }
+    },
+    "infirmary": {
+      "id": "infirmary",
+      "name": "Infirmary",
+      "attributes": {
+        "description_hints": "You have entered a clean, well-lighted place. There are a number of beds,\nsome complicated looking equipment, and many shelves that are mostly bare. - Infirmary",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_pseudo_objects": [
+          "EQUIPMENT",
+          "EQUIPMENT-PSEUDO",
+          "MACHINE",
+          "EQUIPMENT-PSEUDO"
+        ],
+        "zil_global_objects": [
+          "bed",
+          "shelves"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "se": "systems_corridor_west",
+        "out": "systems_corridor_west"
+      }
+    },
+    "repair_room": {
+      "id": "repair_room",
+      "name": "Repair Room",
+      "attributes": {
+        "description_hints": "You are in a dimly lit room, filled with strange machines and wide storage\ncabinets, all locked. To the south, a narrow stairway leads upward. On the\nnorth wall of the room is a very small doorway. - Repair Room",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_pseudo_objects": [
+          "CABINETS",
+          "CABINETS-PSEUDO",
+          "MACHINE",
+          "EQUIPMENT-PSEUDO"
+        ],
+        "zil_global_objects": [
+          "s",
+          "t",
+          "a",
+          "i",
+          "r",
+          "s"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "floydbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "south": "systems_corridor_west",
+        "up": "systems_corridor_west"
+      }
+    },
+    "systems_corridor_west": {
+      "id": "systems_corridor_west",
+      "name": "Systems Corridor West",
+      "attributes": {
+        "description_hints": "The corridor bends here, leading east and southwest. A doorway opens\nto the northwest, and a narrow stairway leads down to the north. - Systems Corridor West",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "s",
+          "t",
+          "a",
+          "i",
+          "r",
+          "s"
+        ],
+        "zil_flags": [
+          "onbit",
+          "rlandbit"
+        ]
+      },
+      "connections": {
+        "north": "repair_room",
+        "east": "systems_corridor",
+        "nw": "infirmary",
+        "sw": "fork",
+        "down": "repair_room"
+      }
+    },
+    "systems_corridor": {
+      "id": "systems_corridor",
+      "name": "Systems Corridor",
+      "attributes": {
+        "description_hints": "This section of hallway has a doorway to the north labelled \"Planateree\nDeefens.\" The corridor continues east and west. - Systems Corridor",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_flags": [
+          "rlandbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "north": "planetary_defense",
+        "east": "systems_corridor_east",
+        "west": "systems_corridor_west"
+      }
+    },
+    "systems_corridor_east": {
+      "id": "systems_corridor_east",
+      "name": "Systems Corridor East",
+      "attributes": {
+        "description_hints": "The hallway ends here with a large doorway leading east, and smaller doorways\nto the north and south. The northern doorway is labelled \"Planateree Kors\nKontrool.\" The hallway itself leads west. - Systems Corridor East",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_flags": [
+          "rlandbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "north": "planetary_course_control",
+        "south": "library_lobby",
+        "east": "physical_plant_two",
+        "west": "systems_corridor"
+      }
+    },
+    "physical_plant_two": {
+      "id": "physical_plant_two",
+      "name": "Physical Plant",
+      "attributes": {
+        "description_hints": "This is an enormous room full of environmental control equipment presumably\nintended to heat and ventilate the Lawanda Complex. Oddly, although the\nLawanda Complex is slightly smaller than its counterpart, this plant is much\nlarger than the one in the Kalamontee Complex. The only exit is westward. - Physical Plant",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_pseudo_objects": [
+          "EQUIPMENT",
+          "EQUIPMENT-PSEUDO"
+        ],
+        "zil_flags": [
+          "floydbit",
+          "rlandbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "west": "systems_corridor_east",
+        "out": "systems_corridor_east"
+      }
+    },
+    "planetary_defense": {
+      "id": "planetary_defense",
+      "name": "Planetary Defense",
+      "attributes": {
+        "description_hints": "Planetary Defense",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "controls",
+          "lights"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "floydbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "south": "systems_corridor",
+        "out": "systems_corridor"
+      }
+    },
+    "planetary_course_control": {
+      "id": "planetary_course_control",
+      "name": "Course Control",
+      "attributes": {
+        "description_hints": "Course Control",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "controls",
+          "lights"
+        ],
+        "zil_flags": [
+          "floydbit",
+          "rlandbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "south": "systems_corridor_east",
+        "out": "systems_corridor_east"
+      }
+    },
+    "library_lobby": {
+      "id": "library_lobby",
+      "name": "Library Lobby",
+      "attributes": {
+        "description_hints": "This is a carpeted room, thick with dust, with exits to the north and south.\nTo the west, up a few steps, is a wide doorway. A small booth lies to the\neast. - Library Lobby",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_pseudo_objects": [
+          "CARPET",
+          "CARPET-PSEUDO",
+          "BOOTH",
+          "NEAR-BOOTH-PSEUDO"
+        ],
+        "zil_global_objects": [
+          "tables",
+          "stairs"
+        ],
+        "zil_flags": [
+          "floydbit",
+          "rlandbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "north": "systems_corridor_east",
+        "south": "project_corridor_east",
+        "east": "booth_3",
+        "west": "library",
+        "up": "library",
+        "in": "booth_3"
+      }
+    },
+    "booth_3": {
+      "id": "booth_3",
+      "name": "Booth 3",
+      "attributes": {
+        "description_hints": "This is a tiny room with a large \"3\" painted on the wall. A panel contains\na slot about ten centimeters wide, a brown button labelled \"1\" and a beige\nbutton labelled \"2.\" - Booth 3",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_pseudo_objects": [
+          "BOOTH",
+          "IN-BOOTH-PSEUDO"
+        ],
+        "zil_global_objects": [
+          "controls",
+          "slot",
+          "teleportation_button_1",
+          "teleportation_button_2"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "west": "library_lobby",
+        "out": "library_lobby"
+      }
+    },
+    "library": {
+      "id": "library",
+      "name": "Library",
+      "attributes": {
+        "description_hints": "This is a large carpeted room with a desk and many small tables. The sole\nexit is down a few steps to the east. - Library",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_pseudo_objects": [
+          "CARPET",
+          "CARPET-PSEUDO",
+          "DESK",
+          "DESK-PSEUDO"
+        ],
+        "zil_global_objects": [
+          "tables",
+          "stairs"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "onbit",
+          "floydbit"
+        ]
+      },
+      "connections": {
+        "east": "library_lobby",
+        "out": "library_lobby"
+      }
+    },
+    "project_corridor_west": {
+      "id": "project_corridor_west",
+      "name": "Project Corridor West",
+      "attributes": {
+        "description_hints": "This is a curving hallway leading east and northwest. There is an opening\nto the west. - Project Corridor West",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_flags": [
+          "rlandbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "east": "project_corridor",
+        "west": "sanfac_f",
+        "nw": "fork"
+      }
+    },
+    "sanfac_f": {
+      "id": "sanfac_f",
+      "name": "SanFac F",
+      "attributes": {
+        "description_hints": "This is another dusty sanitary facility. Unlike the ones near the dorms,\nthis one is smaller and has no bathing fixtures. - SanFac F",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_pseudo_objects": [
+          "FIXTURES",
+          "TOILET-PSEUDO",
+          "TOILET",
+          "TOILET-PSEUDO"
+        ],
+        "zil_flags": [
+          "floydbit",
+          "rlandbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "east": "project_corridor_west",
+        "out": "project_corridor_west"
+      }
+    },
+    "project_corridor": {
+      "id": "project_corridor",
+      "name": "Project Corridor",
+      "attributes": {
+        "description_hints": "You are at the center of a long east-west hallway. A doorway, labelled\n\"PrajKon Awfis\", opens to the south. - Project Corridor",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_flags": [
+          "rlandbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "south": "projcon_office",
+        "east": "project_corridor_east",
+        "west": "project_corridor_west"
+      }
+    },
+    "projcon_office": {
+      "id": "projcon_office",
+      "name": "ProjCon Office",
+      "attributes": {
+        "description_hints": "ProjCon Office",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_pseudo_objects": [
+          "MURAL",
+          "MURAL-PSEUDO",
+          "LOGO",
+          "LOGO-PSEUDO"
+        ],
+        "zil_global_objects": [
+          "c",
+          "r",
+          "y",
+          "o",
+          "_",
+          "e",
+          "l",
+          "e",
+          "v",
+          "a",
+          "t",
+          "o",
+          "r",
+          "_",
+          "d",
+          "o",
+          "o",
+          "r"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "floydbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "north": "project_corridor",
+        "south": "cryo_elevator",
+        "east": "computer_room"
+      }
+    },
+    "cryo_elevator": {
+      "id": "cryo_elevator",
+      "name": "Cryo-Elevator",
+      "attributes": {
+        "description_hints": "Cryo-Elevator",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_pseudo_objects": [
+          "BUTTON",
+          "CRYO-BUTTON-PSEUDO"
+        ],
+        "zil_global_objects": [
+          "c",
+          "r",
+          "y",
+          "o",
+          "_",
+          "e",
+          "l",
+          "e",
+          "v",
+          "a",
+          "t",
+          "o",
+          "r",
+          "_",
+          "d",
+          "o",
+          "o",
+          "r"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "onbit"
+        ]
+      },
+      "connections": {}
+    },
+    "cryo_anteroom": {
+      "id": "cryo_anteroom",
+      "name": "Cryo-Anteroom",
+      "attributes": {
+        "description_hints": "Cryo-Anteroom",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_flags": [
+          "rlandbit",
+          "onbit"
+        ]
+      },
+      "connections": {}
+    },
+    "project_corridor_east": {
+      "id": "project_corridor_east",
+      "name": "Project Corridor East",
+      "attributes": {
+        "description_hints": "The hallway ends here but continues back toward the west. Doorways lead\nnorth, south and east. - Project Corridor East",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_flags": [
+          "rlandbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "north": "library_lobby",
+        "south": "computer_room",
+        "east": "main_lab",
+        "west": "project_corridor"
+      }
+    },
+    "computer_room": {
+      "id": "computer_room",
+      "name": "Computer Room",
+      "attributes": {
+        "description_hints": "This is the main computer room for the Project. The only sign of activity is\na glowing red light. The exits are north, west, and northeast. To the south\nis a small booth. - Computer Room",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_pseudo_objects": [
+          "BOOTH",
+          "NEAR-BOOTH-PSEUDO"
+        ],
+        "zil_global_objects": [
+          "l",
+          "i",
+          "g",
+          "h",
+          "t",
+          "s"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "floydbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "north": "project_corridor_east",
+        "south": "mini_booth",
+        "west": "projcon_office",
+        "ne": "main_lab",
+        "in": "mini_booth"
+      }
+    },
+    "mini_booth": {
+      "id": "mini_booth",
+      "name": "Miniaturization Booth",
+      "attributes": {
+        "description_hints": "This is a small room barely large enough for one person. Mounted on the wall\nis a small slot, and next to it a keyboard with numeric keys. The exit is to\nthe north. - Miniaturization Booth",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_pseudo_objects": [
+          "KEYBOARD",
+          "KEYBOARD-PSEUDO",
+          "BOOTH",
+          "IN-BOOTH-PSEUDO"
+        ],
+        "zil_global_objects": [
+          "s",
+          "l",
+          "o",
+          "t"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "north": "computer_room",
+        "out": "computer_room"
+      }
+    },
+    "main_lab": {
+      "id": "main_lab",
+      "name": "Main Lab",
+      "attributes": {
+        "description_hints": "This is the heart of the Project's vast laboratory complex. There are exits\nto the west and southwest, and heavy metal doors to the northeast and\nsoutheast. A small doorway leads south. - Main Lab",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "bio_door_west",
+          "rad_door_west"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "floydbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "south": "lab_storage",
+        "west": "project_corridor_east",
+        "ne": "radiation_lock_west",
+        "se": "bio_lock_west",
+        "sw": "computer_room"
+      }
+    },
+    "lab_storage": {
+      "id": "lab_storage",
+      "name": "Lab Storage",
+      "attributes": {
+        "description_hints": "This is a tiny room for the storage of laboratory supplies. The sole exit is\nto the north. - Lab Storage",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_pseudo_objects": [
+          "RACK",
+          "CARPET-PSEUDO",
+          "SUPPLIES",
+          "SUPPLIES-PSEUDO"
+        ],
+        "zil_global_objects": [
+          "s",
+          "h",
+          "e",
+          "l",
+          "v",
+          "e",
+          "s"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "floydbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "north": "main_lab",
+        "out": "main_lab"
+      }
+    },
+    "bio_lock_west": {
+      "id": "bio_lock_west",
+      "name": "Bio Lock West",
+      "attributes": {
+        "description_hints": "This is the first half of a sterilization chamber to prevent contamination\nof the delicate biological experiments in the Bio Lab which lies beyond. The\ndoor to the west leads to the main lab, and the bio lock continues eastward. - Bio Lock West",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "b",
+          "i",
+          "o",
+          "_",
+          "d",
+          "o",
+          "o",
+          "r",
+          "_",
+          "w",
+          "e",
+          "s",
+          "t"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "east": "bio_lock_east",
+        "west": "main_lab"
+      }
+    },
+    "bio_lock_east": {
+      "id": "bio_lock_east",
+      "name": "Bio Lock East",
+      "attributes": {
+        "description_hints": "The is the second half of the sterilization chamber leading from the main\nlab to the Bio Lab. The door to the east, leading to the Bio Lab, has a\nwindow. The bio lock continues to the west. - Bio Lock East",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "bio_door_east",
+          "window"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "east": "bio_lab",
+        "west": "bio_lock_west"
+      }
+    },
+    "radiation_lock_west": {
+      "id": "radiation_lock_west",
+      "name": "Radiation Lock West",
+      "attributes": {
+        "description_hints": "This is the western half of a decontamination chamber to prevent dangerous\nradioactive materials from leaving the Radiation Lab which lies to the east.\nThe door leads west to the main lab. - Radiation Lock West",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "r",
+          "a",
+          "d",
+          "_",
+          "d",
+          "o",
+          "o",
+          "r",
+          "_",
+          "w",
+          "e",
+          "s",
+          "t"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "east": "radiation_lock_east",
+        "west": "main_lab"
+      }
+    },
+    "radiation_lock_east": {
+      "id": "radiation_lock_east",
+      "name": "Radiation Lock East",
+      "attributes": {
+        "description_hints": "This is the eastern half of the decontamination chamber. The door to the\neast leads to the Radiation Lab, and the chamber continues westward. A sign\non the wall reads \"WORNEENG! Raadeeaashun suuts must bee worn beeyond xis\npoint.\" - Radiation Lock East",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_global_objects": [
+          "r",
+          "a",
+          "d",
+          "_",
+          "d",
+          "o",
+          "o",
+          "r",
+          "_",
+          "e",
+          "a",
+          "s",
+          "t"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "east": "radiation_lab",
+        "west": "radiation_lock_west"
+      }
+    },
+    "bio_lab": {
+      "id": "bio_lab",
+      "name": "Bio Lab",
+      "attributes": {
+        "description_hints": "Bio Lab",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_pseudo_objects": [
+          "CRACK",
+          "CRACK-PSEUDO"
+        ],
+        "zil_global_objects": [
+          "bio_door_east",
+          "window",
+          "office_door"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "east": "lab_office",
+        "west": "bio_lock_east"
+      }
+    },
+    "radiation_lab": {
+      "id": "radiation_lab",
+      "name": "Radiation Lab",
+      "attributes": {
+        "description_hints": "This room is filled with unfathomable equipment and large canisters bearing\nradioactive warnings. Many of the canisters are split open. You can see the\nBio Lab through a large crack in the south wall. Sinister-looking forms move\nabout within the Bio Lab. Although the lights here are off, the room is\nsuffused with a pale blue glow. - Radiation Lab",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_pseudo_objects": [
+          "CRACK",
+          "CRACK-PSEUDO",
+          "EQUIPMENT",
+          "EQUIPMENT-PSEUDO"
+        ],
+        "zil_global_objects": [
+          "tables",
+          "rad_door_east"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "west": "radiation_lock_east"
+      }
+    },
+    "lab_office": {
+      "id": "lab_office",
+      "name": "Lab Office",
+      "attributes": {
+        "description_hints": "Lab Office",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_pseudo_objects": [
+          "FILES",
+          "CABINETS-PSEUDO",
+          "BOOTH",
+          "NEAR-BOOTH-PSEUDO"
+        ],
+        "zil_global_objects": [
+          "o",
+          "f",
+          "f",
+          "i",
+          "c",
+          "e",
+          "_",
+          "d",
+          "o",
+          "o",
+          "r"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "south": "auxiliary_booth",
+        "west": "bio_lab",
+        "in": "auxiliary_booth"
+      }
+    },
+    "auxiliary_booth": {
+      "id": "auxiliary_booth",
+      "name": "Auxiliary Booth",
+      "attributes": {
+        "description_hints": "This is another small booth. Unlike the Miniaturization Booth, this room\nhas no slot or keyboard, so presumably it is intended only as a receiving\nstation. The exit is on the northern side. - Auxiliary Booth",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_pseudo_objects": [
+          "BOOTH",
+          "IN-BOOTH-PSEUDO"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "north": "lab_office",
+        "out": "lab_office"
+      }
+    },
+    "station_384": {
+      "id": "station_384",
+      "name": "Station 384",
+      "attributes": {
+        "description_hints": "You are standing on a square plate of heavy metal. Above your head, parallel\nto the plate beneath you, is an identical metal plate. To the east is a wide,\nmetallic strip. - Station 384",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_pseudo_objects": [
+          "PLATE",
+          "PLATE-PSEUDO",
+          "PLATES",
+          "PLATE-PSEUDO"
+        ],
+        "zil_global_objects": [
+          "s",
+          "t",
+          "r",
+          "i",
+          "p"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "east": "strip_near_station"
+      }
+    },
+    "strip_near_station": {
+      "id": "strip_near_station",
+      "name": "Strip Near Station",
+      "attributes": {
+        "description_hints": "You are standing on a silicon filament, which looks to you like a wide\nmetal highway. South of here, the filament makes a right angle and heads\nstraight down, like a cliff overlooking a black void. The filament can be\nfollowed north, however. Station 384 lies westward. - Strip Near Station",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_pseudo_objects": [
+          "VOID",
+          "VOID-PSEUDO"
+        ],
+        "zil_global_objects": [
+          "s",
+          "t",
+          "r",
+          "i",
+          "p"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "north": "middle_of_strip",
+        "west": "station_384"
+      }
+    },
+    "middle_of_strip": {
+      "id": "middle_of_strip",
+      "name": "Middle of Strip",
+      "attributes": {
+        "description_hints": "You are standing on a section of the strip with a bottomless void stretching\nout on both sides. The strip continues to the north and south. - Middle of Strip",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_pseudo_objects": [
+          "VOID",
+          "VOID-PSEUDO"
+        ],
+        "zil_global_objects": [
+          "s",
+          "t",
+          "r",
+          "i",
+          "p"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "north": "strip_near_relay",
+        "south": "strip_near_station"
+      }
+    },
+    "strip_near_relay": {
+      "id": "strip_near_relay",
+      "name": "Strip Near Relay",
+      "attributes": {
+        "description_hints": "Strip Near Relay",
+        "lighting": "bright",
+        "is_outdoors": false,
+        "zil_pseudo_objects": [
+          "VOID",
+          "VOID-PSEUDO"
+        ],
+        "zil_global_objects": [
+          "s",
+          "t",
+          "r",
+          "i",
+          "p"
+        ],
+        "zil_flags": [
+          "rlandbit",
+          "onbit"
+        ]
+      },
+      "connections": {
+        "south": "middle_of_strip"
+      }
+    }
+  },
+  "items": {
+    "conference_door": {
+      "id": "conference_door",
+      "name": "door",
+      "attributes": {
+        "description_hints": "door",
+        "type": "entrance",
+        "is_door": true,
+        "is_open": false,
+        "is_locked": false,
+        "takeable": false,
+        "zil_synonyms": [
+          "DOOR"
+        ],
+        "zil_flags": [
+          "doorbit",
+          "ndescbit"
+        ]
+      }
+    },
+    "combination_dial": {
+      "id": "combination_dial",
+      "name": "combination dial",
+      "attributes": {
+        "description_hints": "combination dial",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "DIAL"
+        ],
+        "zil_adjectives": [
+          "COMBINATION"
+        ],
+        "zil_flags": [
+          "mungbit",
+          "ndescbit"
+        ]
+      }
+    },
+    "storage_west_door": {
+      "id": "storage_west_door",
+      "name": "door",
+      "attributes": {
+        "description_hints": "door",
+        "type": "entrance",
+        "is_door": true,
+        "is_open": false,
+        "is_locked": false,
+        "takeable": false,
+        "zil_synonyms": [
+          "DOOR"
+        ],
+        "zil_flags": [
+          "doorbit",
+          "ndescbit"
+        ]
+      }
+    },
+    "padlock": {
+      "id": "padlock",
+      "name": "padlock",
+      "attributes": {
+        "description_hints": "padlock",
+        "type": "generic",
+        "takeable": true,
+        "zil_synonyms": [
+          "PADLOCK",
+          "PAD",
+          "LOCK"
+        ],
+        "zil_adjectives": [
+          "SIMPLE",
+          "STEEL",
+          "METAL"
+        ],
+        "size": 10,
+        "zil_flags": [
+          "mungbit",
+          "ndescbit",
+          "takebit",
+          "trytakebit"
+        ]
+      }
+    },
+    "can": {
+      "id": "can",
+      "name": "tin can",
+      "attributes": {
+        "description_hints": "On a small shelf is a large, unopened tin can. It has a plain white\nlabel which reads \"Spam and Egz.\"",
+        "type": "generic",
+        "takeable": true,
+        "zil_synonyms": [
+          "CAN"
+        ],
+        "zil_adjectives": [
+          "LARGE",
+          "TIN",
+          "UNOPENED"
+        ],
+        "size": 15,
+        "zil_flags": [
+          "takebit"
+        ]
+      }
+    },
+    "ladder": {
+      "id": "ladder",
+      "name": "ladder",
+      "attributes": {
+        "description_hints": "A heavy-duty extendable ladder is leaning against the rear wall.",
+        "type": "generic",
+        "takeable": true,
+        "zil_synonyms": [
+          "LADDER"
+        ],
+        "zil_adjectives": [
+          "HEAVY",
+          "DUTY",
+          "HEAVY-DUTY",
+          "ALUMINUM",
+          "LARGE"
+        ],
+        "size": 80,
+        "zil_flags": [
+          "takebit"
+        ]
+      }
+    },
+    "kitchen_door": {
+      "id": "kitchen_door",
+      "name": "door",
+      "attributes": {
+        "description_hints": "door",
+        "type": "entrance",
+        "is_door": true,
+        "is_open": false,
+        "is_locked": false,
+        "takeable": false,
+        "zil_synonyms": [
+          "DOOR"
+        ],
+        "zil_adjectives": [
+          "KITCHEN"
+        ],
+        "zil_flags": [
+          "doorbit",
+          "ndescbit"
+        ]
+      }
+    },
+    "dispenser": {
+      "id": "dispenser",
+      "name": "dispenser unit",
+      "attributes": {
+        "description_hints": "dispenser unit",
+        "type": "container",
+        "container": true,
+        "open": true,
+        "takeable": false,
+        "zil_synonyms": [
+          "UNIT",
+          "NICHE",
+          "MACHINE",
+          "DISPENSER"
+        ],
+        "zil_adjectives": [
+          "DISPENSER"
+        ],
+        "zil_flags": [
+          "mungbit",
+          "contbit",
+          "searchbit",
+          "openbit",
+          "transbit",
+          "ndescbit"
+        ]
+      }
+    },
+    "canteen": {
+      "id": "canteen",
+      "name": "canteen",
+      "attributes": {
+        "description_hints": "Although the room is quite barren, an octagonally shaped\ncanteen is sitting on one of the benches.",
+        "type": "container",
+        "container": true,
+        "open": false,
+        "capacity": 5,
+        "takeable": true,
+        "zil_synonyms": [
+          "CANTEEN"
+        ],
+        "zil_adjectives": [
+          "OCTAGONAL"
+        ],
+        "size": 10,
+        "zil_flags": [
+          "takebit",
+          "contbit",
+          "searchbit"
+        ]
+      }
+    },
+    "high_protein": {
+      "id": "high_protein",
+      "name": "quantity of protein-rich liquid",
+      "attributes": {
+        "description_hints": "quantity of protein-rich liquid",
+        "type": "consumable",
+        "takeable": false,
+        "zil_synonyms": [
+          "LIQUID",
+          "FLUID",
+          "FOOD",
+          "QUANTITY"
+        ],
+        "zil_adjectives": [
+          "BROWN",
+          "PROTEIN-RICH",
+          "PROTEIN",
+          "RICH"
+        ],
+        "size": 5,
+        "zil_flags": [
+          "foodbit"
+        ]
+      }
+    },
+    "crevice": {
+      "id": "crevice",
+      "name": "crevice",
+      "attributes": {
+        "description_hints": "crevice",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "CREVICE",
+          "CRACK",
+          "HOLE"
+        ],
+        "zil_adjectives": [
+          "NARROW",
+          "JAGGED"
+        ],
+        "zil_flags": [
+          "ndescbit"
+        ]
+      }
+    },
+    "key": {
+      "id": "key",
+      "name": "key",
+      "attributes": {
+        "description_hints": "Lying at the bottom of a narrow crevice is a shiny object.",
+        "type": "weapon",
+        "takeable": true,
+        "weapon": true,
+        "zil_synonyms": [
+          "KEY",
+          "METAL",
+          "OBJECT"
+        ],
+        "zil_adjectives": [
+          "PIECE",
+          "STEEL",
+          "IRON",
+          "SHINY"
+        ],
+        "size": 3,
+        "zil_flags": [
+          "acidbit",
+          "takebit",
+          "toolbit",
+          "invisible",
+          "trytakebit"
+        ]
+      }
+    },
+    "rift": {
+      "id": "rift",
+      "name": "rift",
+      "attributes": {
+        "description_hints": "rift",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "RIFT",
+          "GULF",
+          "PRECIPICE",
+          "HOLE"
+        ],
+        "zil_adjectives": [
+          "WIDE",
+          "DEEP",
+          "GAPING"
+        ],
+        "zil_flags": [
+          "ndescbit"
+        ]
+      }
+    },
+    "small_desk": {
+      "id": "small_desk",
+      "name": "small desk",
+      "attributes": {
+        "description_hints": "small desk",
+        "type": "container",
+        "container": true,
+        "open": false,
+        "capacity": 10,
+        "takeable": false,
+        "zil_synonyms": [
+          "DESK",
+          "DRAWER"
+        ],
+        "zil_adjectives": [
+          "SMALL"
+        ],
+        "zil_flags": [
+          "ndescbit",
+          "contbit",
+          "searchbit"
+        ]
+      }
+    },
+    "kitchen_card": {
+      "id": "kitchen_card",
+      "name": "kitchen access card",
+      "attributes": {
+        "description_hints": "kitchen access card",
+        "type": "readable",
+        "text": "The card is embossed \"kitcin akses kard.\"",
+        "takeable": true,
+        "zil_synonyms": [
+          "CARD",
+          "CARDS"
+        ],
+        "zil_adjectives": [
+          "KITCHEN",
+          "ACCESS"
+        ],
+        "size": 3,
+        "zil_flags": [
+          "takebit",
+          "readbit"
+        ]
+      }
+    },
+    "upper_elevator_card": {
+      "id": "upper_elevator_card",
+      "name": "upper elevator access card",
+      "attributes": {
+        "description_hints": "upper elevator access card",
+        "type": "readable",
+        "text": "The card is embossed \"upur elivaatur akses kard.\"",
+        "takeable": true,
+        "zil_synonyms": [
+          "CARD",
+          "CARDS"
+        ],
+        "zil_adjectives": [
+          "UPPER",
+          "ELEVATOR",
+          "ACCESS"
+        ],
+        "size": 3,
+        "zil_flags": [
+          "vowelbit",
+          "takebit",
+          "readbit"
+        ]
+      }
+    },
+    "shuttle_card": {
+      "id": "shuttle_card",
+      "name": "shuttle access card",
+      "attributes": {
+        "description_hints": "shuttle access card",
+        "type": "readable",
+        "text": "The card is embossed \"shutul akses kard.\"",
+        "takeable": true,
+        "zil_synonyms": [
+          "CARD",
+          "CARDS"
+        ],
+        "zil_adjectives": [
+          "SHUTTLE",
+          "ACCESS"
+        ],
+        "size": 3,
+        "zil_flags": [
+          "takebit",
+          "readbit"
+        ]
+      }
+    },
+    "lower_elevator_card": {
+      "id": "lower_elevator_card",
+      "name": "lower elevator access card",
+      "attributes": {
+        "description_hints": "lower elevator access card",
+        "type": "readable",
+        "text": "The card is embossed \"loowur elivaatur akses kard.\"",
+        "takeable": true,
+        "zil_synonyms": [
+          "CARD",
+          "CARDS"
+        ],
+        "zil_adjectives": [
+          "LOWER",
+          "ELEVATOR",
+          "ACCESS"
+        ],
+        "size": 3,
+        "zil_flags": [
+          "takebit",
+          "readbit"
+        ]
+      }
+    },
+    "large_desk": {
+      "id": "large_desk",
+      "name": "large desk",
+      "attributes": {
+        "description_hints": "large desk",
+        "type": "container",
+        "container": true,
+        "open": false,
+        "capacity": 20,
+        "takeable": false,
+        "zil_synonyms": [
+          "DESK",
+          "DRAWER"
+        ],
+        "zil_adjectives": [
+          "LARGE",
+          "WIDE",
+          "WOODEN"
+        ],
+        "zil_flags": [
+          "contbit",
+          "searchbit",
+          "ndescbit"
+        ]
+      }
+    },
+    "oil_can": {
+      "id": "oil_can",
+      "name": "oil can",
+      "attributes": {
+        "description_hints": "One dusty shelf, otherwise bare, holds a small oil can.",
+        "type": "generic",
+        "takeable": true,
+        "zil_synonyms": [
+          "CAN"
+        ],
+        "zil_adjectives": [
+          "SMALL",
+          "OIL"
+        ],
+        "size": 10,
+        "zil_flags": [
+          "vowelbit",
+          "takebit"
+        ]
+      }
+    },
+    "carton": {
+      "id": "carton",
+      "name": "cardboard box",
+      "attributes": {
+        "description_hints": "On the floor beneath the shelves sits a small cardboard box.",
+        "type": "container",
+        "container": true,
+        "open": true,
+        "capacity": 50,
+        "takeable": true,
+        "zil_synonyms": [
+          "BOX",
+          "CARTON"
+        ],
+        "zil_adjectives": [
+          "SMALL",
+          "CARDBOARD"
+        ],
+        "size": 10,
+        "zil_flags": [
+          "takebit",
+          "contbit",
+          "searchbit",
+          "openbit"
+        ]
+      }
+    },
+    "cracked_board": {
+      "id": "cracked_board",
+      "name": "cracked seventeen-centimeter fromitz board",
+      "attributes": {
+        "description_hints": "cracked seventeen-centimeter fromitz board",
+        "type": "generic",
+        "takeable": true,
+        "zil_synonyms": [
+          "BOARD",
+          "BOARDS"
+        ],
+        "zil_adjectives": [
+          "CRACKED",
+          "SEVENTEEN",
+          "CENTIMETER",
+          "FROMITZ"
+        ],
+        "size": 10,
+        "zil_flags": [
+          "acidbit",
+          "takebit"
+        ]
+      }
+    },
+    "megafuse_b": {
+      "id": "megafuse_b",
+      "name": "B-series megafuse",
+      "attributes": {
+        "description_hints": "B-series megafuse",
+        "type": "generic",
+        "takeable": true,
+        "zil_synonyms": [
+          "FUSE",
+          "MEGAFUSE"
+        ],
+        "zil_adjectives": [
+          "B-SERIES",
+          "B",
+          "SERIES",
+          "MEGA"
+        ],
+        "size": 5,
+        "zil_flags": [
+          "acidbit",
+          "takebit"
+        ]
+      }
+    },
+    "megafuse_k": {
+      "id": "megafuse_k",
+      "name": "K-series megafuse",
+      "attributes": {
+        "description_hints": "K-series megafuse",
+        "type": "generic",
+        "takeable": true,
+        "zil_synonyms": [
+          "FUSE",
+          "MEGAFUSE"
+        ],
+        "zil_adjectives": [
+          "K-SERIES",
+          "K",
+          "SERIES",
+          "MEGA"
+        ],
+        "size": 5,
+        "zil_flags": [
+          "acidbit",
+          "takebit"
+        ]
+      }
+    },
+    "good_bedistor": {
+      "id": "good_bedistor",
+      "name": "good ninety-ohm bedistor",
+      "attributes": {
+        "description_hints": "good ninety-ohm bedistor",
+        "type": "generic",
+        "takeable": true,
+        "zil_synonyms": [
+          "BEDISTOR"
+        ],
+        "zil_adjectives": [
+          "GOOD",
+          "NINETY",
+          "OHM",
+          "NINETY-OHM"
+        ],
+        "size": 8,
+        "zil_flags": [
+          "acidbit",
+          "takebit"
+        ]
+      }
+    },
+    "reactor_elevator_door": {
+      "id": "reactor_elevator_door",
+      "name": "reactor elevator door",
+      "attributes": {
+        "description_hints": "reactor elevator door",
+        "type": "entrance",
+        "is_door": true,
+        "is_open": false,
+        "is_locked": false,
+        "takeable": false,
+        "zil_synonyms": [
+          "DOOR"
+        ],
+        "zil_adjectives": [
+          "REACTOR",
+          "ELEVATOR"
+        ],
+        "zil_flags": [
+          "doorbit"
+        ]
+      }
+    },
+    "flask": {
+      "id": "flask",
+      "name": "glass flask",
+      "attributes": {
+        "description_hints": "Sitting on the floor below the lowest shelf is a large glass flask.",
+        "type": "container",
+        "container": true,
+        "open": true,
+        "capacity": 2,
+        "takeable": true,
+        "zil_synonyms": [
+          "FLASK"
+        ],
+        "zil_adjectives": [
+          "GLASS",
+          "LARGE",
+          "PLASTIC"
+        ],
+        "size": 10,
+        "zil_flags": [
+          "contbit",
+          "searchbit",
+          "openbit",
+          "takebit"
+        ]
+      }
+    },
+    "magnet": {
+      "id": "magnet",
+      "name": "curved metal bar",
+      "attributes": {
+        "description_hints": "On an upper shelf is a metal bar, curved into a U-shape.",
+        "type": "generic",
+        "takeable": true,
+        "zil_synonyms": [
+          "MAGNET",
+          "BAR"
+        ],
+        "zil_adjectives": [
+          "CURVED",
+          "METAL",
+          "HORSESHOE"
+        ],
+        "size": 10,
+        "zil_flags": [
+          "trytakebit",
+          "takebit"
+        ]
+      }
+    },
+    "pliers": {
+      "id": "pliers",
+      "name": "pair of wide-nosed pliers",
+      "attributes": {
+        "description_hints": "pair of wide-nosed pliers",
+        "type": "generic",
+        "takeable": true,
+        "zil_synonyms": [
+          "PAIR",
+          "PLIERS"
+        ],
+        "zil_adjectives": [
+          "WIDE-NOSED",
+          "WIDE",
+          "NOSED"
+        ],
+        "size": 15,
+        "zil_flags": [
+          "takebit"
+        ]
+      }
+    },
+    "digger": {
+      "id": "digger",
+      "name": "wheelbarrow-like machine",
+      "attributes": {
+        "description_hints": "In the far corner is an odd machine, somewhat reminiscent of a wheelbarrow.",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "WHEELBARROW",
+          "MACHINE",
+          "DIGGER"
+        ],
+        "zil_adjectives": [
+          "ODD"
+        ]
+      }
+    },
+    "chemical_dispenser": {
+      "id": "chemical_dispenser",
+      "name": "chemical dispenser",
+      "attributes": {
+        "description_hints": "chemical dispenser",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "DISPENSER",
+          "MACHINE"
+        ],
+        "zil_adjectives": [
+          "DISPENSER",
+          "LARGE",
+          "CHEMICAL"
+        ],
+        "zil_flags": [
+          "mungbit",
+          "ndescbit"
+        ]
+      }
+    },
+    "red_button": {
+      "id": "red_button",
+      "name": "red button",
+      "attributes": {
+        "description_hints": "red button",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "BUTTON"
+        ],
+        "zil_adjectives": [
+          "RED"
+        ],
+        "zil_flags": [
+          "ndescbit"
+        ]
+      }
+    },
+    "blue_button": {
+      "id": "blue_button",
+      "name": "blue button",
+      "attributes": {
+        "description_hints": "blue button",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "BUTTON"
+        ],
+        "zil_adjectives": [
+          "BLUE"
+        ],
+        "zil_flags": [
+          "ndescbit"
+        ]
+      }
+    },
+    "green_button": {
+      "id": "green_button",
+      "name": "green button",
+      "attributes": {
+        "description_hints": "green button",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "BUTTON"
+        ],
+        "zil_adjectives": [
+          "GREEN"
+        ],
+        "zil_flags": [
+          "ndescbit"
+        ]
+      }
+    },
+    "yellow_button": {
+      "id": "yellow_button",
+      "name": "yellow button",
+      "attributes": {
+        "description_hints": "yellow button",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "BUTTON"
+        ],
+        "zil_adjectives": [
+          "YELLOW"
+        ],
+        "zil_flags": [
+          "ndescbit"
+        ]
+      }
+    },
+    "gray_button": {
+      "id": "gray_button",
+      "name": "gray button",
+      "attributes": {
+        "description_hints": "gray button",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "BUTTON"
+        ],
+        "zil_adjectives": [
+          "GRAY",
+          "GREY"
+        ],
+        "zil_flags": [
+          "ndescbit"
+        ]
+      }
+    },
+    "brown_button": {
+      "id": "brown_button",
+      "name": "brown button",
+      "attributes": {
+        "description_hints": "brown button",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "BUTTON"
+        ],
+        "zil_adjectives": [
+          "BROWN"
+        ],
+        "zil_flags": [
+          "ndescbit"
+        ]
+      }
+    },
+    "black_button": {
+      "id": "black_button",
+      "name": "black button",
+      "attributes": {
+        "description_hints": "black button",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "BUTTON"
+        ],
+        "zil_adjectives": [
+          "BLACK"
+        ],
+        "zil_flags": [
+          "ndescbit"
+        ]
+      }
+    },
+    "round_white_button": {
+      "id": "round_white_button",
+      "name": "round white button",
+      "attributes": {
+        "description_hints": "round white button",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "BUTTON"
+        ],
+        "zil_adjectives": [
+          "WHITE",
+          "ROUND"
+        ],
+        "zil_flags": [
+          "ndescbit"
+        ]
+      }
+    },
+    "square_white_button": {
+      "id": "square_white_button",
+      "name": "square white button",
+      "attributes": {
+        "description_hints": "square white button",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "BUTTON"
+        ],
+        "zil_adjectives": [
+          "SQUARE",
+          "WHITE"
+        ],
+        "zil_flags": [
+          "ndescbit"
+        ]
+      }
+    },
+    "floyd": {
+      "id": "floyd",
+      "name": "multiple purpose robot",
+      "attributes": {
+        "description_hints": "Only one robot, about four feet high, looks even remotely close to being\nin working order.",
+        "type": "container",
+        "container": true,
+        "open": true,
+        "capacity": 5,
+        "takeable": false,
+        "provides_light": true,
+        "is_lit": false,
+        "zil_synonyms": [
+          "FLOYD",
+          "COMPARTMENT",
+          "ROBOT",
+          "COMPANION"
+        ],
+        "zil_adjectives": [
+          "MULTIPLE",
+          "PURPOSE",
+          "DIM-WITTED",
+          "DIM",
+          "WITTED"
+        ],
+        "zil_flags": [
+          "contbit",
+          "searchbit",
+          "transbit",
+          "openbit",
+          "lightbit"
+        ]
+      }
+    },
+    "dead_floyd": {
+      "id": "dead_floyd",
+      "name": "mangled robot",
+      "attributes": {
+        "description_hints": "mangled robot",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "FLOYD",
+          "ROBOT",
+          "COMPANION"
+        ],
+        "zil_adjectives": [
+          "MANGLE",
+          "DEAD",
+          "FORMER"
+        ]
+      }
+    },
+    "upper_elevator_door": {
+      "id": "upper_elevator_door",
+      "name": "blue door",
+      "attributes": {
+        "description_hints": "blue door",
+        "type": "entrance",
+        "is_door": true,
+        "is_open": false,
+        "is_locked": false,
+        "takeable": false,
+        "zil_synonyms": [
+          "DOOR"
+        ],
+        "zil_adjectives": [
+          "UPPER",
+          "ELEVATOR",
+          "BLUE"
+        ],
+        "zil_flags": [
+          "ndescbit",
+          "doorbit"
+        ]
+      }
+    },
+    "lower_elevator_door": {
+      "id": "lower_elevator_door",
+      "name": "red door",
+      "attributes": {
+        "description_hints": "red door",
+        "type": "entrance",
+        "is_door": true,
+        "is_open": false,
+        "is_locked": false,
+        "takeable": false,
+        "zil_synonyms": [
+          "DOOR"
+        ],
+        "zil_adjectives": [
+          "RED",
+          "LOWER",
+          "ELEVATOR",
+          "METAL"
+        ],
+        "zil_flags": [
+          "ndescbit",
+          "doorbit"
+        ]
+      }
+    },
+    "blue_elevator_button": {
+      "id": "blue_elevator_button",
+      "name": "blue button",
+      "attributes": {
+        "description_hints": "blue button",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "BUTTON"
+        ],
+        "zil_adjectives": [
+          "BLUE",
+          "NORTH"
+        ],
+        "zil_flags": [
+          "ndescbit"
+        ]
+      }
+    },
+    "red_elevator_button": {
+      "id": "red_elevator_button",
+      "name": "red button",
+      "attributes": {
+        "description_hints": "red button",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "BUTTON"
+        ],
+        "zil_adjectives": [
+          "RED",
+          "SOUTH"
+        ],
+        "zil_flags": [
+          "ndescbit"
+        ]
+      }
+    },
+    "elevator_button": {
+      "id": "elevator_button",
+      "name": "button",
+      "attributes": {
+        "description_hints": "button",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "BUTTON"
+        ],
+        "zil_flags": [
+          "ndescbit"
+        ]
+      }
+    },
+    "helicopter_object": {
+      "id": "helicopter_object",
+      "name": "large vehicle",
+      "attributes": {
+        "description_hints": "large vehicle",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "VEHICLE",
+          "HELICOPTER"
+        ],
+        "zil_adjectives": [
+          "LARGE"
+        ],
+        "zil_flags": [
+          "vehbit",
+          "ndescbit"
+        ]
+      }
+    },
+    "receive_console": {
+      "id": "receive_console",
+      "name": "communications receive console",
+      "attributes": {
+        "description_hints": "communications receive console",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "CONSOLE",
+          "CONTROL"
+        ],
+        "zil_adjectives": [
+          "COMMUNICATIONS",
+          "RECEIVE",
+          "LEFT",
+          "FIRST"
+        ],
+        "zil_flags": [
+          "ndescbit"
+        ]
+      }
+    },
+    "playback_button": {
+      "id": "playback_button",
+      "name": "glowing button",
+      "attributes": {
+        "description_hints": "glowing button",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "BUTTON"
+        ],
+        "zil_adjectives": [
+          "GLOWING",
+          "PLAYBACK"
+        ],
+        "zil_flags": [
+          "ndescbit"
+        ]
+      }
+    },
+    "send_console": {
+      "id": "send_console",
+      "name": "communication send console",
+      "attributes": {
+        "description_hints": "communication send console",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "CONSOLE",
+          "CONTROL"
+        ],
+        "zil_adjectives": [
+          "COMMUNICATIONS",
+          "SEND",
+          "RIGHT",
+          "SECOND"
+        ],
+        "zil_flags": [
+          "ndescbit"
+        ]
+      }
+    },
+    "comm_screen": {
+      "id": "comm_screen",
+      "name": "screen",
+      "attributes": {
+        "description_hints": "screen",
+        "type": "readable",
+        "text": "\"Tuu enee ship uv xe Sekund Galaktik Yuunyun: Planitwiid plaag haz struk\nentiir popyuulaashun. Tiim iz kritikul. Eemurjensee asistins reekwestid.\n(reepeet mesij)\"",
+        "takeable": false,
+        "zil_synonyms": [
+          "COMMUNICATIONS",
+          "MESSAGE",
+          "SCREEN"
+        ],
+        "zil_flags": [
+          "ndescbit",
+          "readbit"
+        ]
+      }
+    },
+    "funnel_hole": {
+      "id": "funnel_hole",
+      "name": "funnel-shaped hole",
+      "attributes": {
+        "description_hints": "funnel-shaped hole",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "HOLE"
+        ],
+        "zil_adjectives": [
+          "FUNNEL",
+          "SHAPED",
+          "FUNNEL-SHAPED"
+        ],
+        "zil_flags": [
+          "ndescbit"
+        ]
+      }
+    },
+    "chemical_fluid": {
+      "id": "chemical_fluid",
+      "name": "quantity of chemical fluid",
+      "attributes": {
+        "description_hints": "quantity of chemical fluid",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "QUANTITY",
+          "LIQUID",
+          "FLUID",
+          "CHEMICAL"
+        ],
+        "zil_adjectives": [
+          "MILKY",
+          "WHITE",
+          "CHEMICAL"
+        ]
+      }
+    },
+    "global_objects": {
+      "id": "global_objects",
+      "name": "it",
+      "attributes": {
+        "description_hints": "it",
+        "type": "readable",
+        "takeable": false,
+        "zil_synonyms": [
+          "ZZMGCK"
+        ],
+        "zil_flags": [
+          "invisible",
+          "touchbit",
+          "surfacebit",
+          "trytakebit",
+          "mungbit",
+          "mungedbit",
+          "scrambledbit",
+          "wornbit",
+          "openbit",
+          "searchbit",
+          "transbit",
+          "wearbit",
+          "readbit",
+          "acidbit",
+          "activebit"
+        ]
+      }
+    },
+    "rooms": {
+      "id": "rooms",
+      "name": "it",
+      "attributes": {
+        "description_hints": "it",
+        "type": "generic",
+        "takeable": false
+      }
+    },
+    "intnum": {
+      "id": "intnum",
+      "name": "number",
+      "attributes": {
+        "description_hints": "number",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "INTNUM"
+        ]
+      }
+    },
+    "pseudo_object": {
+      "id": "pseudo_object",
+      "name": "pseudoxyz",
+      "attributes": {
+        "description_hints": "pseudoxyz",
+        "type": "generic",
+        "takeable": false
+      }
+    },
+    "it": {
+      "id": "it",
+      "name": "random object",
+      "attributes": {
+        "description_hints": "random object",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "IT",
+          "THAT",
+          "THIS",
+          "HIM"
+        ],
+        "zil_flags": [
+          "ndescbit"
+        ]
+      }
+    },
+    "stairs": {
+      "id": "stairs",
+      "name": "stairway",
+      "attributes": {
+        "description_hints": "stairway",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "STAIRS",
+          "STEPS",
+          "GANGWAY",
+          "STAIRWAY"
+        ],
+        "zil_flags": [
+          "ndescbit",
+          "climbbit"
+        ]
+      }
+    },
+    "ground": {
+      "id": "ground",
+      "name": "floor",
+      "attributes": {
+        "description_hints": "floor",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "GROUND",
+          "EARTH",
+          "FLOOR",
+          "DECK"
+        ],
+        "zil_flags": [
+          "ndescbit"
+        ]
+      }
+    },
+    "window": {
+      "id": "window",
+      "name": "window",
+      "attributes": {
+        "description_hints": "window",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "WINDOW",
+          "PORT",
+          "VIEWPORT"
+        ],
+        "zil_adjectives": [
+          "VIEW"
+        ],
+        "zil_flags": [
+          "ndescbit"
+        ]
+      }
+    },
+    "cliff": {
+      "id": "cliff",
+      "name": "cliff",
+      "attributes": {
+        "description_hints": "cliff",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "CLIFF"
+        ],
+        "zil_flags": [
+          "ndescbit"
+        ]
+      }
+    },
+    "ocean": {
+      "id": "ocean",
+      "name": "ocean",
+      "attributes": {
+        "description_hints": "ocean",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "OCEAN"
+        ],
+        "zil_adjectives": [
+          "ENDLESS"
+        ],
+        "zil_flags": [
+          "vowelbit",
+          "ndescbit"
+        ]
+      }
+    },
+    "tables": {
+      "id": "tables",
+      "name": "table",
+      "attributes": {
+        "description_hints": "table",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "TABLE",
+          "TABLES"
+        ],
+        "zil_adjectives": [
+          "ROUND",
+          "CONFERENCE",
+          "SMALL",
+          "WIDE",
+          "LONG"
+        ],
+        "zil_flags": [
+          "ndescbit"
+        ]
+      }
+    },
+    "shelves": {
+      "id": "shelves",
+      "name": "shelf",
+      "attributes": {
+        "description_hints": "shelf",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "SHELF",
+          "SHELVES"
+        ],
+        "zil_flags": [
+          "ndescbit"
+        ]
+      }
+    },
+    "lights": {
+      "id": "lights",
+      "name": "light",
+      "attributes": {
+        "description_hints": "light",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "LIGHT",
+          "LIGHTS"
+        ],
+        "zil_adjectives": [
+          "RED",
+          "DAZZLING",
+          "GLOWING",
+          "BLINKING",
+          "WARNING",
+          "BRIGHT",
+          "COLORED",
+          "FLASHING"
+        ],
+        "zil_flags": [
+          "ndescbit"
+        ]
+      }
+    },
+    "global_doorway": {
+      "id": "global_doorway",
+      "name": "doorway",
+      "attributes": {
+        "description_hints": "doorway",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "DOORWAY",
+          "PORTAL",
+          "OPENING"
+        ],
+        "zil_adjectives": [
+          "NORTH",
+          "SOUTH",
+          "EAST",
+          "WEST",
+          "NE",
+          "SE",
+          "NW",
+          "SW"
+        ],
+        "zil_flags": [
+          "ndescbit"
+        ]
+      }
+    },
+    "controls": {
+      "id": "controls",
+      "name": "set of controls",
+      "attributes": {
+        "description_hints": "set of controls",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "CONTROL",
+          "PANEL",
+          "DIALS",
+          "GAUGES"
+        ],
+        "zil_adjectives": [
+          "CONTROL",
+          "COMPLEX"
+        ],
+        "zil_flags": [
+          "ndescbit"
+        ]
+      }
+    },
+    "global_games": {
+      "id": "global_games",
+      "name": "game",
+      "attributes": {
+        "description_hints": "game",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "BOCCI",
+          "CHESS",
+          "HIDER-AND-SEEKER",
+          "HUCKA-BUCKA",
+          "SEEKER",
+          "BEANSTALK"
+        ],
+        "zil_adjectives": [
+          "HIDER",
+          "HUCKA",
+          "BUCKA"
+        ],
+        "zil_flags": [
+          "ndescbit"
+        ]
+      }
+    },
+    "hands": {
+      "id": "hands",
+      "name": "pair of hands",
+      "attributes": {
+        "description_hints": "pair of hands",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "PAIR",
+          "HANDS"
+        ],
+        "zil_adjectives": [
+          "BARE"
+        ],
+        "zil_flags": [
+          "ndescbit"
+        ]
+      }
+    },
+    "sleep": {
+      "id": "sleep",
+      "name": "sacred act of sleeping",
+      "attributes": {
+        "description_hints": "sacred act of sleeping",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "SLEEP"
+        ],
+        "zil_flags": [
+          "ndescbit"
+        ]
+      }
+    },
+    "adventurer": {
+      "id": "adventurer",
+      "name": "player",
+      "attributes": {
+        "description_hints": "player",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "ADMIRAL",
+          "SMITHE",
+          "SPAM",
+          "EGGS"
+        ],
+        "zil_adjectives": [
+          "ORANGE",
+          "OPENER"
+        ],
+        "zil_flags": [
+          "ndescbit",
+          "invisible"
+        ]
+      }
+    },
+    "scrub_brush": {
+      "id": "scrub_brush",
+      "name": "Patrol-issue self-contained multi-purpose scrub brush",
+      "attributes": {
+        "description_hints": "Patrol-issue self-contained multi-purpose scrub brush",
+        "type": "generic",
+        "takeable": true,
+        "zil_synonyms": [
+          "BRUSH",
+          "SCRUBBRUSH",
+          "SCRUBRUSH"
+        ],
+        "zil_adjectives": [
+          "SCRUB",
+          "PATROL",
+          "SELF-CONTAINED",
+          "MULTI",
+          "MULTI-PURPOSE",
+          "PURPOSE"
+        ],
+        "size": 10,
+        "zil_flags": [
+          "takebit"
+        ]
+      }
+    },
+    "chronometer": {
+      "id": "chronometer",
+      "name": "chronometer",
+      "attributes": {
+        "description_hints": "chronometer",
+        "type": "generic",
+        "takeable": true,
+        "zil_synonyms": [
+          "CHRONOMETER",
+          "WRISTWATCH",
+          "WATCH"
+        ],
+        "zil_adjectives": [
+          "WRIST"
+        ],
+        "size": 10,
+        "zil_flags": [
+          "mungbit",
+          "takebit",
+          "wearbit",
+          "wornbit"
+        ]
+      }
+    },
+    "id_card": {
+      "id": "id_card",
+      "name": "ID card",
+      "attributes": {
+        "description_hints": "ID card",
+        "type": "readable",
+        "text": "\"STELLAR PATROL|\nSpecial Assignment Task Force|\nID Number:  6172-531-541\"",
+        "takeable": true,
+        "zil_synonyms": [
+          "CARD",
+          "CARDS"
+        ],
+        "zil_adjectives": [
+          "PATROL",
+          "ID",
+          "IDENTIFICATION"
+        ],
+        "size": 3,
+        "zil_flags": [
+          "vowelbit",
+          "takebit",
+          "readbit"
+        ]
+      }
+    },
+    "patrol_uniform": {
+      "id": "patrol_uniform",
+      "name": "Patrol uniform",
+      "attributes": {
+        "description_hints": "Patrol uniform",
+        "type": "container",
+        "container": true,
+        "open": true,
+        "capacity": 10,
+        "takeable": true,
+        "zil_synonyms": [
+          "UNIFORM",
+          "POCKET",
+          "SUIT"
+        ],
+        "zil_adjectives": [
+          "PATROL",
+          "WRINKLED"
+        ],
+        "zil_flags": [
+          "takebit",
+          "wornbit",
+          "wearbit",
+          "contbit",
+          "searchbit",
+          "openbit"
+        ]
+      }
+    },
+    "diary": {
+      "id": "diary",
+      "name": "diary",
+      "attributes": {
+        "description_hints": "diary",
+        "type": "readable",
+        "takeable": true,
+        "zil_synonyms": [
+          "DIARY",
+          "MACHINE",
+          "RECORDER"
+        ],
+        "zil_adjectives": [
+          "BATTERED",
+          "OLD"
+        ],
+        "size": 3,
+        "zil_flags": [
+          "acidbit",
+          "takebit",
+          "readbit",
+          "transbit"
+        ]
+      }
+    },
+    "diary_button": {
+      "id": "diary_button",
+      "name": "little button",
+      "attributes": {
+        "description_hints": "little button",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "BUTTON"
+        ],
+        "zil_adjectives": [
+          "LITTLE"
+        ],
+        "zil_flags": [
+          "ndescbit"
+        ]
+      }
+    },
+    "celery": {
+      "id": "celery",
+      "name": "piece of celery",
+      "attributes": {
+        "description_hints": "piece of celery",
+        "type": "consumable",
+        "takeable": false,
+        "zil_synonyms": [
+          "CELERY",
+          "PIECE",
+          "STALK"
+        ],
+        "zil_flags": [
+          "ndescbit",
+          "foodbit"
+        ]
+      }
+    },
+    "brochure": {
+      "id": "brochure",
+      "name": "brochure",
+      "attributes": {
+        "description_hints": "brochure",
+        "type": "readable",
+        "text": "\"The leading export of Blow'k-bibben-Gordo is the adventure game|\n|\n          *** PLANETFALL ***|\n|\nwritten by S. Eric Meretzky.|\nBuy one today. Better yet, buy a thousand.\"",
+        "takeable": true,
+        "zil_synonyms": [
+          "BROCHURE",
+          "PAMPHLET",
+          "LEAFLET"
+        ],
+        "size": 4,
+        "zil_flags": [
+          "acidbit",
+          "takebit",
+          "readbit"
+        ]
+      }
+    },
+    "global_pod": {
+      "id": "global_pod",
+      "name": "escape pod",
+      "attributes": {
+        "description_hints": "escape pod",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "POD"
+        ],
+        "zil_adjectives": [
+          "EMERGENCY",
+          "ESCAPE",
+          "PRIMARY"
+        ],
+        "zil_flags": [
+          "vowelbit",
+          "vehbit",
+          "ndescbit"
+        ]
+      }
+    },
+    "safety_web": {
+      "id": "safety_web",
+      "name": "safety web",
+      "attributes": {
+        "description_hints": "safety web",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "MASS",
+          "WEB",
+          "WEBBING",
+          "NET"
+        ],
+        "zil_adjectives": [
+          "SAFETY"
+        ],
+        "zil_flags": [
+          "climbbit",
+          "vehbit",
+          "ndescbit"
+        ]
+      }
+    },
+    "towel": {
+      "id": "towel",
+      "name": "towel",
+      "attributes": {
+        "description_hints": "towel",
+        "type": "readable",
+        "text": "\"S.P.S. FEINSTEIN|\n  Escape Pod #42|\n   Don't Panic!\"",
+        "takeable": true,
+        "zil_synonyms": [
+          "TOWEL"
+        ],
+        "size": 10,
+        "zil_flags": [
+          "readbit",
+          "takebit"
+        ]
+      }
+    },
+    "food_kit": {
+      "id": "food_kit",
+      "name": "survival kit",
+      "attributes": {
+        "description_hints": "survival kit",
+        "type": "container",
+        "container": true,
+        "open": false,
+        "capacity": 25,
+        "takeable": true,
+        "zil_synonyms": [
+          "PROVISIONS",
+          "KIT"
+        ],
+        "zil_adjectives": [
+          "SURVIVAL",
+          "EMERGENCY"
+        ],
+        "size": 10,
+        "zil_flags": [
+          "takebit",
+          "contbit",
+          "searchbit"
+        ]
+      }
+    },
+    "red_goo": {
+      "id": "red_goo",
+      "name": "blob of red goo",
+      "attributes": {
+        "description_hints": "blob of red goo",
+        "type": "consumable",
+        "takeable": false,
+        "zil_synonyms": [
+          "GOO",
+          "BLOB",
+          "FOOD",
+          "PIE"
+        ],
+        "zil_adjectives": [
+          "RED",
+          "CHERRY"
+        ],
+        "zil_flags": [
+          "acidbit",
+          "foodbit"
+        ]
+      }
+    },
+    "brown_goo": {
+      "id": "brown_goo",
+      "name": "blob of brown goo",
+      "attributes": {
+        "description_hints": "blob of brown goo",
+        "type": "consumable",
+        "takeable": false,
+        "zil_synonyms": [
+          "GOO",
+          "BLOB",
+          "FOOD",
+          "STEW"
+        ],
+        "zil_adjectives": [
+          "BROWN",
+          "BEEF"
+        ],
+        "zil_flags": [
+          "acidbit",
+          "foodbit"
+        ]
+      }
+    },
+    "green_goo": {
+      "id": "green_goo",
+      "name": "blob of green goo",
+      "attributes": {
+        "description_hints": "blob of green goo",
+        "type": "consumable",
+        "takeable": false,
+        "zil_synonyms": [
+          "GOO",
+          "BLOB",
+          "FOOD",
+          "BEANS"
+        ],
+        "zil_adjectives": [
+          "GREEN",
+          "LIMA"
+        ],
+        "zil_flags": [
+          "acidbit",
+          "foodbit"
+        ]
+      }
+    },
+    "pod_door": {
+      "id": "pod_door",
+      "name": "escape pod bulkhead",
+      "attributes": {
+        "description_hints": "escape pod bulkhead",
+        "type": "entrance",
+        "is_door": true,
+        "is_open": false,
+        "is_locked": false,
+        "takeable": false,
+        "zil_synonyms": [
+          "DOOR",
+          "BULKHEAD"
+        ],
+        "zil_adjectives": [
+          "EMERGENCY",
+          "ESCAPE",
+          "POD"
+        ],
+        "zil_flags": [
+          "vowelbit",
+          "doorbit",
+          "ndescbit"
+        ]
+      }
+    },
+    "corridor_door": {
+      "id": "corridor_door",
+      "name": "wide bulkhead",
+      "attributes": {
+        "description_hints": "wide bulkhead",
+        "type": "entrance",
+        "is_door": true,
+        "is_open": true,
+        "is_locked": false,
+        "takeable": false,
+        "zil_synonyms": [
+          "DOOR",
+          "BULKHEAD"
+        ],
+        "zil_adjectives": [
+          "EMERGENCY",
+          "WIDE"
+        ],
+        "zil_flags": [
+          "invisible",
+          "doorbit",
+          "openbit",
+          "ndescbit"
+        ]
+      }
+    },
+    "gangway_door": {
+      "id": "gangway_door",
+      "name": "narrow bulkhead",
+      "attributes": {
+        "description_hints": "narrow bulkhead",
+        "type": "entrance",
+        "is_door": true,
+        "is_open": true,
+        "is_locked": false,
+        "takeable": false,
+        "zil_synonyms": [
+          "DOOR",
+          "BULKHEAD"
+        ],
+        "zil_adjectives": [
+          "EMERGENCY",
+          "NARROW"
+        ],
+        "zil_flags": [
+          "invisible",
+          "doorbit",
+          "openbit",
+          "ndescbit"
+        ]
+      }
+    },
+    "slot": {
+      "id": "slot",
+      "name": "slot",
+      "attributes": {
+        "description_hints": "slot",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "SLOT"
+        ],
+        "zil_adjectives": [
+          "SMALL"
+        ],
+        "zil_flags": [
+          "ndescbit"
+        ]
+      }
+    },
+    "teleportation_button_1": {
+      "id": "teleportation_button_1",
+      "name": "brown button",
+      "attributes": {
+        "description_hints": "brown button",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "BUTTON"
+        ],
+        "zil_adjectives": [
+          "BROWN",
+          "FIRST"
+        ],
+        "zil_flags": [
+          "ndescbit"
+        ]
+      }
+    },
+    "teleportation_button_2": {
+      "id": "teleportation_button_2",
+      "name": "beige button",
+      "attributes": {
+        "description_hints": "beige button",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "BUTTON"
+        ],
+        "zil_adjectives": [
+          "BEIGE",
+          "SECOND"
+        ],
+        "zil_flags": [
+          "ndescbit"
+        ]
+      }
+    },
+    "teleportation_button_3": {
+      "id": "teleportation_button_3",
+      "name": "tan button",
+      "attributes": {
+        "description_hints": "tan button",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "BUTTON"
+        ],
+        "zil_adjectives": [
+          "TAN",
+          "THIRD"
+        ],
+        "zil_flags": [
+          "ndescbit"
+        ]
+      }
+    },
+    "global_shuttle": {
+      "id": "global_shuttle",
+      "name": "shuttle car",
+      "attributes": {
+        "description_hints": "shuttle car",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "CAR",
+          "SHUTTLE"
+        ],
+        "zil_adjectives": [
+          "SHUTTLE"
+        ],
+        "zil_flags": [
+          "ndescbit"
+        ]
+      }
+    },
+    "lever": {
+      "id": "lever",
+      "name": "lever",
+      "attributes": {
+        "description_hints": "lever",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "LEVER"
+        ],
+        "zil_flags": [
+          "ndescbit"
+        ]
+      }
+    },
+    "shuttle_door": {
+      "id": "shuttle_door",
+      "name": "door",
+      "attributes": {
+        "description_hints": "door",
+        "type": "entrance",
+        "is_door": true,
+        "is_open": true,
+        "is_locked": false,
+        "takeable": false,
+        "zil_synonyms": [
+          "DOOR"
+        ],
+        "zil_flags": [
+          "doorbit",
+          "openbit",
+          "invisible"
+        ]
+      }
+    },
+    "bed": {
+      "id": "bed",
+      "name": "bed",
+      "attributes": {
+        "description_hints": "bed",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "BUNK",
+          "BED"
+        ],
+        "zil_adjectives": [
+          "MULTI",
+          "TIERED",
+          "MULTI-TIERED",
+          "BUNK"
+        ],
+        "zil_flags": [
+          "ndescbit",
+          "climbbit",
+          "vehbit"
+        ]
+      }
+    },
+    "lazarus_part": {
+      "id": "lazarus_part",
+      "name": "medical robot breastplate",
+      "attributes": {
+        "description_hints": "medical robot breastplate",
+        "type": "generic",
+        "takeable": true,
+        "zil_synonyms": [
+          "LAZARUS",
+          "PART",
+          "PLATE",
+          "BREASTPLATE"
+        ],
+        "zil_adjectives": [
+          "MEDICAL",
+          "BREAST"
+        ],
+        "size": 35,
+        "zil_flags": [
+          "takebit"
+        ]
+      }
+    },
+    "red_spool": {
+      "id": "red_spool",
+      "name": "red spool",
+      "attributes": {
+        "description_hints": "Lying on one of the beds is a small red spool.",
+        "type": "readable",
+        "text": "The spool is labelled \"Simptumz uv Xe Dizeez.\"",
+        "takeable": true,
+        "zil_synonyms": [
+          "SPOOL",
+          "SPOOLS",
+          "OBJECT"
+        ],
+        "zil_adjectives": [
+          "RED",
+          "SMALL"
+        ],
+        "size": 3,
+        "zil_flags": [
+          "takebit",
+          "acidbit",
+          "readbit"
+        ]
+      }
+    },
+    "medicine_bottle": {
+      "id": "medicine_bottle",
+      "name": "medicine bottle",
+      "attributes": {
+        "description_hints": "On a low shelf is a translucent bottle with a small white label.",
+        "type": "readable",
+        "container": true,
+        "open": false,
+        "capacity": 7,
+        "text": "\"Dizeez supreshun medisin -- eksperimentul\"",
+        "takeable": true,
+        "zil_synonyms": [
+          "BOTTLE",
+          "LABEL"
+        ],
+        "zil_adjectives": [
+          "MEDICINE",
+          "SMALL",
+          "WHITE",
+          "TRANSLUCENT"
+        ],
+        "size": 7,
+        "zil_flags": [
+          "contbit",
+          "searchbit",
+          "takebit",
+          "transbit",
+          "readbit"
+        ]
+      }
+    },
+    "medicine": {
+      "id": "medicine",
+      "name": "quantity of medicine",
+      "attributes": {
+        "description_hints": "At the bottom of the bottle is a small quantity of medicine.",
+        "type": "consumable",
+        "takeable": false,
+        "zil_synonyms": [
+          "MEDICINE",
+          "QUANTITY"
+        ],
+        "zil_adjectives": [
+          "SMALL",
+          "QUANTITY",
+          "EXPERIMENTAL"
+        ],
+        "size": 7,
+        "zil_flags": [
+          "foodbit"
+        ]
+      }
+    },
+    "achilles": {
+      "id": "achilles",
+      "name": "broken robot",
+      "attributes": {
+        "description_hints": "broken robot",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "ROBOT",
+          "ACHILLES"
+        ],
+        "zil_adjectives": [
+          "BROKEN",
+          "DEAD"
+        ]
+      }
+    },
+    "robot_hole": {
+      "id": "robot_hole",
+      "name": "small doorway",
+      "attributes": {
+        "description_hints": "small doorway",
+        "type": "container",
+        "container": true,
+        "open": false,
+        "takeable": false,
+        "zil_synonyms": [
+          "DOOR",
+          "DOORWAY",
+          "HOLE"
+        ],
+        "zil_adjectives": [
+          "SMALL",
+          "VERY"
+        ],
+        "zil_flags": [
+          "ndescbit",
+          "transbit",
+          "contbit"
+        ]
+      }
+    },
+    "good_board": {
+      "id": "good_board",
+      "name": "shiny seventeen-centimeter fromitz board",
+      "attributes": {
+        "description_hints": "shiny seventeen-centimeter fromitz board",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "BOARD",
+          "BOARDS"
+        ],
+        "zil_adjectives": [
+          "SHINY",
+          "GOOD",
+          "SEVENTEEN",
+          "CENTIMETER",
+          "FROMITZ"
+        ],
+        "size": 10,
+        "zil_flags": [
+          "acidbit",
+          "invisible",
+          "ndescbit"
+        ]
+      }
+    },
+    "access_panel": {
+      "id": "access_panel",
+      "name": "access panel",
+      "attributes": {
+        "description_hints": "access panel",
+        "type": "container",
+        "container": true,
+        "open": false,
+        "capacity": 40,
+        "takeable": false,
+        "zil_synonyms": [
+          "PANEL",
+          "DOOR",
+          "SOCKET"
+        ],
+        "zil_adjectives": [
+          "SMALL",
+          "ACCESS",
+          "REPAIR"
+        ],
+        "zil_flags": [
+          "vowelbit",
+          "ndescbit",
+          "contbit",
+          "searchbit"
+        ]
+      }
+    },
+    "first_board": {
+      "id": "first_board",
+      "name": "first seventeen-centimeter fromitz board",
+      "attributes": {
+        "description_hints": "first seventeen-centimeter fromitz board",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "BOARD",
+          "BOARDS"
+        ],
+        "zil_adjectives": [
+          "FIRST",
+          "SEVENTEEN",
+          "CENTIMETER",
+          "FROMITZ"
+        ]
+      }
+    },
+    "fourth_board": {
+      "id": "fourth_board",
+      "name": "fourth seventeen-centimeter fromitz board",
+      "attributes": {
+        "description_hints": "fourth seventeen-centimeter fromitz board",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "BOARD",
+          "BOARDS"
+        ],
+        "zil_adjectives": [
+          "FOURTH",
+          "SEVENTEEN",
+          "CENTIMETER",
+          "FROMITZ"
+        ]
+      }
+    },
+    "third_board": {
+      "id": "third_board",
+      "name": "third seventeen-centimeter fromitz board",
+      "attributes": {
+        "description_hints": "third seventeen-centimeter fromitz board",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "BOARD",
+          "BOARDS"
+        ],
+        "zil_adjectives": [
+          "THIRD",
+          "SEVENTEEN",
+          "CENTIMETER",
+          "FROMITZ"
+        ]
+      }
+    },
+    "second_board": {
+      "id": "second_board",
+      "name": "second seventeen-centimeter fromitz board",
+      "attributes": {
+        "description_hints": "second seventeen-centimeter fromitz board",
+        "type": "generic",
+        "takeable": true,
+        "zil_synonyms": [
+          "BOARD",
+          "BOARDS"
+        ],
+        "zil_adjectives": [
+          "SECOND",
+          "SEVENTEEN",
+          "CENTIMETER",
+          "FROMITZ"
+        ],
+        "zil_flags": [
+          "trytakebit",
+          "takebit"
+        ]
+      }
+    },
+    "fried_board": {
+      "id": "fried_board",
+      "name": "fried seventeen-centimeter fromitz board",
+      "attributes": {
+        "description_hints": "fried seventeen-centimeter fromitz board",
+        "type": "generic",
+        "takeable": true,
+        "zil_synonyms": [
+          "BOARD",
+          "BOARDS"
+        ],
+        "zil_adjectives": [
+          "FRIED",
+          "SEVENTEEN",
+          "CENTIMETER",
+          "FROMITZ"
+        ],
+        "size": 10,
+        "zil_flags": [
+          "acidbit",
+          "takebit"
+        ]
+      }
+    },
+    "cube": {
+      "id": "cube",
+      "name": "large metal cube",
+      "attributes": {
+        "description_hints": "large metal cube",
+        "type": "container",
+        "container": true,
+        "open": false,
+        "takeable": false,
+        "zil_synonyms": [
+          "CUBE",
+          "LID",
+          "SOCKET"
+        ],
+        "zil_adjectives": [
+          "LARGE",
+          "METAL"
+        ],
+        "zil_flags": [
+          "mungbit",
+          "ndescbit",
+          "contbit",
+          "searchbit"
+        ]
+      }
+    },
+    "bad_bedistor": {
+      "id": "bad_bedistor",
+      "name": "fused ninety-ohm bedistor",
+      "attributes": {
+        "description_hints": "fused ninety-ohm bedistor",
+        "type": "generic",
+        "takeable": true,
+        "zil_synonyms": [
+          "BEDISTOR"
+        ],
+        "zil_adjectives": [
+          "FUSED",
+          "NINETY",
+          "OHM",
+          "NINETY-OHM"
+        ],
+        "size": 8,
+        "zil_flags": [
+          "acidbit",
+          "trytakebit",
+          "takebit"
+        ]
+      }
+    },
+    "green_spool": {
+      "id": "green_spool",
+      "name": "green spool",
+      "attributes": {
+        "description_hints": "You catch a glimpse of a small object nestled among the dust.",
+        "type": "readable",
+        "text": "The spool is labelled \"Helikoptur Opuraateeng Manyuuwul.\"",
+        "takeable": true,
+        "zil_synonyms": [
+          "SPOOL",
+          "SPOOLS",
+          "OBJECT"
+        ],
+        "zil_adjectives": [
+          "GREEN",
+          "SMALL"
+        ],
+        "size": 3,
+        "zil_flags": [
+          "acidbit",
+          "takebit",
+          "readbit"
+        ]
+      }
+    },
+    "terminal": {
+      "id": "terminal",
+      "name": "terminal",
+      "attributes": {
+        "description_hints": "Sitting on a wide table is a machine of sorts, consisting of a video\nscreen and a keyboard. It is currently turned off.",
+        "type": "light_source",
+        "takeable": false,
+        "provides_light": true,
+        "is_lit": false,
+        "zil_synonyms": [
+          "TERMINAL",
+          "KEYBOARD",
+          "SCREEN",
+          "MACHINE"
+        ],
+        "zil_adjectives": [
+          "COMPUTER",
+          "VIDEO"
+        ],
+        "zil_flags": [
+          "lightbit"
+        ]
+      }
+    },
+    "spool_reader": {
+      "id": "spool_reader",
+      "name": "microfilm reader",
+      "attributes": {
+        "description_hints": "On the desk is a machine with a screen and a small circular opening. It\nseems to be turned off.",
+        "type": "container",
+        "container": true,
+        "open": true,
+        "capacity": 3,
+        "takeable": false,
+        "provides_light": true,
+        "is_lit": false,
+        "zil_synonyms": [
+          "READER",
+          "SCREEN",
+          "OPENING",
+          "MACHINE"
+        ],
+        "zil_adjectives": [
+          "MICROFILM",
+          "SMALL",
+          "CIRCULAR"
+        ],
+        "zil_flags": [
+          "lightbit",
+          "contbit",
+          "searchbit",
+          "openbit"
+        ]
+      }
+    },
+    "cryo_elevator_door": {
+      "id": "cryo_elevator_door",
+      "name": "cryo-elevator door",
+      "attributes": {
+        "description_hints": "cryo-elevator door",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "DOOR"
+        ],
+        "zil_adjectives": [
+          "CRYO-ELEVATOR",
+          "ELEVATOR"
+        ],
+        "zil_flags": [
+          "ndescbit",
+          "invisible"
+        ]
+      }
+    },
+    "print_out": {
+      "id": "print_out",
+      "name": "pile of computer output",
+      "attributes": {
+        "description_hints": "pile of computer output",
+        "type": "readable",
+        "takeable": true,
+        "zil_synonyms": [
+          "PILE",
+          "PAPER",
+          "OUTPUT",
+          "PRINTOUT"
+        ],
+        "zil_adjectives": [
+          "COMPUTER"
+        ],
+        "size": 20,
+        "zil_flags": [
+          "acidbit",
+          "takebit",
+          "readbit"
+        ]
+      }
+    },
+    "mini_card": {
+      "id": "mini_card",
+      "name": "miniaturization access card",
+      "attributes": {
+        "description_hints": "miniaturization access card",
+        "type": "readable",
+        "text": "The card is embossed \"minitcurizaashun akses kard.\"",
+        "takeable": true,
+        "zil_synonyms": [
+          "CARD",
+          "CARDS"
+        ],
+        "zil_adjectives": [
+          "MINIATURIZATION",
+          "MINI",
+          "ACCESS"
+        ],
+        "size": 3,
+        "zil_flags": [
+          "takebit",
+          "ndescbit",
+          "invisible",
+          "readbit"
+        ]
+      }
+    },
+    "lab_uniform": {
+      "id": "lab_uniform",
+      "name": "lab uniform",
+      "attributes": {
+        "description_hints": "Hanging on a rack is a pale blue lab uniform. Sewn onto its pocket is a\nnondescript logo.",
+        "type": "container",
+        "container": true,
+        "open": false,
+        "capacity": 5,
+        "takeable": true,
+        "zil_synonyms": [
+          "UNIFORM",
+          "SUIT",
+          "POCKET",
+          "LOGO"
+        ],
+        "zil_adjectives": [
+          "PALE",
+          "BLUE",
+          "LAB"
+        ],
+        "size": 10,
+        "zil_flags": [
+          "takebit",
+          "contbit",
+          "searchbit",
+          "wearbit"
+        ]
+      }
+    },
+    "teleportation_card": {
+      "id": "teleportation_card",
+      "name": "teleportation access card",
+      "attributes": {
+        "description_hints": "teleportation access card",
+        "type": "readable",
+        "text": "The card is embossed \"teliportaashun akses kard.\"",
+        "takeable": true,
+        "zil_synonyms": [
+          "CARD",
+          "CARDS"
+        ],
+        "zil_adjectives": [
+          "TELEPORT",
+          "TELEPORTATION",
+          "ACCESS"
+        ],
+        "size": 3,
+        "zil_flags": [
+          "takebit",
+          "readbit"
+        ]
+      }
+    },
+    "modulator_pin": {
+      "id": "modulator_pin",
+      "name": "modulator pin",
+      "attributes": {
+        "description_hints": "modulator pin",
+        "type": "generic",
+        "takeable": true,
+        "zil_synonyms": [
+          "PIN"
+        ],
+        "zil_adjectives": [
+          "DIGGER",
+          "MODULATOR"
+        ],
+        "size": 2,
+        "zil_flags": [
+          "takebit"
+        ]
+      }
+    },
+    "combination_paper": {
+      "id": "combination_paper",
+      "name": "piece of paper",
+      "attributes": {
+        "description_hints": "piece of paper",
+        "type": "readable",
+        "takeable": true,
+        "zil_synonyms": [
+          "PIECE",
+          "PAPER"
+        ],
+        "size": 2,
+        "zil_flags": [
+          "acidbit",
+          "takebit",
+          "readbit"
+        ]
+      }
+    },
+    "bio_door_east": {
+      "id": "bio_door_east",
+      "name": "lab door",
+      "attributes": {
+        "description_hints": "lab door",
+        "type": "entrance",
+        "is_door": true,
+        "is_open": false,
+        "is_locked": false,
+        "takeable": false,
+        "zil_synonyms": [
+          "DOOR"
+        ],
+        "zil_adjectives": [
+          "LAB"
+        ],
+        "zil_flags": [
+          "doorbit",
+          "ndescbit"
+        ]
+      }
+    },
+    "bio_door_west": {
+      "id": "bio_door_west",
+      "name": "bio-lock door",
+      "attributes": {
+        "description_hints": "bio-lock door",
+        "type": "entrance",
+        "is_door": true,
+        "is_open": false,
+        "is_locked": false,
+        "takeable": false,
+        "zil_synonyms": [
+          "DOOR"
+        ],
+        "zil_adjectives": [
+          "BIO-LOCK"
+        ],
+        "zil_flags": [
+          "doorbit",
+          "ndescbit"
+        ]
+      }
+    },
+    "rad_door_east": {
+      "id": "rad_door_east",
+      "name": "lab door",
+      "attributes": {
+        "description_hints": "lab door",
+        "type": "entrance",
+        "is_door": true,
+        "is_open": false,
+        "is_locked": false,
+        "takeable": false,
+        "zil_synonyms": [
+          "DOOR"
+        ],
+        "zil_adjectives": [
+          "LAB"
+        ],
+        "zil_flags": [
+          "doorbit",
+          "ndescbit"
+        ]
+      }
+    },
+    "rad_door_west": {
+      "id": "rad_door_west",
+      "name": "radiation-lock door",
+      "attributes": {
+        "description_hints": "radiation-lock door",
+        "type": "entrance",
+        "is_door": true,
+        "is_open": false,
+        "is_locked": false,
+        "takeable": false,
+        "zil_synonyms": [
+          "DOOR"
+        ],
+        "zil_adjectives": [
+          "RADIATION"
+        ],
+        "zil_flags": [
+          "doorbit",
+          "ndescbit"
+        ]
+      }
+    },
+    "brown_spool": {
+      "id": "brown_spool",
+      "name": "brown spool",
+      "attributes": {
+        "description_hints": "Sitting on a long table is a small brown spool.",
+        "type": "readable",
+        "text": "The spool is labelled \"Instrukshunz foor Reepaareeng Reepaar Roobots.\"",
+        "takeable": true,
+        "zil_synonyms": [
+          "SPOOL",
+          "SPOOLS",
+          "OBJECT"
+        ],
+        "zil_adjectives": [
+          "BROWN",
+          "SMALL"
+        ],
+        "size": 3,
+        "zil_flags": [
+          "acidbit",
+          "takebit",
+          "readbit"
+        ]
+      }
+    },
+    "lamp": {
+      "id": "lamp",
+      "name": "portable lamp",
+      "attributes": {
+        "description_hints": "There is a powerful portable lamp here, currently off.",
+        "type": "generic",
+        "takeable": true,
+        "zil_synonyms": [
+          "LAMP",
+          "LANTERN",
+          "LIGHT"
+        ],
+        "zil_adjectives": [
+          "POWERFUL",
+          "PORTABLE"
+        ],
+        "size": 20,
+        "zil_flags": [
+          "takebit"
+        ]
+      }
+    },
+    "office_door": {
+      "id": "office_door",
+      "name": "office door",
+      "attributes": {
+        "description_hints": "office door",
+        "type": "entrance",
+        "is_door": true,
+        "is_open": false,
+        "is_locked": false,
+        "takeable": false,
+        "zil_synonyms": [
+          "DOOR"
+        ],
+        "zil_adjectives": [
+          "OFFICE"
+        ],
+        "zil_flags": [
+          "vowelbit",
+          "doorbit",
+          "ndescbit"
+        ]
+      }
+    },
+    "lab_desk": {
+      "id": "lab_desk",
+      "name": "desk",
+      "attributes": {
+        "description_hints": "desk",
+        "type": "container",
+        "container": true,
+        "open": false,
+        "capacity": 10,
+        "takeable": false,
+        "zil_synonyms": [
+          "DESK"
+        ],
+        "zil_adjectives": [
+          "LARGE",
+          "MESSY"
+        ],
+        "zil_flags": [
+          "contbit",
+          "searchbit",
+          "ndescbit"
+        ]
+      }
+    },
+    "gas_mask": {
+      "id": "gas_mask",
+      "name": "gas mask",
+      "attributes": {
+        "description_hints": "gas mask",
+        "type": "generic",
+        "takeable": true,
+        "zil_synonyms": [
+          "MASK"
+        ],
+        "zil_adjectives": [
+          "GAS"
+        ],
+        "size": 10,
+        "zil_flags": [
+          "acidbit",
+          "takebit",
+          "wearbit"
+        ]
+      }
+    },
+    "memo": {
+      "id": "memo",
+      "name": "memo",
+      "attributes": {
+        "description_hints": "memo",
+        "type": "readable",
+        "text": "\"Memoo tuu awl lab pursunel: Duu tuu xe daanjuris naatshur uv xe biioo\neksperiments, an eemurjensee sistum haz bin instawld. Xis sistum wud flud\nxe entiir Biioo Lab wic aa dedlee fungasiid. Propur preecawshunz shud bee\ntaakin if xis sistum iz evur yuuzd.\"",
+        "takeable": true,
+        "zil_synonyms": [
+          "MEMO"
+        ],
+        "zil_flags": [
+          "readbit",
+          "acidbit",
+          "takebit"
+        ]
+      }
+    },
+    "light_button": {
+      "id": "light_button",
+      "name": "white button",
+      "attributes": {
+        "description_hints": "white button",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "BUTTON"
+        ],
+        "zil_adjectives": [
+          "WHITE",
+          "LIGHT"
+        ],
+        "zil_flags": [
+          "ndescbit"
+        ]
+      }
+    },
+    "dark_button": {
+      "id": "dark_button",
+      "name": "black button",
+      "attributes": {
+        "description_hints": "black button",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "BUTTON"
+        ],
+        "zil_adjectives": [
+          "BLACK",
+          "DARK",
+          "DARKNESS"
+        ],
+        "zil_flags": [
+          "ndescbit"
+        ]
+      }
+    },
+    "fungicide_button": {
+      "id": "fungicide_button",
+      "name": "red button",
+      "attributes": {
+        "description_hints": "red button",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "BUTTON"
+        ],
+        "zil_adjectives": [
+          "RED",
+          "FUNGICIDE",
+          "EMERGENCY"
+        ],
+        "zil_flags": [
+          "ndescbit"
+        ]
+      }
+    },
+    "relay": {
+      "id": "relay",
+      "name": "microrelay",
+      "attributes": {
+        "description_hints": "microrelay",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "RELAY",
+          "MICRORELAY"
+        ],
+        "zil_adjectives": [
+          "MICRO"
+        ],
+        "zil_flags": [
+          "ndescbit",
+          "transbit"
+        ]
+      }
+    },
+    "speck": {
+      "id": "speck",
+      "name": "speck",
+      "attributes": {
+        "description_hints": "speck",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "SPECK",
+          "BOULDER",
+          "IMPURITY"
+        ],
+        "zil_adjectives": [
+          "BLUE"
+        ],
+        "zil_flags": [
+          "ndescbit"
+        ]
+      }
+    },
+    "laser": {
+      "id": "laser",
+      "name": "laser",
+      "attributes": {
+        "description_hints": "A small device, labelled \"Akmee Portabul Laazur\", is resting on one of\nthe lower shelves.",
+        "type": "container",
+        "container": true,
+        "open": true,
+        "capacity": 5,
+        "takeable": true,
+        "zil_synonyms": [
+          "DEVICE",
+          "LASER",
+          "UNIT",
+          "DEPRESSION"
+        ],
+        "zil_adjectives": [
+          "PORTABLE",
+          "ACME"
+        ],
+        "size": 25,
+        "zil_flags": [
+          "mungbit",
+          "takebit",
+          "openbit",
+          "transbit",
+          "contbit"
+        ]
+      }
+    },
+    "laser_dial": {
+      "id": "laser_dial",
+      "name": "laser setting dial",
+      "attributes": {
+        "description_hints": "laser setting dial",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "DIAL"
+        ],
+        "zil_adjectives": [
+          "LASER",
+          "SETTING"
+        ],
+        "zil_flags": [
+          "mungbit",
+          "ndescbit"
+        ]
+      }
+    },
+    "old_battery": {
+      "id": "old_battery",
+      "name": "old battery",
+      "attributes": {
+        "description_hints": "old battery",
+        "type": "generic",
+        "takeable": true,
+        "zil_synonyms": [
+          "BATTERY"
+        ],
+        "zil_adjectives": [
+          "LASER",
+          "WORN-OUT",
+          "OLD"
+        ],
+        "size": 5,
+        "zil_flags": [
+          "vowelbit",
+          "acidbit",
+          "takebit"
+        ]
+      }
+    },
+    "new_battery": {
+      "id": "new_battery",
+      "name": "new battery",
+      "attributes": {
+        "description_hints": "The odds and ends on the shelves include a small round object, which closer\ninspection reveals to be a fresh laser battery.",
+        "type": "generic",
+        "takeable": true,
+        "zil_synonyms": [
+          "OBJECT",
+          "BATTERY"
+        ],
+        "zil_adjectives": [
+          "LASER",
+          "SMALL",
+          "ROUND",
+          "FRESH",
+          "NEW"
+        ],
+        "size": 5,
+        "zil_flags": [
+          "acidbit",
+          "takebit"
+        ]
+      }
+    },
+    "strip": {
+      "id": "strip",
+      "name": "silicon strip",
+      "attributes": {
+        "description_hints": "silicon strip",
+        "type": "generic",
+        "takeable": false,
+        "zil_synonyms": [
+          "STRIP",
+          "SIDE",
+          "EDGE"
+        ],
+        "zil_adjectives": [
+          "SILICON"
+        ],
+        "zil_flags": [
+          "ndescbit"
+        ]
+      }
+    }
+  },
+  "npcs": {
+    "me": {
+      "id": "me",
+      "name": "you",
+      "attributes": {
+        "description_hints": "you",
+        "creature_type": "humanoid",
+        "hostility": "unknown",
+        "personality": "you from Planetfall",
+        "special_behavior": "Complex behavior defined in ZIL routine: CRETIN-F",
+        "zil_flags": [
+          "actorbit"
+        ]
+      }
+    },
+    "measle": {
+      "id": "measle",
+      "name": "Lt. Measle",
+      "attributes": {
+        "description_hints": "Lt. Measle",
+        "creature_type": "humanoid",
+        "hostility": "unknown",
+        "personality": "Lt. Measle from Planetfall",
+        "special_behavior": "Complex behavior defined in ZIL routine: MEASLE-F",
+        "zil_flags": [
+          "actorbit"
+        ]
+      }
+    },
+    "blather": {
+      "id": "blather",
+      "name": "Ensign First Class",
+      "attributes": {
+        "description_hints": "Ensign First Class",
+        "creature_type": "humanoid",
+        "hostility": "unknown",
+        "personality": "Ensign First Class from Planetfall",
+        "special_behavior": "Complex behavior defined in ZIL routine: BLATHER-F",
+        "zil_flags": [
+          "vowelbit",
+          "actorbit"
+        ]
+      }
+    },
+    "ambassador": {
+      "id": "ambassador",
+      "name": "alien ambassador",
+      "attributes": {
+        "description_hints": "alien ambassador",
+        "creature_type": "humanoid",
+        "hostility": "unknown",
+        "personality": "alien ambassador from Planetfall",
+        "special_behavior": "Complex behavior defined in ZIL routine: AMBASSADOR-F",
+        "zil_flags": [
+          "vowelbit",
+          "actorbit"
+        ]
+      }
+    },
+    "microbe": {
+      "id": "microbe",
+      "name": "microbe",
+      "attributes": {
+        "description_hints": "microbe",
+        "creature_type": "humanoid",
+        "hostility": "unknown",
+        "personality": "microbe from Planetfall",
+        "special_behavior": "Complex behavior defined in ZIL routine: MICROBE-F",
+        "zil_flags": [
+          "actorbit"
+        ]
+      }
+    },
+    "rat_ant": {
+      "id": "rat_ant",
+      "name": "rat-like, ant-like man-sized monster",
+      "attributes": {
+        "description_hints": "rat-like, ant-like man-sized monster",
+        "creature_type": "humanoid",
+        "hostility": "unknown",
+        "personality": "rat-like, ant-like man-sized monster from Planetfall",
+        "zil_flags": [
+          "actorbit"
+        ]
+      }
+    },
+    "troll": {
+      "id": "troll",
+      "name": "hairy growling biped",
+      "attributes": {
+        "description_hints": "hairy growling biped",
+        "creature_type": "humanoid",
+        "hostility": "unknown",
+        "personality": "hairy growling biped from Planetfall",
+        "zil_flags": [
+          "actorbit"
+        ]
+      }
+    },
+    "grue": {
+      "id": "grue",
+      "name": "lurking fanged creature",
+      "attributes": {
+        "description_hints": "lurking fanged creature",
+        "creature_type": "humanoid",
+        "hostility": "unknown",
+        "personality": "lurking fanged creature from Planetfall",
+        "special_behavior": "Complex behavior defined in ZIL routine: GRUE-F",
+        "zil_flags": [
+          "actorbit"
+        ]
+      }
+    },
+    "triffid": {
+      "id": "triffid",
+      "name": "mobile man-eating plant",
+      "attributes": {
+        "description_hints": "mobile man-eating plant",
+        "creature_type": "humanoid",
+        "hostility": "unknown",
+        "personality": "mobile man-eating plant from Planetfall",
+        "zil_flags": [
+          "actorbit"
+        ]
+      }
+    }
+  },
+  "item_locations": {
+    "conference_door": "local_globals",
+    "combination_dial": "rec_area",
+    "storage_west_door": "local_globals",
+    "padlock": "mess_corridor",
+    "can": "storage_west",
+    "ladder": "storage_west",
+    "kitchen_door": "local_globals",
+    "dispenser": "kitchen",
+    "canteen": "mess_hall",
+    "crevice": "admin_corridor_s",
+    "key": "admin_corridor_s",
+    "rift": "local_globals",
+    "small_desk": "small_office",
+    "kitchen_card": "small_desk",
+    "upper_elevator_card": "small_desk",
+    "shuttle_card": "large_desk",
+    "large_desk": "large_office",
+    "oil_can": "storage_east",
+    "carton": "storage_east",
+    "cracked_board": "carton",
+    "megafuse_b": "carton",
+    "megafuse_k": "carton",
+    "good_bedistor": "carton",
+    "reactor_elevator_door": "local_globals",
+    "flask": "tool_room",
+    "magnet": "tool_room",
+    "pliers": "tool_room",
+    "digger": "machine_shop",
+    "chemical_dispenser": "machine_shop",
+    "red_button": "machine_shop",
+    "blue_button": "machine_shop",
+    "green_button": "machine_shop",
+    "yellow_button": "machine_shop",
+    "gray_button": "machine_shop",
+    "brown_button": "machine_shop",
+    "black_button": "machine_shop",
+    "round_white_button": "machine_shop",
+    "square_white_button": "machine_shop",
+    "floyd": "robot_shop",
+    "upper_elevator_door": "local_globals",
+    "lower_elevator_door": "local_globals",
+    "blue_elevator_button": "elevator_lobby",
+    "red_elevator_button": "elevator_lobby",
+    "elevator_button": "local_globals",
+    "helicopter_object": "local_globals",
+    "receive_console": "comm_room",
+    "playback_button": "comm_room",
+    "send_console": "comm_room",
+    "comm_screen": "comm_room",
+    "funnel_hole": "comm_room",
+    "intnum": "global_objects",
+    "it": "global_objects",
+    "stairs": "local_globals",
+    "ground": "global_objects",
+    "window": "local_globals",
+    "cliff": "local_globals",
+    "ocean": "local_globals",
+    "tables": "local_globals",
+    "shelves": "local_globals",
+    "lights": "local_globals",
+    "global_doorway": "global_objects",
+    "controls": "local_globals",
+    "global_games": "global_objects",
+    "hands": "global_objects",
+    "sleep": "global_objects",
+    "adventurer": "deck_nine",
+    "scrub_brush": "adventurer",
+    "chronometer": "adventurer",
+    "id_card": "patrol_uniform",
+    "patrol_uniform": "adventurer",
+    "diary": "adventurer",
+    "diary_button": "diary",
+    "global_pod": "local_globals",
+    "safety_web": "escape_pod",
+    "red_goo": "food_kit",
+    "brown_goo": "food_kit",
+    "green_goo": "food_kit",
+    "pod_door": "local_globals",
+    "corridor_door": "local_globals",
+    "gangway_door": "local_globals",
+    "slot": "local_globals",
+    "teleportation_button_1": "local_globals",
+    "teleportation_button_2": "booth_1",
+    "teleportation_button_3": "booth_1",
+    "global_shuttle": "local_globals",
+    "lever": "local_globals",
+    "shuttle_door": "local_globals",
+    "bed": "local_globals",
+    "red_spool": "infirmary",
+    "medicine_bottle": "infirmary",
+    "medicine": "medicine_bottle",
+    "achilles": "repair_room",
+    "robot_hole": "repair_room",
+    "good_board": "robot_hole",
+    "access_panel": "planetary_defense",
+    "first_board": "access_panel",
+    "fourth_board": "access_panel",
+    "third_board": "access_panel",
+    "second_board": "access_panel",
+    "cube": "planetary_course_control",
+    "bad_bedistor": "cube",
+    "green_spool": "library_lobby",
+    "terminal": "library_lobby",
+    "spool_reader": "library",
+    "cryo_elevator_door": "local_globals",
+    "print_out": "computer_room",
+    "mini_card": "bio_lock_east",
+    "lab_uniform": "lab_storage",
+    "teleportation_card": "lab_uniform",
+    "modulator_pin": "lab_uniform",
+    "combination_paper": "lab_uniform",
+    "bio_door_east": "local_globals",
+    "bio_door_west": "local_globals",
+    "rad_door_east": "local_globals",
+    "rad_door_west": "local_globals",
+    "brown_spool": "radiation_lab",
+    "lamp": "radiation_lab",
+    "office_door": "local_globals",
+    "lab_desk": "lab_office",
+    "gas_mask": "lab_desk",
+    "light_button": "lab_office",
+    "dark_button": "lab_office",
+    "fungicide_button": "lab_office",
+    "relay": "strip_near_relay",
+    "speck": "relay",
+    "laser": "tool_room",
+    "laser_dial": "laser",
+    "old_battery": "laser",
+    "new_battery": "lab_storage",
+    "strip": "local_globals"
+  },
+  "npc_locations": {
+    "me": "global_objects",
+    "rat_ant": "bio_lab",
+    "troll": "bio_lab",
+    "grue": "bio_lab",
+    "triffid": "bio_lab"
+  },
+  "player_location": "crag",
+  "flags": {},
+  "puzzles": {}
+}
