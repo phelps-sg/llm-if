@@ -5,694 +5,224 @@ Generated from ZIL source files
 ## Conversion Summary
 
 - **Locations**: 109
-- **Items**: 128
+- **Items**: 130
 - **NPCs**: 7
 - **Puzzles**: 0
-- **Manual review items**: 136
+- **Manual review items**: 42
 
 ## Manual Review Required
 
 The following items need manual review and possible implementation:
 
-### 1. Room west_of_house has action routine
+### 1. Conditional exit sw -> stone_barrow
 
-Room west_of_house has action routine: WEST-HOUSE
-  Review ZIL routine for special room behavior
+Conditional exit sw -> stone_barrow: if WON-FLAG
+  LLM will interpret from raw_zil
 
-### 2. Room stone_barrow has action routine
+### 2. Conditional exit in -> stone_barrow
 
-Room stone_barrow has action routine: STONE-BARROW-FCN
-  Review ZIL routine for special room behavior
+Conditional exit in -> stone_barrow: if WON-FLAG
+  LLM will interpret from raw_zil
 
-### 3. Room east_of_house has action routine
+### 3. Conditional exit west -> kitchen
 
-Room east_of_house has action routine: EAST-HOUSE
-  Review ZIL routine for special room behavior
+Conditional exit west -> kitchen: if KITCHEN-WINDOW
+  LLM will interpret from raw_zil
 
-### 4. Room forest_1 has action routine
+### 4. Conditional exit in -> kitchen
 
-Room forest_1 has action routine: FOREST-ROOM
-  Review ZIL routine for special room behavior
+Conditional exit in -> kitchen: if KITCHEN-WINDOW
+  LLM will interpret from raw_zil
 
-### 5. Room forest_2 has action routine
-
-Room forest_2 has action routine: FOREST-ROOM
-  Review ZIL routine for special room behavior
-
-### 6. Room forest_3 has action routine
-
-Room forest_3 has action routine: FOREST-ROOM
-  Review ZIL routine for special room behavior
-
-### 7. Room path has action routine
-
-Room path has action routine: FOREST-ROOM
-  Review ZIL routine for special room behavior
-
-### 8. Room up_a_tree has action routine
-
-Room up_a_tree has action routine: TREE-ROOM
-  Review ZIL routine for special room behavior
-
-### 9. Conditional exit down in room
+### 5. Conditional exit down in room
 
 Conditional exit down in room: condition=GRATING-EXIT
   Review ZIL to determine destination and create puzzle if needed
 
-### 10. Room grating_clearing has action routine
+### 6. Conditional exit east -> east_of_house
 
-Room grating_clearing has action routine: CLEARING-FCN
-  Review ZIL routine for special room behavior
+Conditional exit east -> east_of_house: if KITCHEN-WINDOW
+  LLM will interpret from raw_zil
 
-### 11. Room clearing has action routine
+### 7. Conditional exit down -> studio
 
-Room clearing has action routine: FOREST-ROOM
-  Review ZIL routine for special room behavior
+Conditional exit down -> studio: if FALSE-FLAG
+  LLM will interpret from raw_zil
 
-### 12. Room kitchen has action routine
+### 8. Conditional exit out -> east_of_house
 
-Room kitchen has action routine: KITCHEN-FCN
-  Review ZIL routine for special room behavior
+Conditional exit out -> east_of_house: if KITCHEN-WINDOW
+  LLM will interpret from raw_zil
 
-### 13. Conditional exit down in room
+### 9. Conditional exit west -> strange_passage
+
+Conditional exit west -> strange_passage: if MAGIC-FLAG
+  LLM will interpret from raw_zil
+
+### 10. Conditional exit down in room
 
 Conditional exit down in room: condition=TRAP-DOOR-EXIT
   Review ZIL to determine destination and create puzzle if needed
 
-### 14. Room living_room has action routine
+### 11. Conditional exit up -> living_room
 
-Room living_room has action routine: LIVING-ROOM-FCN
-  Review ZIL routine for special room behavior
+Conditional exit up -> living_room: if TRAP-DOOR
+  LLM will interpret from raw_zil
 
-### 15. Room cellar has action routine
+### 12. Conditional exit east -> ew_passage
 
-Room cellar has action routine: CELLAR-FCN
-  Review ZIL routine for special room behavior
+Conditional exit east -> ew_passage: if TROLL-FLAG
+  LLM will interpret from raw_zil
 
-### 16. Room troll_room has action routine
+### 13. Conditional exit west -> maze_1
 
-Room troll_room has action routine: TROLL-ROOM-F
-  Review ZIL routine for special room behavior
+Conditional exit west -> maze_1: if TROLL-FLAG
+  LLM will interpret from raw_zil
 
-### 17. Conditional exit up in room
+### 14. Conditional exit up in room
 
 Conditional exit up in room: condition=UP-CHIMNEY-FUNCTION
   Review ZIL to determine destination and create puzzle if needed
 
-### 18. Conditional exit down in room
+### 15. Conditional exit down in room
 
 Conditional exit down in room: condition=MAZE-DIODES
   Review ZIL to determine destination and create puzzle if needed
+
+### 16. Conditional exit down in room
+
+Conditional exit down in room: condition=MAZE-DIODES
+  Review ZIL to determine destination and create puzzle if needed
+
+### 17. Conditional exit down in room
+
+Conditional exit down in room: condition=MAZE-DIODES
+  Review ZIL to determine destination and create puzzle if needed
+
+### 18. Conditional exit up -> grating_clearing
+
+Conditional exit up -> grating_clearing: if GRATE
+  LLM will interpret from raw_zil
 
 ### 19. Conditional exit down in room
 
 Conditional exit down in room: condition=MAZE-DIODES
   Review ZIL to determine destination and create puzzle if needed
 
-### 20. Conditional exit down in room
+### 20. Conditional exit east -> strange_passage
 
-Conditional exit down in room: condition=MAZE-DIODES
-  Review ZIL to determine destination and create puzzle if needed
+Conditional exit east -> strange_passage: if MAGIC-FLAG
+  LLM will interpret from raw_zil
 
-### 21. Room grating_room has action routine
+### 21. Conditional exit up -> treasure_room
 
-Room grating_room has action routine: MAZE-11-FCN
-  Review ZIL routine for special room behavior
+Conditional exit up -> treasure_room: if CYCLOPS-FLAG
+  LLM will interpret from raw_zil
 
-### 22. Conditional exit down in room
+### 22. Conditional exit north -> reservoir
 
-Conditional exit down in room: condition=MAZE-DIODES
-  Review ZIL to determine destination and create puzzle if needed
+Conditional exit north -> reservoir: if LOW-TIDE
+  LLM will interpret from raw_zil
 
-### 23. Room cyclops_room has action routine
+### 23. Conditional exit south -> reservoir
 
-Room cyclops_room has action routine: CYCLOPS-ROOM-FCN
-  Review ZIL routine for special room behavior
+Conditional exit south -> reservoir: if LOW-TIDE
+  LLM will interpret from raw_zil
 
-### 24. Room reservoir_south has action routine
-
-Room reservoir_south has action routine: RESERVOIR-SOUTH-FCN
-  Review ZIL routine for special room behavior
-
-### 25. Room reservoir has action routine
-
-Room reservoir has action routine: RESERVOIR-FCN
-  Review ZIL routine for special room behavior
-
-### 26. Room reservoir_north has action routine
-
-Room reservoir_north has action routine: RESERVOIR-NORTH-FCN
-  Review ZIL routine for special room behavior
-
-### 27. Room mirror_room_1 has action routine
-
-Room mirror_room_1 has action routine: MIRROR-ROOM
-  Review ZIL routine for special room behavior
-
-### 28. Room mirror_room_2 has action routine
-
-Room mirror_room_2 has action routine: MIRROR-ROOM
-  Review ZIL routine for special room behavior
-
-### 29. Room tiny_cave has action routine
-
-Room tiny_cave has action routine: CAVE2-ROOM
-  Review ZIL routine for special room behavior
-
-### 30. Room deep_canyon has action routine
-
-Room deep_canyon has action routine: DEEP-CANYON-F
-  Review ZIL routine for special room behavior
-
-### 31. Room loud_room has action routine
+### 24. Room loud_room has action routine
 
 Room loud_room has action routine: LOUD-ROOM-FCN
-  Review ZIL routine for special room behavior
+  WARNING: Routine code not found in ZIL files
 
-### 32. Room entrance_to_hades has action routine
+### 25. Conditional exit south -> land_of_living_dead
 
-Room entrance_to_hades has action routine: LLD-ROOM
-  Review ZIL routine for special room behavior
+Conditional exit south -> land_of_living_dead: if LLD-FLAG
+  LLM will interpret from raw_zil
 
-### 33. Room dome_room has action routine
+### 26. Conditional exit in -> land_of_living_dead
 
-Room dome_room has action routine: DOME-ROOM-FCN
-  Review ZIL routine for special room behavior
+Conditional exit in -> land_of_living_dead: if LLD-FLAG
+  LLM will interpret from raw_zil
 
-### 34. Room torch_room has action routine
+### 27. Conditional exit down -> torch_room
 
-Room torch_room has action routine: TORCH-ROOM-FCN
-  Review ZIL routine for special room behavior
+Conditional exit down -> torch_room: if DOME-FLAG
+  LLM will interpret from raw_zil
 
-### 35. Room south_temple has action routine
+### 28. Conditional exit down -> tiny_cave
 
-Room south_temple has action routine: SOUTH-TEMPLE-FCN
-  Review ZIL routine for special room behavior
+Conditional exit down -> tiny_cave: if COFFIN-CURE
+  LLM will interpret from raw_zil
 
-### 36. Room dam_room has action routine
+### 29. Conditional exit south -> white_cliffs_south
 
-Room dam_room has action routine: DAM-ROOM-FCN
-  Review ZIL routine for special room behavior
+Conditional exit south -> white_cliffs_south: if DEFLATE
+  LLM will interpret from raw_zil
 
-### 37. Room white_cliffs_north has action routine
+### 30. Conditional exit west -> damp_cave
 
-Room white_cliffs_north has action routine: WHITE-CLIFFS-FUNCTION
-  Review ZIL routine for special room behavior
+Conditional exit west -> damp_cave: if DEFLATE
+  LLM will interpret from raw_zil
 
-### 38. Room white_cliffs_south has action routine
+### 31. Conditional exit north -> white_cliffs_north
 
-Room white_cliffs_south has action routine: WHITE-CLIFFS-FUNCTION
-  Review ZIL routine for special room behavior
+Conditional exit north -> white_cliffs_north: if DEFLATE
+  LLM will interpret from raw_zil
 
-### 39. Room river_4 has action routine
+### 32. Conditional exit west -> on_rainbow
 
-Room river_4 has action routine: RIVR4-ROOM
-  Review ZIL routine for special room behavior
+Conditional exit west -> on_rainbow: if RAINBOW-FLAG
+  LLM will interpret from raw_zil
 
-### 40. Room aragain_falls has action routine
+### 33. Conditional exit up -> on_rainbow
 
-Room aragain_falls has action routine: FALLS-ROOM
-  Review ZIL routine for special room behavior
+Conditional exit up -> on_rainbow: if RAINBOW-FLAG
+  LLM will interpret from raw_zil
 
-### 41. Room canyon_view has action routine
+### 34. Conditional exit east -> on_rainbow
 
-Room canyon_view has action routine: CANYON-VIEW-F
-  Review ZIL routine for special room behavior
+Conditional exit east -> on_rainbow: if RAINBOW-FLAG
+  LLM will interpret from raw_zil
 
-### 42. Room bat_room has action routine
+### 35. Conditional exit ne -> on_rainbow
 
-Room bat_room has action routine: BATS-ROOM
-  Review ZIL routine for special room behavior
+Conditional exit ne -> on_rainbow: if RAINBOW-FLAG
+  LLM will interpret from raw_zil
 
-### 43. Room gas_room has action routine
+### 36. Conditional exit up -> on_rainbow
 
-Room gas_room has action routine: BOOM-ROOM
-  Review ZIL routine for special room behavior
+Conditional exit up -> on_rainbow: if RAINBOW-FLAG
+  LLM will interpret from raw_zil
 
-### 44. Room timber_room has action routine
+### 37. Conditional exit west -> lower_shaft
 
-Room timber_room has action routine: NO-OBJS
-  Review ZIL routine for special room behavior
+Conditional exit west -> lower_shaft: if EMPTY-HANDED
+  LLM will interpret from raw_zil
 
-### 45. Room lower_shaft has action routine
+### 38. Conditional exit east -> timber_room
 
-Room lower_shaft has action routine: NO-OBJS
-  Review ZIL routine for special room behavior
+Conditional exit east -> timber_room: if EMPTY-HANDED
+  LLM will interpret from raw_zil
 
-### 46. Room machine_room has action routine
+### 39. Conditional exit out -> timber_room
 
-Room machine_room has action routine: MACHINE-ROOM-FCN
-  Review ZIL routine for special room behavior
+Conditional exit out -> timber_room: if EMPTY-HANDED
+  LLM will interpret from raw_zil
 
-### 47. Object board has action routine
-
-Object board has action routine: BOARD-F
-  Review ZIL routine for special object behavior
-
-### 48. Object teeth has action routine
-
-Object teeth has action routine: TEETH-F
-  Review ZIL routine for special object behavior
-
-### 49. Object granite_wall has action routine
-
-Object granite_wall has action routine: GRANITE-WALL-F
-  Review ZIL routine for special object behavior
-
-### 50. Object songbird has action routine
-
-Object songbird has action routine: SONGBIRD-F
-  Review ZIL routine for special object behavior
-
-### 51. Object white_house has action routine
-
-Object white_house has action routine: WHITE-HOUSE-F
-  Review ZIL routine for special object behavior
-
-### 52. Object forest has action routine
-
-Object forest has action routine: FOREST-F
-  Review ZIL routine for special object behavior
-
-### 53. Object mountain_range has action routine
-
-Object mountain_range has action routine: MOUNTAIN-RANGE-F
-  Review ZIL routine for special object behavior
-
-### 54. Object global_water has action routine
+### 40. Object global_water has action routine
 
 Object global_water has action routine: WATER-F
-  Review ZIL routine for special object behavior
+  WARNING: Routine code not found in ZIL files
 
-### 55. Object water has action routine
+### 41. Object water has action routine
 
 Object water has action routine: WATER-F
-  Review ZIL routine for special object behavior
+  WARNING: Routine code not found in ZIL files
 
-### 56. Object chimney has action routine
-
-Object chimney has action routine: CHIMNEY-F
-  Review ZIL routine for special object behavior
-
-### 57. Object lowered_basket has action routine
-
-Object lowered_basket has action routine: BASKET-F
-  Review ZIL routine for special object behavior
-
-### 58. Object raised_basket has action routine
-
-Object raised_basket has action routine: BASKET-F
-  Review ZIL routine for special object behavior
-
-### 59. Object bell has action routine
-
-Object bell has action routine: BELL-F
-  Review ZIL routine for special object behavior
-
-### 60. Object hot_bell has action routine
-
-Object hot_bell has action routine: HOT-BELL-F
-  Review ZIL routine for special object behavior
-
-### 61. Object axe has action routine
-
-Object axe has action routine: AXE-F
-  Review ZIL routine for special object behavior
-
-### 62. Object bolt has action routine
-
-Object bolt has action routine: BOLT-F
-  Review ZIL routine for special object behavior
-
-### 63. Object bubble has action routine
-
-Object bubble has action routine: BUBBLE-F
-  Review ZIL routine for special object behavior
-
-### 64. Object book has action routine
-
-Object book has action routine: BLACK-BOOK
-  Review ZIL routine for special object behavior
-
-### 65. Object sceptre has action routine
-
-Object sceptre has action routine: SCEPTRE-FUNCTION
-  Review ZIL routine for special object behavior
-
-### 66. Object sandwich_bag has action routine
-
-Object sandwich_bag has action routine: SANDWICH-BAG-FCN
-  Review ZIL routine for special object behavior
-
-### 67. Object tool_chest has action routine
-
-Object tool_chest has action routine: TOOL-CHEST-FCN
-  Review ZIL routine for special object behavior
-
-### 68. Object yellow_button has action routine
-
-Object yellow_button has action routine: BUTTON-F
-  Review ZIL routine for special object behavior
-
-### 69. Object brown_button has action routine
-
-Object brown_button has action routine: BUTTON-F
-  Review ZIL routine for special object behavior
-
-### 70. Object red_button has action routine
-
-Object red_button has action routine: BUTTON-F
-  Review ZIL routine for special object behavior
-
-### 71. Object blue_button has action routine
-
-Object blue_button has action routine: BUTTON-F
-  Review ZIL routine for special object behavior
-
-### 72. Object trophy_case has action routine
-
-Object trophy_case has action routine: TROPHY-CASE-FCN
-  Review ZIL routine for special object behavior
-
-### 73. Object rug has action routine
-
-Object rug has action routine: RUG-FCN
-  Review ZIL routine for special object behavior
-
-### 74. Object chalice has action routine
-
-Object chalice has action routine: CHALICE-FCN
-  Review ZIL routine for special object behavior
-
-### 75. Object garlic has action routine
-
-Object garlic has action routine: GARLIC-F
-  Review ZIL routine for special object behavior
-
-### 76. Object dam has action routine
-
-Object dam has action routine: DAM-FUNCTION
-  Review ZIL routine for special object behavior
-
-### 77. Object trap_door has action routine
-
-Object trap_door has action routine: TRAP-DOOR-FCN
-  Review ZIL routine for special object behavior
-
-### 78. Object boarded_window has action routine
-
-Object boarded_window has action routine: BOARDED-WINDOW-FCN
-  Review ZIL routine for special object behavior
-
-### 79. Object front_door has action routine
-
-Object front_door has action routine: FRONT-DOOR-FCN
-  Review ZIL routine for special object behavior
-
-### 80. Object barrow_door has action routine
-
-Object barrow_door has action routine: BARROW-DOOR-FCN
-  Review ZIL routine for special object behavior
-
-### 81. Object barrow has action routine
-
-Object barrow has action routine: BARROW-FCN
-  Review ZIL routine for special object behavior
-
-### 82. Object bottle has action routine
-
-Object bottle has action routine: BOTTLE-FUNCTION
-  Review ZIL routine for special object behavior
-
-### 83. Object crack has action routine
-
-Object crack has action routine: CRACK-FCN
-  Review ZIL routine for special object behavior
-
-### 84. Object grate has action routine
-
-Object grate has action routine: GRATE-FUNCTION
-  Review ZIL routine for special object behavior
-
-### 85. Object knife has action routine
-
-Object knife has action routine: KNIFE-F
-  Review ZIL routine for special object behavior
-
-### 86. Object bones has action routine
-
-Object bones has action routine: SKELETON
-  Review ZIL routine for special object behavior
-
-### 87. Object bag_of_coins has action routine
-
-Object bag_of_coins has action routine: BAG-OF-COINS-F
-  Review ZIL routine for special object behavior
-
-### 88. Object lamp has action routine
-
-Object lamp has action routine: LANTERN
-  Review ZIL routine for special object behavior
-
-### 89. Object leak has action routine
-
-Object leak has action routine: LEAK-FUNCTION
-  Review ZIL routine for special object behavior
-
-### 90. Object machine has action routine
-
-Object machine has action routine: MACHINE-F
-  Review ZIL routine for special object behavior
-
-### 91. Object inflated_boat has action routine
-
-Object inflated_boat has action routine: RBOAT-FUNCTION
-  Review ZIL routine for special object behavior
-
-### 92. Object mailbox has action routine
-
-Object mailbox has action routine: MAILBOX-F
-  Review ZIL routine for special object behavior
-
-### 93. Object match has action routine
-
-Object match has action routine: MATCH-FUNCTION
-  Review ZIL routine for special object behavior
-
-### 94. Object mirror_2 has action routine
-
-Object mirror_2 has action routine: MIRROR-MIRROR
-  Review ZIL routine for special object behavior
-
-### 95. Object mirror_1 has action routine
-
-Object mirror_1 has action routine: MIRROR-MIRROR
-  Review ZIL routine for special object behavior
-
-### 96. Object painting has action routine
-
-Object painting has action routine: PAINTING-FCN
-  Review ZIL routine for special object behavior
-
-### 97. Object candles has action routine
-
-Object candles has action routine: CANDLES-FCN
-  Review ZIL routine for special object behavior
-
-### 98. Object gunk has action routine
-
-Object gunk has action routine: GUNK-FUNCTION
-  Review ZIL routine for special object behavior
-
-### 99. Object bodies has action routine
-
-Object bodies has action routine: BODY-FUNCTION
-  Review ZIL routine for special object behavior
-
-### 100. Object leaves has action routine
-
-Object leaves has action routine: LEAF-PILE
-  Review ZIL routine for special object behavior
-
-### 101. Object punctured_boat has action routine
-
-Object punctured_boat has action routine: DBOAT-FUNCTION
-  Review ZIL routine for special object behavior
-
-### 102. Object inflatable_boat has action routine
-
-Object inflatable_boat has action routine: IBOAT-FUNCTION
-  Review ZIL routine for special object behavior
-
-### 103. Object rainbow has action routine
-
-Object rainbow has action routine: RAINBOW-FCN
-  Review ZIL routine for special object behavior
-
-### 104. Object river has action routine
-
-Object river has action routine: RIVER-FUNCTION
-  Review ZIL routine for special object behavior
-
-### 105. Object buoy has action routine
-
-Object buoy has action routine: TREASURE-INSIDE
-  Review ZIL routine for special object behavior
-
-### 106. Object rope has action routine
-
-Object rope has action routine: ROPE-FUNCTION
-  Review ZIL routine for special object behavior
-
-### 107. Object rusty_knife has action routine
-
-Object rusty_knife has action routine: RUSTY-KNIFE-FCN
-  Review ZIL routine for special object behavior
-
-### 108. Object sand has action routine
-
-Object sand has action routine: SAND-FUNCTION
-  Review ZIL routine for special object behavior
-
-### 109. Object large_bag has action routine
-
-Object large_bag has action routine: LARGE-BAG-F
-  Review ZIL routine for special object behavior
-
-### 110. Object stiletto has action routine
-
-Object stiletto has action routine: STILETTO-FUNCTION
-  Review ZIL routine for special object behavior
-
-### 111. Object machine_switch has action routine
-
-Object machine_switch has action routine: MSWITCH-FUNCTION
-  Review ZIL routine for special object behavior
-
-### 112. Object wooden_door has action routine
-
-Object wooden_door has action routine: FRONT-DOOR-FCN
-  Review ZIL routine for special object behavior
-
-### 113. Object sword has action routine
-
-Object sword has action routine: SWORD-FCN
-  Review ZIL routine for special object behavior
-
-### 114. Object pedestal has action routine
-
-Object pedestal has action routine: DUMB-CONTAINER
-  Review ZIL routine for special object behavior
-
-### 115. Object torch has action routine
-
-Object torch has action routine: TORCH-OBJECT
-  Review ZIL routine for special object behavior
-
-### 116. Object trunk has action routine
-
-Object trunk has action routine: TRUNK-F
-  Review ZIL routine for special object behavior
-
-### 117. Object putty has action routine
-
-Object putty has action routine: PUTTY-FCN
-  Review ZIL routine for special object behavior
-
-### 118. Object climbable_cliff has action routine
-
-Object climbable_cliff has action routine: CLIFF-OBJECT
-  Review ZIL routine for special object behavior
-
-### 119. Object white_cliff has action routine
-
-Object white_cliff has action routine: WCLIF-OBJECT
-  Review ZIL routine for special object behavior
-
-### 120. Object egg has action routine
-
-Object egg has action routine: EGG-OBJECT
-  Review ZIL routine for special object behavior
-
-### 121. Object canary has action routine
-
-Object canary has action routine: CANARY-OBJECT
-  Review ZIL routine for special object behavior
-
-### 122. Object broken_canary has action routine
-
-Object broken_canary has action routine: CANARY-OBJECT
-  Review ZIL routine for special object behavior
-
-### 123. Object pseudo_object has action routine
-
-Object pseudo_object has action routine: CRETIN-FCN
-  Review ZIL routine for special object behavior
-
-### 124. Object stairs has action routine
-
-Object stairs has action routine: STAIRS-F
-  Review ZIL routine for special object behavior
-
-### 125. Object sailor has action routine
-
-Object sailor has action routine: SAILOR-FCN
-  Review ZIL routine for special object behavior
-
-### 126. Object ground has action routine
-
-Object ground has action routine: GROUND-FUNCTION
-  Review ZIL routine for special object behavior
-
-### 127. Object grue has action routine
-
-Object grue has action routine: GRUE-FUNCTION
-  Review ZIL routine for special object behavior
-
-### 128. Object pathobj has action routine
-
-Object pathobj has action routine: PATH-OBJECT
-  Review ZIL routine for special object behavior
-
-### 129. Object zorkmid has action routine
-
-Object zorkmid has action routine: ZORKMID-FUNCTION
-  Review ZIL routine for special object behavior
-
-### 130. NPC ghosts has action routine
-
-NPC ghosts has action routine: GHOSTS-F
-  Review ZIL routine to understand NPC behavior, dialogue, and AI
-
-### 131. NPC bat has action routine
-
-NPC bat has action routine: BAT-F
-  Review ZIL routine to understand NPC behavior, dialogue, and AI
-
-### 132. NPC cyclops has action routine
-
-NPC cyclops has action routine: CYCLOPS-FCN
-  Review ZIL routine to understand NPC behavior, dialogue, and AI
-
-### 133. NPC thief has action routine
+### 42. NPC thief has action routine
 
 NPC thief has action routine: ROBBER-FUNCTION
-  Review ZIL routine to understand NPC behavior, dialogue, and AI
-
-### 134. NPC troll has action routine
-
-NPC troll has action routine: TROLL-FCN
-  Review ZIL routine to understand NPC behavior, dialogue, and AI
-
-### 135. NPC me has action routine
-
-NPC me has action routine: CRETIN-FCN
-  Review ZIL routine to understand NPC behavior, dialogue, and AI
-
-### 136. NPC adventurer has action routine
-
-NPC adventurer has action routine: 0
-  Review ZIL routine to understand NPC behavior, dialogue, and AI
+  WARNING: Routine code not found in ZIL files
 
 ## Additional Conversion Notes
 
@@ -702,72 +232,178 @@ NPC adventurer has action routine: 0
 
 The following items need manual review and possible implementation:
 
-1. Conditional exit in grating_clearing: down -> condition=GRATING-EXIT
-  Consider creating puzzle or adding logic to gate this exit
+1. Conditional exit in west_of_house: sw -> condition=WON-FLAG
+  Needs implementation
 
-2. Conditional exit in living_room: down -> condition=TRAP-DOOR-EXIT
-  Consider creating puzzle or adding logic to gate this exit
+2. Conditional exit in west_of_house: in -> condition=WON-FLAG
+  Needs implementation
 
-3. Conditional exit in studio: up -> condition=UP-CHIMNEY-FUNCTION
-  Consider creating puzzle or adding logic to gate this exit
+3. Conditional exit in east_of_house: west -> condition=KITCHEN-WINDOW
+  Needs implementation
 
-4. Conditional exit in maze_2: down -> condition=MAZE-DIODES
-  Consider creating puzzle or adding logic to gate this exit
+4. Conditional exit in east_of_house: in -> condition=KITCHEN-WINDOW
+  Needs implementation
 
-5. Conditional exit in maze_7: down -> condition=MAZE-DIODES
-  Consider creating puzzle or adding logic to gate this exit
+5. Conditional exit in grating_clearing: down -> condition=GRATING-EXIT
+  Needs implementation
 
-6. Conditional exit in maze_9: down -> condition=MAZE-DIODES
-  Consider creating puzzle or adding logic to gate this exit
+6. Conditional exit in kitchen: east -> condition=KITCHEN-WINDOW
+  Needs implementation
 
-7. Conditional exit in maze_12: down -> condition=MAZE-DIODES
-  Consider creating puzzle or adding logic to gate this exit
+7. Conditional exit in kitchen: down -> condition=FALSE-FLAG
+  Needs implementation
 
-8. Object axe is a weapon - add damage/attack stats if needed
+8. Conditional exit in kitchen: out -> condition=KITCHEN-WINDOW
+  Needs implementation
 
-9. Object sceptre is a weapon - add damage/attack stats if needed
+9. Conditional exit in living_room: west -> condition=MAGIC-FLAG
+  Needs implementation
 
-10. Object pump is a weapon - add damage/attack stats if needed
+10. Conditional exit in living_room: down -> condition=TRAP-DOOR-EXIT
+  Needs implementation
 
-11. Object knife is a weapon - add damage/attack stats if needed
+11. Conditional exit in cellar: up -> condition=TRAP-DOOR
+  Needs implementation
 
-12. Object rusty_knife is a weapon - add damage/attack stats if needed
+12. Conditional exit in troll_room: east -> condition=TROLL-FLAG
+  Needs implementation
 
-13. Object screwdriver is a weapon - add damage/attack stats if needed
+13. Conditional exit in troll_room: west -> condition=TROLL-FLAG
+  Needs implementation
 
-14. Object keys is a weapon - add damage/attack stats if needed
+14. Conditional exit in studio: up -> condition=UP-CHIMNEY-FUNCTION
+  Needs implementation
 
-15. Object shovel is a weapon - add damage/attack stats if needed
+15. Conditional exit in maze_2: down -> condition=MAZE-DIODES
+  Needs implementation
 
-16. Object stiletto is a weapon - add damage/attack stats if needed
+16. Conditional exit in maze_7: down -> condition=MAZE-DIODES
+  Needs implementation
 
-17. Object sword is a weapon - add damage/attack stats if needed
+17. Conditional exit in maze_9: down -> condition=MAZE-DIODES
+  Needs implementation
 
-18. Object putty is a weapon - add damage/attack stats if needed
+18. Conditional exit in grating_room: up -> condition=GRATE
+  Needs implementation
 
-19. Object wrench is a weapon - add damage/attack stats if needed
+19. Conditional exit in maze_12: down -> condition=MAZE-DIODES
+  Needs implementation
 
-20. Object intnum is a weapon - add damage/attack stats if needed
+20. Conditional exit in cyclops_room: east -> condition=MAGIC-FLAG
+  Needs implementation
 
-21. Object hands is a weapon - add damage/attack stats if needed
+21. Conditional exit in cyclops_room: up -> condition=CYCLOPS-FLAG
+  Needs implementation
 
-22. NPC ghosts needs behavior implementation
-  Review ZIL routine GHOSTS-F for dialogue and AI logic
+22. Conditional exit in reservoir_south: north -> condition=LOW-TIDE
+  Needs implementation
 
-23. NPC bat needs behavior implementation
-  Review ZIL routine BAT-F for dialogue and AI logic
+23. Conditional exit in reservoir_north: south -> condition=LOW-TIDE
+  Needs implementation
 
-24. NPC cyclops needs behavior implementation
-  Review ZIL routine CYCLOPS-FCN for dialogue and AI logic
+24. Conditional exit in entrance_to_hades: south -> condition=LLD-FLAG
+  Needs implementation
 
-25. NPC thief needs behavior implementation
+25. Conditional exit in entrance_to_hades: in -> condition=LLD-FLAG
+  Needs implementation
+
+26. Conditional exit in dome_room: down -> condition=DOME-FLAG
+  Needs implementation
+
+27. Conditional exit in south_temple: down -> condition=COFFIN-CURE
+  Needs implementation
+
+28. Conditional exit in white_cliffs_north: south -> condition=DEFLATE
+  Needs implementation
+
+29. Conditional exit in white_cliffs_north: west -> condition=DEFLATE
+  Needs implementation
+
+30. Conditional exit in white_cliffs_south: north -> condition=DEFLATE
+  Needs implementation
+
+31. Conditional exit in aragain_falls: west -> condition=RAINBOW-FLAG
+  Needs implementation
+
+32. Conditional exit in aragain_falls: up -> condition=RAINBOW-FLAG
+  Needs implementation
+
+33. Conditional exit in end_of_rainbow: east -> condition=RAINBOW-FLAG
+  Needs implementation
+
+34. Conditional exit in end_of_rainbow: ne -> condition=RAINBOW-FLAG
+  Needs implementation
+
+35. Conditional exit in end_of_rainbow: up -> condition=RAINBOW-FLAG
+  Needs implementation
+
+36. Conditional exit in timber_room: west -> condition=EMPTY-HANDED
+  Needs implementation
+
+37. Conditional exit in lower_shaft: east -> condition=EMPTY-HANDED
+  Needs implementation
+
+38. Conditional exit in lower_shaft: out -> condition=EMPTY-HANDED
+  Needs implementation
+
+39. Object axe is a weapon - add damage/attack stats if needed
+
+40. Object sceptre is a weapon - add damage/attack stats if needed
+
+41. Object pump is a weapon - add damage/attack stats if needed
+
+42. Object knife is a weapon - add damage/attack stats if needed
+
+43. Object rusty_knife is a weapon - add damage/attack stats if needed
+
+44. Object screwdriver is a weapon - add damage/attack stats if needed
+
+45. Object keys is a weapon - add damage/attack stats if needed
+
+46. Object shovel is a weapon - add damage/attack stats if needed
+
+47. Object stiletto is a weapon - add damage/attack stats if needed
+
+48. Object sword is a weapon - add damage/attack stats if needed
+
+49. Object putty is a weapon - add damage/attack stats if needed
+
+50. Object wrench is a weapon - add damage/attack stats if needed
+
+51. Object intnum is a weapon - add damage/attack stats if needed
+
+52. Object hands is a weapon - add damage/attack stats if needed
+
+53. Object axe is a weapon - add damage/attack stats if needed
+
+54. Object sceptre is a weapon - add damage/attack stats if needed
+
+55. Object pump is a weapon - add damage/attack stats if needed
+
+56. Object knife is a weapon - add damage/attack stats if needed
+
+57. Object rusty_knife is a weapon - add damage/attack stats if needed
+
+58. Object screwdriver is a weapon - add damage/attack stats if needed
+
+59. Object keys is a weapon - add damage/attack stats if needed
+
+60. Object shovel is a weapon - add damage/attack stats if needed
+
+61. Object stiletto is a weapon - add damage/attack stats if needed
+
+62. Object sword is a weapon - add damage/attack stats if needed
+
+63. Object putty is a weapon - add damage/attack stats if needed
+
+64. Object wrench is a weapon - add damage/attack stats if needed
+
+65. Object intnum is a weapon - add damage/attack stats if needed
+
+66. Object hands is a weapon - add damage/attack stats if needed
+
+67. NPC thief needs behavior implementation
   Review ZIL routine ROBBER-FUNCTION for dialogue and AI logic
-
-26. NPC troll needs behavior implementation
-  Review ZIL routine TROLL-FCN for dialogue and AI logic
-
-27. NPC me needs behavior implementation
-  Review ZIL routine CRETIN-FCN for dialogue and AI logic
 
 
 

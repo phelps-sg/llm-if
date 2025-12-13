@@ -1,10 +1,13 @@
 """Main game loop."""
 
+import logging
 from typing import Optional, Dict, Any
 from ..models.game_state import GameState
 from ..llm.gemini_client import GeminiClient
 from ..rules.rule_engine import RuleEngine
 from .action_processor import ActionProcessor
+
+logger = logging.getLogger(__name__)
 
 
 class GameLoop:
@@ -95,6 +98,33 @@ class GameLoop:
                     cached_descriptions=cached_descriptions,
                 )
 
+                # Add container contents with LLM-generated prose (Zork-style)
+                for item in items:
+                    if item.attributes.get("container") and item.attributes.get("open"):
+                        contents = self.game_state.get_items_in_container(item.id)
+                        if contents:
+                            # Build context for container description (same as main description)
+                            container_context = {
+                                "location": location.model_dump(),
+                                "lighting_info": lighting,
+                                "player": {
+                                    "attributes": self.game_state.player.attributes,
+                                    "inventory": player_context["inventory_items"]
+                                }
+                            }
+                            # Generate natural prose for container contents (with full context)
+                            container_desc = self.gemini.describe_container_contents(
+                                item.model_dump(),
+                                [c.model_dump() for c in contents],
+                                context=container_context
+                            )
+                            # Only add if there's content (empty if cannot see)
+                            if container_desc and container_desc.strip():
+                                narrative += f"\n\n{container_desc}"
+
+                # Update conversation history with complete narrative (including containers)
+                self.game_state.update_last_narrative(narrative)
+
                 # Cache the generated description with current state
                 self.game_state.cache_description(
                     "location",
@@ -148,6 +178,12 @@ class GameLoop:
         print("INTERACTIVE FICTION ENGINE - MVP")
         print("=" * 60)
         print()
+
+        # Display intro text if present in world_context
+        if self.game_state.world_context and "intro" in self.game_state.world_context:
+            intro = self.game_state.world_context["intro"]
+            print(intro)
+            print()
 
         # Show initial location
         self._show_location()
@@ -366,15 +402,15 @@ class GameLoop:
         invalid_reason = intent_result.get("invalid_reason")
         not_allowed_reason = intent_result.get("not_allowed_reason")
 
-        # DEBUG: Log what LLM returned
-        print(f"\n[DEBUG] Intent Interpretation:")
-        print(f"  Intent: {intent}")
-        print(f"  is_valid: {is_valid}")
-        print(f"  is_allowed: {is_allowed}")
+        # Log what LLM returned
+        logger.debug("Intent Interpretation:")
+        logger.debug(f"  Intent: {intent}")
+        logger.debug(f"  is_valid: {is_valid}")
+        logger.debug(f"  is_allowed: {is_allowed}")
         if invalid_reason:
-            print(f"  invalid_reason: {invalid_reason}")
+            logger.debug(f"  invalid_reason: {invalid_reason}")
         if not_allowed_reason:
-            print(f"  not_allowed_reason: {not_allowed_reason}")
+            logger.debug(f"  not_allowed_reason: {not_allowed_reason}")
 
         # STEP 2: Generate mechanics (only if valid AND allowed)
         state_updates = []
@@ -384,8 +420,8 @@ class GameLoop:
             mechanics_result = self.gemini.generate_state_updates(intent, context, intent_result)
             state_updates = mechanics_result.get("state_updates", [])
 
-            print(f"\n[DEBUG] Mechanics:")
-            print(f"  State Updates: {state_updates}")
+            logger.debug("Mechanics:")
+            logger.debug(f"  State Updates: {state_updates}")
 
             # Track what was referenced for pronoun resolution
             temp_interpretation = {**intent_result, **mechanics_result}
@@ -405,18 +441,18 @@ class GameLoop:
         if mechanics_result.get("new_time"):
             self.game_state.game_time = mechanics_result["new_time"]
 
-            # DEBUG: Log state after updates
-            print(f"\n[DEBUG] State After Updates:")
-            print(f"  Player location: {self.game_state.player_location}")
-            print(f"  Player inventory: {self.game_state.player.inventory}")
-            print(
+            # Log state after updates
+            logger.debug("State After Updates:")
+            logger.debug(f"  Player location: {self.game_state.player_location}")
+            logger.debug(f"  Player inventory: {self.game_state.player.inventory}")
+            logger.debug(
                 f"  Items at location: {[item.name for item in self.game_state.get_items_at_location(self.game_state.player_location)]}"
             )
-            print(f"  Item locations: {self.game_state.item_locations}")
-            print(
+            logger.debug(f"  Item locations: {self.game_state.item_locations}")
+            logger.debug(
                 f"  NPCs at location: {[npc.name for npc in self.game_state.get_npcs_at_location(self.game_state.player_location)]}"
             )
-            print(f"  NPC locations: {self.game_state.npc_locations}")
+            logger.debug(f"  NPC locations: {self.game_state.npc_locations}")
 
         # STEP 3: Generate narrative (skip for movement - location description handles that)
         is_movement = any(update.get("type") == "move_player" for update in state_updates)
@@ -554,13 +590,49 @@ class GameLoop:
             cached_descriptions=cached_descriptions,
         )
 
-        print(f"\n{description}")
+        # Generate container contents descriptions (for caching in history)
+        container_descriptions = []
+        for item in items:
+            if item.attributes.get("container") and item.attributes.get("open"):
+                container_id = item.id
+                contents = self.game_state.get_items_in_container(container_id)
+                if contents:
+                    # Build context for container description (same as main description)
+                    container_context = {
+                        "location": location.model_dump(),
+                        "lighting_info": lighting,
+                        "player": {
+                            "attributes": self.game_state.player.attributes,
+                            "inventory": player_context["inventory_items"]
+                        }
+                    }
+                    # Generate natural prose for container contents (with full context)
+                    container_desc = self.gemini.describe_container_contents(
+                        item.model_dump(),
+                        [c.model_dump() for c in contents],
+                        context=container_context
+                    )
+                    # Only add if there's content (empty if cannot see)
+                    if container_desc and container_desc.strip():
+                        container_descriptions.append(container_desc)
 
-        # Cache the generated description with current state
+        # Append container descriptions to main description for caching
+        full_description = description
+        if container_descriptions:
+            full_description += "\n\n" + "\n\n".join(container_descriptions)
+
+        # Display to player
+        print(f"\n{full_description}")
+
+        # Update conversation history with complete description (including containers)
+        # This ensures the LLM has full context in subsequent prompts
+        self.game_state.update_last_narrative(full_description)
+
+        # Cache the FULL description (including container contents) with current state
         self.game_state.cache_description(
             "location",
             location.id,
-            description,
+            full_description,
             state_snapshot={
                 "game_time": self.game_state.game_time,
                 "lighting": lighting.get("level"),
@@ -857,6 +929,39 @@ You can also type natural language commands and the AI will interpret them.
             self.game_state.player_location
         )
 
+        # Add global objects from location's zil_global_objects to items list
+        if location and 'zil_global_objects' in location.attributes:
+            global_obj_ids = location.attributes['zil_global_objects']
+            for obj_id in global_obj_ids:
+                if obj_id in self.game_state.items and obj_id not in [item.id for item in items_at_location]:
+                    items_at_location.append(self.game_state.items[obj_id])
+
+        # Add pseudo objects (scenery) from location's zil_pseudo_routines as virtual items
+        if location and 'zil_pseudo_routines' in location.attributes:
+            from src.models.game_state import Item
+            pseudo_routines = location.attributes['zil_pseudo_routines']
+            for pseudo_name, routine_info in pseudo_routines.items():
+                # Create a virtual item for this pseudo object
+                pseudo_id = f"pseudo_{pseudo_name.lower()}"
+                # Check if we haven't already added it
+                if pseudo_id not in [item.id for item in items_at_location]:
+                    pseudo_item = Item(
+                        id=pseudo_id,
+                        name=pseudo_name.lower(),
+                        attributes={
+                            "type": "scenery",
+                            "takeable": False,
+                            "is_visible": True,
+                            "auto_describe": False,
+                            "is_pseudo_object": True,
+                            "zil_pseudo_routine": routine_info.get("routine_name"),
+                            "zil_action_code": routine_info.get("zil_string"),
+                            "zil_action_json": routine_info.get("zil_json"),
+                            "description_hints": f"{pseudo_name.lower()} (scenery)"
+                        }
+                    )
+                    items_at_location.append(pseudo_item)
+
         # Get detailed item info for items in inventory
         inventory_items = []
         for item_id in self.game_state.player.inventory:
@@ -903,6 +1008,53 @@ You can also type natural language commands and the AI will interpret them.
                 "narrative": interpretation.get("narrative_response", ""),
             })
 
+        # Build container contents map for open containers
+        # Check items at location and in inventory for open containers
+        # IMPORTANT: Check recursively - containers can be inside other containers!
+        container_contents = {}
+
+        def check_container_recursive(item, checked_ids=None):
+            """Recursively check if item is an open container and collect its contents."""
+            if checked_ids is None:
+                checked_ids = set()
+
+            # Avoid infinite loops
+            if item.id in checked_ids:
+                return
+            checked_ids.add(item.id)
+
+            # Check both 'is_container' and 'container' attributes
+            is_container = item.attributes.get("is_container", False) or item.attributes.get("container", False)
+            # Check multiple variations of 'open' attribute (LLM may use different names)
+            is_open = (
+                item.attributes.get("is_open", False) or
+                item.attributes.get("open", False) or
+                item.attributes.get("opened", False) or
+                (isinstance(item.attributes.get("state"), dict) and item.attributes["state"].get("opened", False))
+            )
+
+            if is_container and is_open:
+                contents = self.game_state.get_items_in_container(item.id)
+                logger.debug(f"Container {item.id} is open, contains {len(contents)} items: {[c.name for c in contents]}")
+                if contents:
+                    container_contents[item.id] = [
+                        {"id": c.id, "name": c.name, "attributes": c.attributes}
+                        for c in contents
+                    ]
+                    # Recursively check items inside this container
+                    for content_item in contents:
+                        check_container_recursive(content_item, checked_ids)
+
+        # Check items at current location (and recursively their contents)
+        for item in items_at_location:
+            check_container_recursive(item)
+
+        # Also check inventory for open containers (and recursively their contents)
+        for item_id in self.game_state.player.inventory:
+            if item_id in self.game_state.items:
+                item = self.game_state.items[item_id]
+                check_container_recursive(item)
+
         # Build detailed context
         context = {
             "location": location.model_dump() if location else None,
@@ -912,6 +1064,7 @@ You can also type natural language commands and the AI will interpret them.
                 {"id": item.id, "name": item.name, "attributes": item.attributes}
                 for item in items_at_location
             ],
+            "container_contents": container_contents,  # Items inside open containers
             "npcs": [
                 {"id": npc.id, "name": npc.name, "attributes": npc.attributes}
                 for npc in npcs_at_location
@@ -926,6 +1079,7 @@ You can also type natural language commands and the AI will interpret them.
             "all_locations": all_locations,  # Complete map of location IDs
             "all_npcs": all_npcs,  # All NPCs with locations (for plot management)
             "conversation_history": recent_turns,  # For natural pronoun resolution
+            "global_flags": self.game_state.flags,  # For ZIL condition evaluation
         }
 
         # Add plot information if present

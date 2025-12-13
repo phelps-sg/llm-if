@@ -36,20 +36,23 @@ class ZILParser:
 
                 while True:
                     # Find next occurrence of this form type
-                    # Handle both '<ROOM ' and '<ROOM\n' patterns
+                    # Handle '<ROOM ', '<ROOM\n', and '<ROOM\t' patterns
                     pattern_space = f'<{form_type} '
                     pattern_newline = f'<{form_type}\n'
+                    pattern_tab = f'<{form_type}\t'
 
                     pos_space = content.find(pattern_space, start_idx)
                     pos_newline = content.find(pattern_newline, start_idx)
+                    pos_tab = content.find(pattern_tab, start_idx)
 
                     # Use whichever pattern appears first
-                    if pos_space >= 0 and (pos_newline < 0 or pos_space < pos_newline):
-                        start_idx = pos_space
-                    elif pos_newline >= 0:
-                        start_idx = pos_newline
-                    else:
+                    positions = [(pos_space, 'space'), (pos_newline, 'newline'), (pos_tab, 'tab')]
+                    valid_positions = [(pos, typ) for pos, typ in positions if pos >= 0]
+
+                    if not valid_positions:
                         break
+
+                    start_idx = min(valid_positions, key=lambda x: x[0])[0]
 
                     # Find the matching closing >
                     depth = 0

@@ -1,11 +1,14 @@
 """Action processor for handling player actions."""
 
+import logging
 from typing import Dict, Any, Optional, Tuple, List, Union
 from ..models.game_state import GameState
 from ..models.npc import NPC
 from ..models.item import Item
 from ..models.player import Player
 from ..rules.rule_engine import RuleEngine, RuleTrigger
+
+logger = logging.getLogger(__name__)
 
 
 class ActionProcessor:
@@ -156,7 +159,7 @@ class ActionProcessor:
                 if item_id and name:
                     # Validate item doesn't already exist
                     if item_id in game_state.items:
-                        print(f"[WARNING] Item '{item_id}' already exists, skipping create_item")
+                        logger.warning(f"Item '{item_id}' already exists, skipping create_item")
                         continue
 
                     # Create new Item object
@@ -193,7 +196,7 @@ class ActionProcessor:
                 if item_id and new_name:
                     item = game_state.items.get(item_id)
                     if not item:
-                        print(f"[WARNING] Cannot transform '{item_id}' - item doesn't exist")
+                        logger.warning(f"Cannot transform '{item_id}' - item doesn't exist")
                         continue
 
                     # Initialize transformation_history if not present
@@ -211,12 +214,17 @@ class ActionProcessor:
                         "reversible": reversible
                     }
 
-                    # Store in new attributes (so it carries forward)
-                    transformation_history = item.attributes["transformation_history"].copy()
+                    # Store previous attributes for reference (but don't merge)
+                    # The LLM must explicitly include attributes it wants to preserve
+                    new_attributes["prev_attributes"] = item.attributes.copy()
+
+                    # Store transformation history in new attributes
+                    transformation_history = item.attributes.get("transformation_history", []).copy()
                     transformation_history.append(transformation_record)
                     new_attributes["transformation_history"] = transformation_history
 
-                    # Update item in-place
+                    # Update item in-place with ONLY the new attributes
+                    # Do NOT auto-merge - the LLM must explicitly specify what to keep
                     item.name = new_name
                     item.attributes = new_attributes
 
@@ -232,7 +240,7 @@ class ActionProcessor:
                 if item_id and npc_name:
                     item = game_state.items.get(item_id)
                     if not item:
-                        print(f"[WARNING] Cannot transform '{item_id}' to NPC - item doesn't exist")
+                        logger.warning(f"Cannot transform '{item_id}' to NPC - item doesn't exist")
                         continue
 
                     # Get item's current location (inventory or world location)
@@ -292,7 +300,7 @@ class ActionProcessor:
                 if npc_id and item_name:
                     npc = game_state.npcs.get(npc_id)
                     if not npc:
-                        print(f"[WARNING] Cannot transform '{npc_id}' to item - NPC doesn't exist")
+                        logger.warning(f"Cannot transform '{npc_id}' to item - NPC doesn't exist")
                         continue
 
                     # Get NPC's current location
@@ -366,7 +374,7 @@ class ActionProcessor:
                 if location_id and name:
                     # Validate location doesn't already exist
                     if location_id in game_state.locations:
-                        print(f"[WARNING] Location '{location_id}' already exists, skipping create_location")
+                        logger.warning(f"Location '{location_id}' already exists, skipping create_location")
                         continue
 
                     # Create new Location object
@@ -403,7 +411,7 @@ class ActionProcessor:
                 if npc_id and name:
                     # Validate NPC doesn't already exist
                     if npc_id in game_state.npcs:
-                        print(f"[WARNING] NPC '{npc_id}' already exists, skipping create_npc")
+                        logger.warning(f"NPC '{npc_id}' already exists, skipping create_npc")
                         continue
 
                     # Create new NPC object

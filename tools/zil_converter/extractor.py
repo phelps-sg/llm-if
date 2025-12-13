@@ -6,6 +6,7 @@ into intermediate Python data structures.
 
 from typing import List, Any, Dict, Optional
 from sexpdata import Symbol
+from .zil_serializer import extract_raw_zil
 
 
 class ZILExtractor:
@@ -13,6 +14,7 @@ class ZILExtractor:
 
     def __init__(self):
         self.todos = []  # Track items needing manual review
+        self.routines = {}  # Map of routine names to their ZIL code
 
     def _parse_properties(self, sexp_list: List[Any]) -> Dict[str, Any]:
         """Parse ZIL property list into dictionary.
@@ -109,24 +111,54 @@ class RoomExtractor(ZILExtractor):
             "zil_name": str(name),
             "name": properties.get("DESC", str(name)),
             "long_desc": properties.get("LDESC", ""),
-            "exits": self._extract_exits(properties),
+            "exits": self._extract_exits(properties, room_sexp[2:]),
             "flags": self._extract_flags(properties),
             "pseudo_objects": properties.get("PSEUDO", []),
             "global_objects": properties.get("GLOBAL", []),
             "action_routine": properties.get("ACTION"),
+            "raw_zil": extract_raw_zil(room_sexp),
             "_zil_properties": properties
         }
 
-        # Add TODO if room has action routine
+        # Add routine code if action routine is present and we have it
         if room_data["action_routine"]:
-            self._add_todo(
-                f"Room {room_data['id']} has action routine: {room_data['action_routine']}\n"
-                f"  Review ZIL routine for special room behavior"
-            )
+            routine_name = str(room_data["action_routine"]).upper()
+            if routine_name in self.routines:
+                room_data["action_routine_code"] = self.routines[routine_name]["zil_string"]
+                room_data["action_routine_json"] = self.routines[routine_name]["zil_json"]
+            else:
+                self._add_todo(
+                    f"Room {room_data['id']} has action routine: {room_data['action_routine']}\n"
+                    f"  WARNING: Routine code not found in ZIL files"
+                )
+
+        # Add pseudo object routine codes if present
+        # PSEUDO property format: (PSEUDO "NAME1" ROUTINE1 "NAME2" ROUTINE2 ...)
+        # We get a list like ["NAME1", ROUTINE1, "NAME2", ROUTINE2, ...]
+        if room_data["pseudo_objects"]:
+            pseudo_routines = {}
+            pseudo_list = room_data["pseudo_objects"]
+
+            # Process in pairs: (name, routine_ref)
+            for i in range(0, len(pseudo_list), 2):
+                if i + 1 < len(pseudo_list):
+                    pseudo_name = str(pseudo_list[i])  # The name players type
+                    routine_ref = pseudo_list[i + 1]  # The routine symbol
+                    routine_name = str(routine_ref).upper()
+
+                    if routine_name in self.routines:
+                        pseudo_routines[pseudo_name] = {
+                            "routine_name": routine_name,
+                            "zil_string": self.routines[routine_name]["zil_string"],
+                            "zil_json": self.routines[routine_name]["zil_json"]
+                        }
+
+            if pseudo_routines:
+                room_data["pseudo_object_routines"] = pseudo_routines
 
         return room_data
 
-    def _extract_exits(self, props: Dict[str, Any]) -> Dict[str, Any]:
+    def _extract_exits(self, props: Dict[str, Any], raw_props: List[Any]) -> Dict[str, Any]:
         """Extract room connections from direction properties.
 
         ZIL directions: NORTH, SOUTH, EAST, WEST, NE, NW, SE, SW, UP, DOWN, IN, OUT
@@ -135,6 +167,9 @@ class RoomExtractor(ZILExtractor):
             (NORTH TO OTHER-ROOM)       - Direct exit
             (DOWN PER DOOR-LOCKED-F)    - Conditional exit (function check)
             (EAST IF FLAG-NAME)         - Conditional exit (flag check)
+
+        CRITICAL: (IN ROOMS) is NOT an exit - it means the room is IN the ROOMS container.
+                  Only (IN TO somewhere) is an exit.
         """
         exits = {}
         directions = [
@@ -147,18 +182,68 @@ class RoomExtractor(ZILExtractor):
             if direction in props:
                 exit_def = props[direction]
 
+                # SPECIAL CASE: (IN ROOMS) is not an exit, it's a container declaration
+                # Only process if it's an actual exit like (IN TO somewhere)
+                if direction == "IN":
+                    # Check the raw property to see if it's (IN TO ...) or just (IN ROOMS)
+                    is_exit = False
+                    for prop in raw_props:
+                        if isinstance(prop, list) and len(prop) >= 2:
+                            prop_name = str(prop[0]).upper() if isinstance(prop[0], Symbol) else str(prop[0])
+                            if prop_name == "IN" and len(prop) >= 3:
+                                second_elem = str(prop[1]).upper() if isinstance(prop[1], Symbol) else str(prop[1])
+                                if second_elem == "TO":
+                                    is_exit = True
+                                    break
+                    if not is_exit:
+                        # Skip (IN ROOMS) - it's not an exit
+                        continue
+
                 # Handle different exit formats
                 if isinstance(exit_def, list) and len(exit_def) >= 2:
                     exit_type = str(exit_def[0]).upper() if isinstance(exit_def[0], Symbol) else str(exit_def[0])
 
-                    if exit_type == "TO":
-                        # Direct exit
+                    # Check if this is a conditional exit with format: (TO destination IF condition)
+                    # or (TO destination PER function)
+                    is_conditional = False
+                    condition_keyword = None
+                    condition_value = None
+                    destination = None
+
+                    if exit_type == "TO" and len(exit_def) >= 4:
+                        # Look for IF or PER later in the list
+                        for i in range(2, len(exit_def)):
+                            elem = str(exit_def[i]).upper() if isinstance(exit_def[i], Symbol) else str(exit_def[i])
+                            if elem in ["IF", "PER"]:
+                                is_conditional = True
+                                condition_keyword = elem.lower()
+                                destination = self._normalize_id(exit_def[1])
+                                if i + 1 < len(exit_def):
+                                    condition_value = str(exit_def[i + 1])
+                                break
+
+                    if is_conditional:
+                        # Conditional exit (e.g., SW TO STONE-BARROW IF WON-FLAG)
+                        exits[direction.lower()] = {
+                            "type": "conditional",
+                            "condition_type": condition_keyword,
+                            "condition": condition_value,
+                            "destination": destination
+                        }
+
+                        self._add_todo(
+                            f"Conditional exit {direction.lower()} -> {destination}: "
+                            f"{condition_keyword} {condition_value}\n"
+                            f"  LLM will interpret from raw_zil"
+                        )
+                    elif exit_type == "TO":
+                        # Direct exit (simple TO destination)
                         exits[direction.lower()] = {
                             "type": "direct",
                             "destination": self._normalize_id(exit_def[1])
                         }
                     elif exit_type in ["PER", "IF"]:
-                        # Conditional exit
+                        # Conditional exit (old format: PER function or IF flag)
                         exits[direction.lower()] = {
                             "type": "conditional",
                             "condition_type": exit_type.lower(),
@@ -171,6 +256,13 @@ class RoomExtractor(ZILExtractor):
                             f"condition={exit_def[1]}\n"
                             f"  Review ZIL to determine destination and create puzzle if needed"
                         )
+                elif isinstance(exit_def, str):
+                    # String message means blocked exit (e.g., "The windows are all boarded.")
+                    # Store as conditional with message
+                    exits[direction.lower()] = {
+                        "type": "blocked",
+                        "message": exit_def
+                    }
                 else:
                     # Simple destination (older ZIL format)
                     exits[direction.lower()] = {
@@ -235,15 +327,21 @@ class ObjectExtractor(ZILExtractor):
             "size": properties.get("SIZE"),
             "text": properties.get("TEXT"),
             "action_routine": properties.get("ACTION"),
+            "raw_zil": extract_raw_zil(obj_sexp),
             "_zil_properties": properties
         }
 
-        # Add TODO if object has custom action
+        # Add routine code if action routine is present and we have it
         if obj_data["action_routine"]:
-            self._add_todo(
-                f"Object {obj_data['id']} has action routine: {obj_data['action_routine']}\n"
-                f"  Review ZIL routine for special object behavior"
-            )
+            routine_name = str(obj_data["action_routine"]).upper()
+            if routine_name in self.routines:
+                obj_data["action_routine_code"] = self.routines[routine_name]["zil_string"]
+                obj_data["action_routine_json"] = self.routines[routine_name]["zil_json"]
+            else:
+                self._add_todo(
+                    f"Object {obj_data['id']} has action routine: {obj_data['action_routine']}\n"
+                    f"  WARNING: Routine code not found in ZIL files"
+                )
 
         return obj_data
 
@@ -353,14 +451,21 @@ class NPCExtractor(ZILExtractor):
             "flags": flags,
             "hostility": self._infer_hostility(flags, properties),
             "action_routine": properties.get("ACTION"),
+            "raw_zil": extract_raw_zil(obj_sexp),
             "_zil_properties": properties
         }
 
-        # NPCs always need manual review for behavior
-        self._add_todo(
-            f"NPC {npc_data['id']} has action routine: {npc_data['action_routine']}\n"
-            f"  Review ZIL routine to understand NPC behavior, dialogue, and AI"
-        )
+        # Add routine code if action routine is present and we have it
+        if npc_data["action_routine"]:
+            routine_name = str(npc_data["action_routine"]).upper()
+            if routine_name in self.routines:
+                npc_data["action_routine_code"] = self.routines[routine_name]["zil_string"]
+                npc_data["action_routine_json"] = self.routines[routine_name]["zil_json"]
+            else:
+                self._add_todo(
+                    f"NPC {npc_data['id']} has action routine: {npc_data['action_routine']}\n"
+                    f"  WARNING: Routine code not found in ZIL files"
+                )
 
         return npc_data
 
@@ -395,12 +500,50 @@ class GameExtractor:
         self.object_extractor = ObjectExtractor()
         self.npc_extractor = NPCExtractor()
 
+    def _extract_routines(self, sexps: List[Any]) -> Dict[str, Dict]:
+        """Extract all ROUTINE definitions and build name -> code map.
+
+        Args:
+            sexps: Parsed S-expressions
+
+        Returns:
+            Dict mapping routine names to their ZIL code (both string and JSON)
+        """
+        from .zil_to_json import format_routine_as_json
+
+        routines = {}
+        for sexp in sexps:
+            if not isinstance(sexp, list) or len(sexp) < 2:
+                continue
+
+            form_type = str(sexp[0]).upper() if isinstance(sexp[0], Symbol) else ""
+
+            if form_type == "ROUTINE":
+                # Format: (ROUTINE NAME (...) ...)
+                if len(sexp) >= 2:
+                    routine_name = str(sexp[1]).upper() if isinstance(sexp[1], Symbol) else str(sexp[1])
+                    # Store both string format (for debugging) and JSON (for LLM)
+                    routines[routine_name] = {
+                        "zil_string": extract_raw_zil(sexp),
+                        "zil_json": format_routine_as_json(sexp)
+                    }
+
+        return routines
+
     def extract(self, sexps: List[Any]) -> Dict[str, Any]:
         """Extract all game entities from parsed S-expressions.
 
         Returns:
             Dictionary with rooms, objects, npcs, and todos
         """
+        # First pass: extract all routine definitions
+        routines = self._extract_routines(sexps)
+
+        # Pass routines to extractors so they can include function code
+        self.room_extractor.routines = routines
+        self.object_extractor.routines = routines
+        self.npc_extractor.routines = routines
+
         rooms = []
         objects = []
         npcs = []

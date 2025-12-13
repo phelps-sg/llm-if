@@ -2,6 +2,7 @@
 
 import argparse
 import json
+import logging
 import os
 import sys
 from pathlib import Path
@@ -12,6 +13,7 @@ from .llm.gemini_client import GeminiClient
 from .rules.rule_engine import RuleEngine
 from .rules.dnd_rules import get_all_dnd_rules
 from .engine.game_loop import GameLoop
+from .utils.logging_config import setup_logging
 
 
 def load_game(world_file: str) -> GameState:
@@ -24,6 +26,28 @@ def load_game(world_file: str) -> GameState:
         f"{len(game_state.items)} items"
     )
     return game_state
+
+
+def apply_start_location_override(game_state: GameState, start_location: str) -> None:
+    """Override the player's starting location if specified.
+
+    Args:
+        game_state: Game state to modify
+        start_location: Location ID to start at
+
+    Raises:
+        ValueError: If the location doesn't exist
+    """
+    if start_location not in game_state.locations:
+        available_locations = list(game_state.locations.keys())[:10]  # Show first 10
+        error_msg = f"Error: Location '{start_location}' not found in world.\n"
+        error_msg += f"Available locations (showing first 10): {', '.join(available_locations)}"
+        if len(game_state.locations) > 10:
+            error_msg += f"... and {len(game_state.locations) - 10} more"
+        raise ValueError(error_msg)
+
+    game_state.player_location = start_location
+    print(f"Starting location overridden to: {start_location}")
 
 
 def initialize_rule_engine() -> RuleEngine:
@@ -250,6 +274,12 @@ def create_parser() -> argparse.ArgumentParser:
         help="Output full state dump for debugging",
     )
 
+    parser.add_argument(
+        "--verbose",
+        action="store_true",
+        help="Enable verbose debug logging output",
+    )
+
     # Rogue mode arguments
     parser.add_argument(
         "--game-mode",
@@ -299,6 +329,12 @@ def create_parser() -> argparse.ArgumentParser:
         help="Number of items to generate per level (default: 3)",
     )
 
+    parser.add_argument(
+        "--start-location",
+        type=str,
+        help="Override starting location (location ID) - useful for testing specific areas",
+    )
+
     return parser
 
 
@@ -318,6 +354,14 @@ def run_single_step_mode(args, gcp_project: str) -> None:
                 sys.exit(1)
             game_state = GameState.from_file(args.init)
             print(f"Initialized with {len(game_state.locations)} locations")
+
+            # Apply start location override if specified
+            if args.start_location:
+                try:
+                    apply_start_location_override(game_state, args.start_location)
+                except ValueError as e:
+                    print(str(e))
+                    sys.exit(1)
         else:
             print("Error: --no-state requires --init <world_file> or --game-mode rogue")
             print("Example: python -m src.main --single-step --no-state --init worlds/example_dungeon.json --command 'look'")
@@ -331,6 +375,14 @@ def run_single_step_mode(args, gcp_project: str) -> None:
 
         game_state = GameState.from_file(args.init)
         print(f"Initialized with {len(game_state.locations)} locations")
+
+        # Apply start location override if specified
+        if args.start_location:
+            try:
+                apply_start_location_override(game_state, args.start_location)
+            except ValueError as e:
+                print(str(e))
+                sys.exit(1)
     elif args.game_mode == "rogue":
         # Rogue mode: try to load existing state, otherwise initialize
         if os.path.exists(args.state_file):
@@ -420,6 +472,9 @@ def main() -> None:
     parser = create_parser()
     args = parser.parse_args()
 
+    # Initialize logging based on verbose flag
+    setup_logging(verbose=args.verbose)
+
     # Get GCP project (required for Vertex AI)
     gcp_project = os.getenv("GCP_PROJECT")
     if not gcp_project:
@@ -455,6 +510,10 @@ def main() -> None:
                 sys.exit(1)
 
             game_state = load_game(world_file_str)
+
+            # Apply start location override if specified
+            if args.start_location:
+                apply_start_location_override(game_state, args.start_location)
     except Exception as e:
         print(f"Error initializing game: {e}")
         import traceback

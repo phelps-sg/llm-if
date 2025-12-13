@@ -1,5 +1,6 @@
 """GameState model - central state container for the game."""
 
+import logging
 from typing import Dict, Optional, List, Any
 from pydantic import BaseModel, Field
 
@@ -7,6 +8,8 @@ from .location import Location
 from .npc import NPC
 from .item import Item
 from .player import Player
+
+logger = logging.getLogger(__name__)
 
 
 class GameState(BaseModel):
@@ -96,7 +99,30 @@ class GameState(BaseModel):
                     items.append(self.items[item_id])
                 else:
                     # Orphaned reference - clean it up
-                    print(f"[WARNING] Orphaned item_id '{item_id}' at location '{location_id}' - cleaning up")
+                    logger.warning(f"Orphaned item_id '{item_id}' at location '{location_id}' - cleaning up")
+        return items
+
+    def get_items_in_container(self, container_id: str) -> List[Item]:
+        """Get all items inside a container.
+
+        A container is an item that can hold other items. This method returns
+        items whose location is the container's ID.
+
+        Defensive: Skips items that exist in item_locations but not in items dict.
+
+        Args:
+            container_id: The ID of the container item
+
+        Returns:
+            List of Item objects inside the container
+        """
+        items = []
+        for item_id, loc_id in self.item_locations.items():
+            if loc_id == container_id:
+                if item_id in self.items:
+                    items.append(self.items[item_id])
+                else:
+                    logger.warning(f"Orphaned item_id '{item_id}' in container '{container_id}' - cleaning up")
         return items
 
     def get_npcs_at_location(self, location_id: str) -> List[NPC]:
@@ -112,7 +138,7 @@ class GameState(BaseModel):
                     npcs.append(self.npcs[npc_id])
                 else:
                     # Orphaned reference - clean it up
-                    print(f"[WARNING] Orphaned npc_id '{npc_id}' at location '{location_id}' - cleaning up")
+                    logger.warning(f"Orphaned npc_id '{npc_id}' at location '{location_id}' - cleaning up")
         return npcs
 
     def get_player_location(self) -> Optional[Location]:
@@ -314,6 +340,20 @@ class GameState(BaseModel):
         self.history.append(entry)
         self.turn_count += 1
 
+    def update_last_narrative(self, full_narrative: str) -> None:
+        """Update the narrative in the most recent history entry.
+
+        This is used when container descriptions are generated after the main
+        narrative, ensuring the complete description is in conversation history.
+
+        Args:
+            full_narrative: Complete narrative including container descriptions
+        """
+        if self.history:
+            last_entry = self.history[-1]
+            if "interpretation" in last_entry:
+                last_entry["interpretation"]["narrative_response"] = full_narrative
+
     def get_recent_history(self, count: int = 5) -> List[Dict[str, Any]]:
         """Get recent history entries."""
         return self.history[-count:] if self.history else []
@@ -417,8 +457,15 @@ class GameState(BaseModel):
         # Extract puzzles before creating GameState
         puzzles_data = data.pop("puzzles", {})
 
+        # Extract player_inventory if present (for ZIL worlds with adventurer item)
+        player_inventory_items = data.pop("player_inventory", [])
+
         # Create GameState from remaining data
         game_state = cls.from_dict(data)
+
+        # Set initial player inventory from world file
+        if player_inventory_items:
+            game_state.player.inventory = player_inventory_items
 
         # Load puzzles into dm_state
         if puzzles_data:

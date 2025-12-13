@@ -1,11 +1,14 @@
 """Gemini LLM client for narrative generation using Vertex AI."""
 
+import logging
 import os
 import subprocess
 import json
 from typing import Optional, Dict, Any, List
 from datetime import datetime, timedelta
 from .action_schema import ActionInterpretation
+
+logger = logging.getLogger(__name__)
 
 
 class GeminiClient:
@@ -177,7 +180,9 @@ class GeminiClient:
             return not_allowed_reason
 
         # Otherwise, generate narrative from actual state (existing behavior)
-        prompt = self._build_narrative_prompt(player_input, intent, context, action_metadata, state_updates, is_valid)
+        prompt = self._build_narrative_prompt(
+            player_input, intent, context, action_metadata, state_updates, is_valid
+        )
         return self.generate(prompt)
 
     def describe_action_result(
@@ -208,7 +213,9 @@ class GeminiClient:
         prompt = self._build_combat_narration_prompt(combat_result)
         return self.generate(prompt)
 
-    def narrate_npc_actions(self, npc_actions: Dict[str, Any], context: Dict[str, Any]) -> str:
+    def narrate_npc_actions(
+        self, npc_actions: Dict[str, Any], context: Dict[str, Any]
+    ) -> str:
         """Narrate NPC actions (unprovoked attacks, chases).
 
         This is different from narrate_combat_result() because:
@@ -227,6 +234,22 @@ class GeminiClient:
             Narrative describing all NPC actions and prompting player
         """
         prompt = self._build_npc_actions_prompt(npc_actions, context)
+        return self.generate(prompt)
+
+    def describe_container_contents(
+        self, container: Dict[str, Any], contents: list, context: Dict[str, Any]
+    ) -> str:
+        """Generate natural prose for items in/on a container.
+
+        Args:
+            container: Container item dict with id, name, attributes
+            contents: List of item dicts inside the container
+            context: Full game context (lighting, player attributes, location, etc.)
+
+        Returns:
+            Natural prose describing the contents (1-2 sentences), or empty string if can't see
+        """
+        prompt = self._build_container_contents_prompt(container, contents, context)
         return self.generate(prompt)
 
     def generate_dungeon_level(
@@ -268,7 +291,9 @@ class GeminiClient:
 
         # Use provided counts for dungeon generation
         num_middle = num_middle_locations
-        total_steps = 4 + num_middle + num_npcs + num_items  # theme + entry + middle + exit + npcs + items + validation
+        total_steps = (
+            4 + num_middle + num_npcs + num_items
+        )  # theme + entry + middle + exit + npcs + items + validation
 
         # Step 1: Generate theme (1 call)
         step_num = 1
@@ -287,26 +312,32 @@ class GeminiClient:
             level_number, genre, theme, "entry", existing_state, plot, specifics
         )
         locations.append(entry)
-        existing_state["locations"].append({
-            "id": entry["id"],
-            "name": entry["name"],
-            "connections": entry["connections"]
-        })
+        existing_state["locations"].append(
+            {
+                "id": entry["id"],
+                "name": entry["name"],
+                "connections": entry["connections"],
+            }
+        )
         entry_id = entry["id"]
 
         # Middle locations (2-3)
         for i in range(num_middle):
             step_num += 1
-            print(f"  [{step_num}/{total_steps}] Generating middle location {i+1}/{num_middle}...")
+            print(
+                f"  [{step_num}/{total_steps}] Generating middle location {i + 1}/{num_middle}..."
+            )
             middle = self._generate_single_location(
                 level_number, genre, theme, "middle", existing_state, plot, specifics
             )
             locations.append(middle)
-            existing_state["locations"].append({
-                "id": middle["id"],
-                "name": middle["name"],
-                "connections": middle["connections"]
-            })
+            existing_state["locations"].append(
+                {
+                    "id": middle["id"],
+                    "name": middle["name"],
+                    "connections": middle["connections"],
+                }
+            )
 
         # Exit location
         step_num += 1
@@ -315,11 +346,13 @@ class GeminiClient:
             level_number, genre, theme, "exit", existing_state, plot, specifics
         )
         locations.append(exit_loc)
-        existing_state["locations"].append({
-            "id": exit_loc["id"],
-            "name": exit_loc["name"],
-            "connections": exit_loc["connections"]
-        })
+        existing_state["locations"].append(
+            {
+                "id": exit_loc["id"],
+                "name": exit_loc["name"],
+                "connections": exit_loc["connections"],
+            }
+        )
         exit_id = exit_loc["id"]
 
         # Step 3: Generate NPCs iteratively (1-2 calls)
@@ -329,21 +362,17 @@ class GeminiClient:
 
         for i in range(num_npcs):
             step_num += 1
-            print(f"  [{step_num}/{total_steps}] Generating NPC {i+1}/{num_npcs}...")
+            print(f"  [{step_num}/{total_steps}] Generating NPC {i + 1}/{num_npcs}...")
             npc = self._generate_single_npc(
                 level_number, genre, theme, existing_state, difficulty_modifier
             )
-            npcs.append({
-                "id": npc["id"],
-                "name": npc["name"],
-                "attributes": npc["attributes"]
-            })
+            npcs.append(
+                {"id": npc["id"], "name": npc["name"], "attributes": npc["attributes"]}
+            )
             npc_locations[npc["id"]] = npc["location"]
-            existing_state["npcs"].append({
-                "id": npc["id"],
-                "name": npc["name"],
-                "location": npc["location"]
-            })
+            existing_state["npcs"].append(
+                {"id": npc["id"], "name": npc["name"], "location": npc["location"]}
+            )
 
         # Step 4: Generate items iteratively (configurable number of calls)
         items = []
@@ -356,21 +385,27 @@ class GeminiClient:
             step_num += 1
             # Cycle through item types for variety
             item_type_hint = item_type_options[i % len(item_type_options)]
-            print(f"  [{step_num}/{total_steps}] Generating item {i+1}/{num_items} ({item_type_hint})...")
+            print(
+                f"  [{step_num}/{total_steps}] Generating item {i + 1}/{num_items} ({item_type_hint})..."
+            )
             item = self._generate_single_item(
                 level_number, genre, theme, existing_state, item_type_hint
             )
-            items.append({
-                "id": item["id"],
-                "name": item["name"],
-                "attributes": item["attributes"]
-            })
+            items.append(
+                {
+                    "id": item["id"],
+                    "name": item["name"],
+                    "attributes": item["attributes"],
+                }
+            )
             item_locations[item["id"]] = item["location"]
-            existing_state["items"].append({
-                "id": item["id"],
-                "name": item["name"],
-                "type": item["attributes"].get("type", "unknown")
-            })
+            existing_state["items"].append(
+                {
+                    "id": item["id"],
+                    "name": item["name"],
+                    "type": item["attributes"].get("type", "unknown"),
+                }
+            )
 
         # Step 5: Validate & Repair
         step_num += 1
@@ -379,7 +414,9 @@ class GeminiClient:
         # Validate bidirectional connections
         bidir_check = self._validate_bidirectional_connections(locations)
         if not bidir_check["is_valid"]:
-            print(f"    [VALIDATION] Found {len(bidir_check['missing_reverse'])} missing reverse connections")
+            print(
+                f"    [VALIDATION] Found {len(bidir_check['missing_reverse'])} missing reverse connections"
+            )
             locations = self._repair_bidirectional_connections(
                 locations, bidir_check["missing_reverse"]
             )
@@ -390,7 +427,9 @@ class GeminiClient:
         # Validate reachability (after fixing bidirectional connections)
         reachability = self._validate_reachability(locations, entry_id)
         if not reachability["is_valid"]:
-            print(f"    [VALIDATION] Found {len(reachability['unreachable'])} unreachable locations")
+            print(
+                f"    [VALIDATION] Found {len(reachability['unreachable'])} unreachable locations"
+            )
             locations = self._repair_unreachable_locations(
                 locations, reachability["reachable"], reachability["unreachable"]
             )
@@ -418,7 +457,7 @@ class GeminiClient:
             "item_locations": item_locations,
             "entry_location_id": entry_id,
             "exit_location_id": exit_id,
-            "theme": theme
+            "theme": theme,
         }
 
     def _generate_level_structure(
@@ -426,7 +465,7 @@ class GeminiClient:
         level_number: int,
         genre: str,
         plot: Optional[str],
-        specifics: Optional[str]
+        specifics: Optional[str],
     ) -> Dict[str, Any]:
         """Generate level structure (locations, connections, theme).
 
@@ -489,22 +528,22 @@ Return JSON with:
                             "id": {"type": "STRING"},
                             "name": {"type": "STRING"},
                             "connections": {"type": "OBJECT"},
-                            "attributes": {"type": "OBJECT"}
+                            "attributes": {"type": "OBJECT"},
                         },
-                        "required": ["id", "name", "connections", "attributes"]
-                    }
+                        "required": ["id", "name", "connections", "attributes"],
+                    },
                 },
                 "entry_location_id": {"type": "STRING"},
                 "exit_location_id": {"type": "STRING"},
-                "theme": {"type": "STRING"}
+                "theme": {"type": "STRING"},
             },
-            "required": ["locations", "entry_location_id", "exit_location_id", "theme"]
+            "required": ["locations", "entry_location_id", "exit_location_id", "theme"],
         }
 
         config = GenerationConfig(
             response_mime_type="application/json",
             response_schema=schema,
-            temperature=0.9
+            temperature=0.9,
         )
 
         response = self.model.generate_content(prompt, generation_config=config)
@@ -521,7 +560,7 @@ Return JSON with:
         genre: str,
         theme: str,
         location_ids: List[str],
-        difficulty_modifier: float
+        difficulty_modifier: float,
     ) -> Dict[str, Any]:
         """Generate NPCs for the level.
 
@@ -588,31 +627,27 @@ Return JSON:
                         "properties": {
                             "id": {"type": "STRING"},
                             "name": {"type": "STRING"},
-                            "attributes": {"type": "OBJECT"}
+                            "attributes": {"type": "OBJECT"},
                         },
-                        "required": ["id", "name", "attributes"]
-                    }
+                        "required": ["id", "name", "attributes"],
+                    },
                 },
-                "npc_locations": {"type": "OBJECT"}
+                "npc_locations": {"type": "OBJECT"},
             },
-            "required": ["npcs", "npc_locations"]
+            "required": ["npcs", "npc_locations"],
         }
 
         config = GenerationConfig(
             response_mime_type="application/json",
             response_schema=schema,
-            temperature=0.8
+            temperature=0.8,
         )
 
         response = self.model.generate_content(prompt, generation_config=config)
         return json.loads(response.text)
 
     def _generate_level_items(
-        self,
-        level_number: int,
-        genre: str,
-        theme: str,
-        location_ids: List[str]
+        self, level_number: int, genre: str, theme: str, location_ids: List[str]
     ) -> Dict[str, Any]:
         """Generate items for the level.
 
@@ -650,20 +685,20 @@ Return JSON:
                         "properties": {
                             "id": {"type": "STRING"},
                             "name": {"type": "STRING"},
-                            "attributes": {"type": "OBJECT"}
+                            "attributes": {"type": "OBJECT"},
                         },
-                        "required": ["id", "name", "attributes"]
-                    }
+                        "required": ["id", "name", "attributes"],
+                    },
                 },
-                "item_locations": {"type": "OBJECT"}
+                "item_locations": {"type": "OBJECT"},
             },
-            "required": ["items", "item_locations"]
+            "required": ["items", "item_locations"],
         }
 
         config = GenerationConfig(
             response_mime_type="application/json",
             response_schema=schema,
-            temperature=0.8
+            temperature=0.8,
         )
 
         response = self.model.generate_content(prompt, generation_config=config)
@@ -678,7 +713,7 @@ Return JSON:
         level_number: int,
         genre: str,
         plot: Optional[str],
-        specifics: Optional[str]
+        specifics: Optional[str],
     ) -> str:
         """Generate a cohesive theme for the level.
 
@@ -712,16 +747,14 @@ Return JSON: {{"theme": "Your Theme Here"}}
 
         schema = {
             "type": "OBJECT",
-            "properties": {
-                "theme": {"type": "STRING"}
-            },
-            "required": ["theme"]
+            "properties": {"theme": {"type": "STRING"}},
+            "required": ["theme"],
         }
 
         config = GenerationConfig(
             response_mime_type="application/json",
             response_schema=schema,
-            temperature=0.9
+            temperature=0.9,
         )
 
         response = self.model.generate_content(prompt, generation_config=config)
@@ -730,9 +763,7 @@ Return JSON: {{"theme": "Your Theme Here"}}
         return data["theme"]
 
     def _validate_reachability(
-        self,
-        locations: List[Dict],
-        entry_id: str
+        self, locations: List[Dict], entry_id: str
     ) -> Dict[str, Any]:
         """Validate all locations are reachable from entry using BFS.
 
@@ -780,12 +811,11 @@ Return JSON: {{"theme": "Your Theme Here"}}
         return {
             "is_valid": len(unreachable) == 0,
             "reachable": visited,
-            "unreachable": unreachable
+            "unreachable": unreachable,
         }
 
     def _validate_bidirectional_connections(
-        self,
-        locations: List[Dict]
+        self, locations: List[Dict]
     ) -> Dict[str, Any]:
         """Validate all connections are bidirectional.
 
@@ -799,9 +829,12 @@ Return JSON: {{"theme": "Your Theme Here"}}
         """
         missing_reverse = []
         reverse_directions = {
-            "north": "south", "south": "north",
-            "east": "west", "west": "east",
-            "up": "down", "down": "up"
+            "north": "south",
+            "south": "north",
+            "east": "west",
+            "west": "east",
+            "up": "down",
+            "down": "up",
         }
 
         # Build location lookup
@@ -833,13 +866,11 @@ Return JSON: {{"theme": "Your Theme Here"}}
 
         return {
             "is_valid": len(missing_reverse) == 0,
-            "missing_reverse": missing_reverse
+            "missing_reverse": missing_reverse,
         }
 
     def _repair_bidirectional_connections(
-        self,
-        locations: List[Dict],
-        missing_reverse: List[tuple]
+        self, locations: List[Dict], missing_reverse: List[tuple]
     ) -> List[Dict]:
         """Add missing reverse connections to make all connections bidirectional.
 
@@ -864,7 +895,9 @@ Return JSON: {{"theme": "Your Theme Here"}}
 
             # Add reverse connection
             dest_loc["connections"][reverse_dir] = from_id
-            print(f"  [REPAIR] Added bidirectional connection: {to_id} ({reverse_dir}) -> {from_id}")
+            print(
+                f"  [REPAIR] Added bidirectional connection: {to_id} ({reverse_dir}) -> {from_id}"
+            )
 
         return locations
 
@@ -873,7 +906,7 @@ Return JSON: {{"theme": "Your Theme Here"}}
         items: List[Dict],
         item_locations: Dict[str, str],
         entry_id: str,
-        player_inventory: List[str]
+        player_inventory: List[str],
     ) -> Dict[str, Any]:
         """Validate player has access to light source at start.
 
@@ -916,14 +949,11 @@ Return JSON: {{"theme": "Your Theme Here"}}
             "is_valid": has_light,
             "has_light": has_light,
             "light_items_at_entry": light_items_at_entry,
-            "light_items_in_inventory": light_items_in_inventory
+            "light_items_in_inventory": light_items_in_inventory,
         }
 
     def _repair_unreachable_locations(
-        self,
-        locations: List[Dict],
-        reachable: set,
-        unreachable: set
+        self, locations: List[Dict], reachable: set, unreachable: set
     ) -> List[Dict]:
         """Add connections to make all locations reachable.
 
@@ -948,7 +978,7 @@ Return JSON: {{"theme": "Your Theme Here"}}
             "east": "west",
             "west": "east",
             "up": "down",
-            "down": "up"
+            "down": "up",
         }
 
         for unreachable_id in unreachable:
@@ -985,7 +1015,9 @@ Return JSON: {{"theme": "Your Theme Here"}}
             unreachable_loc["connections"][chosen_direction] = target_loc_id
             loc_dict[target_loc_id]["connections"][target_direction] = unreachable_id
 
-            print(f"  [REPAIR] Connected {unreachable_id} ({chosen_direction}) <-> {target_loc_id} ({target_direction})")
+            print(
+                f"  [REPAIR] Connected {unreachable_id} ({chosen_direction}) <-> {target_loc_id} ({target_direction})"
+            )
 
         return locations
 
@@ -996,7 +1028,7 @@ Return JSON: {{"theme": "Your Theme Here"}}
         entry_id: str,
         level_number: int,
         genre: str,
-        theme: str
+        theme: str,
     ) -> tuple[List[Dict], Dict[str, str]]:
         """Add a light source at entry if none exists.
 
@@ -1045,15 +1077,15 @@ Return JSON: {{"id": "item{level_number}_light_starter", "name": "...", "attribu
             "properties": {
                 "id": {"type": "STRING"},
                 "name": {"type": "STRING"},
-                "attributes": {"type": "OBJECT"}
+                "attributes": {"type": "OBJECT"},
             },
-            "required": ["id", "name", "attributes"]
+            "required": ["id", "name", "attributes"],
         }
 
         config = GenerationConfig(
             response_mime_type="application/json",
             response_schema=schema,
-            temperature=0.8
+            temperature=0.8,
         )
 
         response = self.model.generate_content(prompt, generation_config=config)
@@ -1062,7 +1094,9 @@ Return JSON: {{"id": "item{level_number}_light_starter", "name": "...", "attribu
         items.append(light_item)
         item_locations[light_item["id"]] = entry_id
 
-        print(f"  [REPAIR] Added light source '{light_item['name']}' ({light_item['id']}) at entry location '{entry_id}'")
+        print(
+            f"  [REPAIR] Added light source '{light_item['name']}' ({light_item['id']}) at entry location '{entry_id}'"
+        )
 
         return items, item_locations
 
@@ -1127,15 +1161,15 @@ Return JSON: {{"id": "...", "name": "...", "connections": {{}}, "attributes": {{
                 "id": {"type": "STRING"},
                 "name": {"type": "STRING"},
                 "connections": {"type": "OBJECT"},
-                "attributes": {"type": "OBJECT"}
+                "attributes": {"type": "OBJECT"},
             },
-            "required": ["id", "name", "connections", "attributes"]
+            "required": ["id", "name", "connections", "attributes"],
         }
 
         config = GenerationConfig(
             response_mime_type="application/json",
             response_schema=schema,
-            temperature=0.8
+            temperature=0.8,
         )
 
         response = self.model.generate_content(prompt, generation_config=config)
@@ -1187,11 +1221,15 @@ Return JSON: {{"id": "...", "name": "...", "connections": {{}}, "attributes": {{
         # Format existing NPCs for variety
         existing_npcs_summary = []
         for npc in existing_state.get("npcs", []):
-            existing_npcs_summary.append({
-                "id": npc["id"],
-                "name": npc["name"],
-                "creature_type": npc.get("attributes", {}).get("creature_type", "unknown")
-            })
+            existing_npcs_summary.append(
+                {
+                    "id": npc["id"],
+                    "name": npc["name"],
+                    "creature_type": npc.get("attributes", {}).get(
+                        "creature_type", "unknown"
+                    ),
+                }
+            )
 
         existing_npcs_json = ""
         if existing_npcs_summary:
@@ -1245,19 +1283,27 @@ Return JSON: {{"id": "...", "name": "...", "attributes": {{}}, "location": "..."
                         "attack_bonus": {"type": "NUMBER"},
                         "hostility": {"type": "STRING"},
                         "creature_type": {"type": "STRING"},
-                        "description_hints": {"type": "STRING"}
+                        "description_hints": {"type": "STRING"},
                     },
-                    "required": ["hp", "hp_max", "armor_class", "attack_bonus", "hostility", "creature_type", "description_hints"]
+                    "required": [
+                        "hp",
+                        "hp_max",
+                        "armor_class",
+                        "attack_bonus",
+                        "hostility",
+                        "creature_type",
+                        "description_hints",
+                    ],
                 },
-                "location": {"type": "STRING"}
+                "location": {"type": "STRING"},
             },
-            "required": ["id", "name", "attributes", "location"]
+            "required": ["id", "name", "attributes", "location"],
         }
 
         config = GenerationConfig(
             response_mime_type="application/json",
             response_schema=schema,
-            temperature=0.85
+            temperature=0.85,
         )
 
         response = self.model.generate_content(prompt, generation_config=config)
@@ -1298,24 +1344,30 @@ Return JSON: {{"id": "...", "name": "...", "attributes": {{}}, "location": "..."
         # Format existing NPCs for context
         existing_npcs_summary = []
         for npc in existing_state.get("npcs", []):
-            existing_npcs_summary.append({
-                "id": npc["id"],
-                "name": npc["name"],
-                "location": npc.get("location", "unknown")
-            })
+            existing_npcs_summary.append(
+                {
+                    "id": npc["id"],
+                    "name": npc["name"],
+                    "location": npc.get("location", "unknown"),
+                }
+            )
 
         existing_npcs_json = ""
         if existing_npcs_summary:
-            existing_npcs_json = f"\n\nEXISTING NPCs:\n{json.dumps(existing_npcs_summary, indent=2)}"
+            existing_npcs_json = (
+                f"\n\nEXISTING NPCs:\n{json.dumps(existing_npcs_summary, indent=2)}"
+            )
 
         # Format existing items for variety
         existing_items_summary = []
         for item in existing_state.get("items", []):
-            existing_items_summary.append({
-                "id": item["id"],
-                "name": item["name"],
-                "type": item.get("attributes", {}).get("type", "unknown")
-            })
+            existing_items_summary.append(
+                {
+                    "id": item["id"],
+                    "name": item["name"],
+                    "type": item.get("attributes", {}).get("type", "unknown"),
+                }
+            )
 
         existing_items_json = ""
         if existing_items_summary:
@@ -1374,15 +1426,15 @@ Return JSON: {{"id": "...", "name": "...", "attributes": {{}}, "location": "..."
                 "id": {"type": "STRING"},
                 "name": {"type": "STRING"},
                 "attributes": {"type": "OBJECT"},
-                "location": {"type": "STRING"}
+                "location": {"type": "STRING"},
             },
-            "required": ["id", "name", "attributes", "location"]
+            "required": ["id", "name", "attributes", "location"],
         }
 
         config = GenerationConfig(
             response_mime_type="application/json",
             response_schema=schema,
-            temperature=0.85
+            temperature=0.85,
         )
 
         response = self.model.generate_content(prompt, generation_config=config)
@@ -1425,7 +1477,7 @@ Return JSON: {{"id": "...", "name": "...", "attributes": {{}}, "location": "..."
                 "requires_dice_roll": False,
                 "dice_check": None,
                 "time_advancement": None,
-                "new_time": None
+                "new_time": None,
             }
 
         # Combine for backward compatibility
@@ -1503,7 +1555,7 @@ Return JSON: {{"id": "...", "name": "...", "attributes": {{}}, "location": "..."
             )
 
             # DEBUG: Print raw response
-            print(f"\n[DEBUG] Raw Gemini response:\n{response.text}\n")
+            logger.debug(f"Raw Gemini response:\n{response.text}")
 
             # Parse the JSON response directly
             parsed: Dict[str, Any] = json.loads(response.text)
@@ -1514,7 +1566,7 @@ Return JSON: {{"id": "...", "name": "...", "attributes": {{}}, "location": "..."
             return parsed
 
         except json.JSONDecodeError as e:
-            print(f"[WARNING] JSON parsing error: {e}")
+            logger.warning(f"JSON parsing error: {e}")
             print("[RETRY] Attempting with simpler prompt...")
 
             # Retry with a much simpler, more focused prompt
@@ -1523,15 +1575,15 @@ Return JSON: {{"id": "...", "name": "...", "attributes": {{}}, "location": "..."
                 response = self.model.generate_content(
                     simple_prompt, generation_config=generation_config
                 )
-                print(f"\n[DEBUG] Retry response:\n{response.text}\n")
+                logger.debug(f"Retry response:\n{response.text}")
                 parsed = json.loads(response.text)
                 parsed = self._fill_missing_params(parsed, context)
                 return parsed
             except Exception as retry_error:
-                print(f"[WARNING] Retry also failed: {retry_error}")
+                logger.warning(f"Retry also failed: {retry_error}")
 
         except Exception as e:
-            print(f"[WARNING] LLM error: {e}")
+            logger.warning(f"LLM error: {e}")
 
         # Ultimate fallback: DM gracefully handles anything
         return {
@@ -1576,14 +1628,14 @@ Return JSON: {{"id": "...", "name": "...", "attributes": {{}}, "location": "..."
                 if target:  # LLM often puts item_id in target instead of params
                     params["item_id"] = target
                     update["params"] = params
-                    print(f"[DEBUG] Filled missing item_id from target: {target}")
+                    logger.debug(f"Filled missing item_id from target: {target}")
 
             # Fix remove_from_inventory with missing item_id
             elif update_type == "remove_from_inventory" and not params.get("item_id"):
                 if target:
                     params["item_id"] = target
                     update["params"] = params
-                    print(f"[DEBUG] Filled missing item_id from target: {target}")
+                    logger.debug(f"Filled missing item_id from target: {target}")
                 else:
                     # Use pronoun resolution - if "it" refers to last item
                     last_item = context.get("last_item")
@@ -1603,14 +1655,14 @@ Return JSON: {{"id": "...", "name": "...", "attributes": {{}}, "location": "..."
                     params["to_location"] = context.get("location", {}).get("id")
                 update["params"] = params
                 if target:
-                    print(f"[DEBUG] Filled missing move_item params for {target}")
+                    logger.debug(f"Filled missing move_item params for {target}")
 
             # Fix trigger_combat with missing target_npc_id
             elif update_type == "trigger_combat":
                 if not params.get("target_npc_id") and target:
                     params["target_npc_id"] = target
                     update["params"] = params
-                    print(f"[DEBUG] Filled missing target_npc_id from target: {target}")
+                    logger.debug(f"Filled missing target_npc_id from target: {target}")
 
         return interpretation
 
@@ -1639,8 +1691,6 @@ Return JSON: {{"id": "...", "name": "...", "attributes": {{}}, "location": "..."
 
         prompt = self._build_intent_interpretation_prompt(player_input, context)
 
-        print(f"[DEBUG] prompt = {prompt}")
-
         # Define schema for structured output
         response_schema = {
             "type": "OBJECT",
@@ -1661,19 +1711,21 @@ Return JSON: {{"id": "...", "name": "...", "attributes": {{}}, "location": "..."
         )
 
         try:
-            response = self.model.generate_content(prompt, generation_config=generation_config)
+            response = self.model.generate_content(
+                prompt, generation_config=generation_config
+            )
             parsed = json.loads(response.text)
             return parsed
 
         except json.JSONDecodeError as e:
-            print(f"[WARNING] Intent interpretation JSON parsing error: {e}")
+            logger.warning(f"Intent interpretation JSON parsing error: {e}")
             # Return safe default: invalid
             return {
                 "intent": f"Interpret '{player_input}'",
                 "is_valid": False,
                 "is_allowed": False,
                 "invalid_reason": "I don't understand that command.",
-                "not_allowed_reason": None
+                "not_allowed_reason": None,
             }
 
     def generate_state_updates(
@@ -1702,7 +1754,9 @@ Return JSON: {{"id": "...", "name": "...", "attributes": {{}}, "location": "..."
         """
         from vertexai.generative_models import GenerationConfig
 
-        prompt = self._build_mechanics_generation_prompt(intent, context, interpretation)
+        prompt = self._build_mechanics_generation_prompt(
+            intent, context, interpretation
+        )
 
         # Define schema for structured output (similar to current state_updates schema)
         response_schema = {
@@ -1742,7 +1796,9 @@ Return JSON: {{"id": "...", "name": "...", "attributes": {{}}, "location": "..."
         )
 
         try:
-            response = self.model.generate_content(prompt, generation_config=generation_config)
+            response = self.model.generate_content(
+                prompt, generation_config=generation_config
+            )
             parsed = json.loads(response.text)
 
             # Post-process to fill missing params
@@ -1751,14 +1807,14 @@ Return JSON: {{"id": "...", "name": "...", "attributes": {{}}, "location": "..."
             return parsed
 
         except json.JSONDecodeError as e:
-            print(f"[WARNING] Mechanics generation JSON parsing error: {e}")
+            logger.warning(f"Mechanics generation JSON parsing error: {e}")
             # Return safe default: no changes
             return {
                 "state_updates": [],
                 "requires_dice_roll": False,
                 "dice_check": None,
                 "time_advancement": "1 minute",
-                "new_time": None
+                "new_time": None,
             }
 
     def _build_location_prompt(
@@ -1771,25 +1827,30 @@ Return JSON: {{"id": "...", "name": "...", "attributes": {{}}, "location": "..."
         cached_descriptions: Optional[Dict[str, Any]] = None,
     ) -> str:
         """Build prompt for location description."""
-        game_time = player_context.get("attributes", {}).get("game_time") if player_context else None
+        game_time = (
+            player_context.get("attributes", {}).get("game_time")
+            if player_context
+            else None
+        )
         if not game_time and lighting_info:
             # Try to get from lighting_info if not in player_context
             game_time = "Unknown"
 
         prompt = f"""You are a Dungeon Master describing a location.
 
-Location: {location.get('name', 'Unknown')}
-Attributes: {location.get('attributes', {})}
+Location: {location.get("name", "Unknown")}
+Attributes: {location.get("attributes", {})}
 
-⏰ CURRENT TIME (for lighting only): {player_context.get('game_time') if player_context else 'Unknown'}
-CRITICAL: Use time to DETERMINE LIGHTING, but DO NOT MENTION THE TIME in your description!
-- If time says "Afternoon" or "2:00 PM" → describe AFTERNOON/DAYTIME lighting (bright sun, warm light)
-- If time says "Evening" or "5:00 PM" or "6:00 PM" → describe EVENING/DUSK lighting (fading sun, long shadows, golden hour)
-- If time says "Night" or "Midnight" or "10:00 PM" → describe NIGHTTIME/DARKNESS (moon/stars, darkness)
-- If time says "Morning" or "8:00 AM" → describe MORNING lighting (rising sun, fresh light)
-- DO NOT include clock times like "at 5:15 PM" or "at 2:00 PM" in the description!
-- Players only know exact time if they have a watch/clock/sundial AND explicitly ask for it
-- Focus on lighting EFFECTS (shadows, brightness, color of light), not the time itself
+⏰ CURRENT TIME (for lighting only): {player_context.get("game_time") if player_context else "Unknown"}
+🚨 CRITICAL LIGHTING RULES - DO NOT OVERDO LIGHTING:
+- Use time to DETERMINE LIGHTING: Morning/Afternoon = bright; Evening = dusk; Night = darkness
+- DO NOT mention clock times like "at 5:15 PM" in the description!
+- 🚨 LIGHTING MUST BE MINIMAL: Maximum 3-4 words, mentioned ONCE at most
+- The room/objects are the focus, NOT the lighting
+- Acceptable: "The bright kitchen...", "The dimly lit corridor...", "The kitchen..."
+- UNACCEPTABLE: "bathed in soft light", "awash in gentle light", "streaming through windows"
+- If it's daytime and there are no visibility issues, you can often SKIP mentioning lighting entirely
+- Only emphasize lighting if it's unusual (pitch black, sunset, candlelight) or affects gameplay
 
 """
 
@@ -1811,7 +1872,7 @@ CRITICAL: Use time to DETERMINE LIGHTING, but DO NOT MENTION THE TIME in your de
                     item_name = item_cache.get("name", item_id)
                     cached_desc = item_cache.get("description", "")
                     cached_turn = item_cache.get("turn", "unknown")
-                    prompt += f"  - {item_name} (turn {cached_turn}): \"{cached_desc}\"\n"
+                    prompt += f'  - {item_name} (turn {cached_turn}): "{cached_desc}"\n'
                 prompt += "\n"
 
             npcs_cache = cached_descriptions.get("npcs", {})
@@ -1821,7 +1882,7 @@ CRITICAL: Use time to DETERMINE LIGHTING, but DO NOT MENTION THE TIME in your de
                     npc_name = npc_cache.get("name", npc_id)
                     cached_desc = npc_cache.get("description", "")
                     cached_turn = npc_cache.get("turn", "unknown")
-                    prompt += f"  - {npc_name} (turn {cached_turn}): \"{cached_desc}\"\n"
+                    prompt += f'  - {npc_name} (turn {cached_turn}): "{cached_desc}"\n'
                 prompt += "\n"
 
             prompt += """⚠️  CRITICAL INSTRUCTIONS FOR USING CACHED DESCRIPTIONS:
@@ -1843,7 +1904,6 @@ Use cached descriptions for CONSISTENCY and BREVITY, but always prioritize CURRE
 
 """
 
-
         # Add player inventory context
         if player_context:
             inventory_items = player_context.get("inventory_items", [])
@@ -1856,17 +1916,27 @@ Use cached descriptions for CONSISTENCY and BREVITY, but always prioritize CURRE
             # Add player attributes/conditions
             player_attributes = player_context.get("attributes", {})
             if player_attributes:
-                prompt += f"👤 PLAYER ATTRIBUTES (current conditions affecting perception):\n"
+                prompt += (
+                    f"👤 PLAYER ATTRIBUTES (current conditions affecting perception):\n"
+                )
                 prompt += f"{player_attributes}\n\n"
-                prompt += f"⚠️  CRITICAL - ADJUST DESCRIPTION BASED ON PLAYER ATTRIBUTES:\n"
+                prompt += (
+                    f"⚠️  CRITICAL - ADJUST DESCRIPTION BASED ON PLAYER ATTRIBUTES:\n"
+                )
                 prompt += f"Check the attributes above and adjust your description accordingly.\n"
                 prompt += f"Examples (be creative with any attributes present):\n"
                 prompt += f"- If 'blind: true' → Describe ONLY sounds, smells, touch, temperature. NO visual details!\n"
-                prompt += f"- If 'deaf: true' → Describe visuals, smells, touch. NO sounds!\n"
+                prompt += (
+                    f"- If 'deaf: true' → Describe visuals, smells, touch. NO sounds!\n"
+                )
                 prompt += f"- If 'wounded: severe' → Mention pain, difficulty moving, blood loss\n"
-                prompt += f"- If 'poisoned: X' → Mention nausea, weakness, blurred vision\n"
+                prompt += (
+                    f"- If 'poisoned: X' → Mention nausea, weakness, blurred vision\n"
+                )
                 prompt += f"- If 'terrified_of: darkness' → Emphasize fear when dark\n"
-                prompt += f"- If 'covered_in: mud' → Mention how it affects vision/movement\n"
+                prompt += (
+                    f"- If 'covered_in: mud' → Mention how it affects vision/movement\n"
+                )
                 prompt += f"Be creative! Any attribute that would affect perception should change your description.\n\n"
 
         # Add lighting information
@@ -1919,29 +1989,34 @@ Use cached descriptions for CONSISTENCY and BREVITY, but always prioritize CURRE
             prompt += "\n"
 
         # CRITICAL: Make current state very explicit to override cached descriptions
-        prompt += "\n" + "="*80 + "\n"
+        prompt += "\n" + "=" * 80 + "\n"
         prompt += "⚠️  CURRENT STATE OF THIS LOCATION (THIS IS REALITY - USE THIS, NOT CACHED DESCRIPTIONS)\n"
-        prompt += "="*80 + "\n\n"
+        prompt += "=" * 80 + "\n\n"
 
         if items and lighting_info and lighting_info.get("can_see_clearly", False):
-            item_names = [item.get('name') for item in items]
+            item_names = [item.get("name") for item in items]
             prompt += f"✅ ITEMS CURRENTLY AT THIS LOCATION: {item_names}\n"
             prompt += f"Item details: {items}\n\n"
         elif items and lighting_info:
-            item_names = [item.get('name') for item in items]
+            item_names = [item.get("name") for item in items]
             prompt += f"✅ ITEMS CURRENTLY AT THIS LOCATION (but may not be visible due to darkness): {item_names}\n\n"
         else:
             prompt += f"✅ ITEMS CURRENTLY AT THIS LOCATION: [] (NONE - location is empty of items)\n\n"
 
         if npcs and lighting_info and lighting_info.get("can_see_clearly", False):
-            npc_names = [npc.get('name') for npc in npcs]
+            npc_names = [npc.get("name") for npc in npcs]
             prompt += f"✅ NPCs CURRENTLY AT THIS LOCATION: {npc_names}\n"
             prompt += f"NPC details: {npcs}\n\n"
         elif npcs and lighting_info:
-            npc_names = [npc.get('name') for npc in npcs]
+            npc_names = [npc.get("name") for npc in npcs]
             prompt += f"✅ NPCs CURRENTLY AT THIS LOCATION (but may not be visible due to darkness): {npc_names}\n\n"
         else:
-            prompt += f"✅ NPCs CURRENTLY AT THIS LOCATION: [] (NONE - no NPCs here)\n\n"
+            prompt += (
+                f"✅ NPCs CURRENTLY AT THIS LOCATION: [] (NONE - no NPCs here)\n\n"
+            )
+
+        # Add ZIL interpretation hints if ZIL attributes are present
+        prompt += self._build_zil_interpretation_hints(items, location)
 
         # Add explicit warning about cached descriptions
         if cached_descriptions and cached_descriptions.get("location"):
@@ -1962,7 +2037,7 @@ IT HAS BEEN REMOVED. DO NOT DESCRIBE IT AS BEING PRESENT.
 
 """
 
-        prompt += "="*80 + "\n\n"
+        prompt += "=" * 80 + "\n\n"
 
         if location.get("connections"):
             exits = [d for d, loc in location["connections"].items() if loc]
@@ -1997,10 +2072,13 @@ Be concise but evocative.
         return prompt
 
     def _build_narrative_prompt(
-        self, player_input: str, intent: str, context: Dict[str, Any],
+        self,
+        player_input: str,
+        intent: str,
+        context: Dict[str, Any],
         action_metadata: Optional[Dict[str, Any]] = None,
         state_updates: Optional[List[Dict[str, Any]]] = None,
-        is_valid: bool = True
+        is_valid: bool = True,
     ) -> str:
         """Build prompt for generating narrative based on current state.
 
@@ -2021,20 +2099,35 @@ Be concise but evocative.
             for i, turn in enumerate(conversation_history, 1):
                 history_text += f"\nTurn -{len(conversation_history) - i + 1}:\n"
                 history_text += f"  Player: {turn.get('player_input', '')}\n"
-                narrative = turn.get('narrative', '')
+                narrative = turn.get("narrative", "")
                 if narrative:
                     # Keep full narrative for consistency (no truncation)
                     history_text += f"  You (DM): {narrative}\n"
             history_text += "\n⚠️  MAINTAIN CONSISTENCY:\n"
             history_text += "1. If you previously described specific details (colors, numbers, materials), keep them consistent\n"
             history_text += "2. Don't contradict your earlier descriptions\n"
-            history_text += "3. If player asks the same question again, give the same answer\n"
+            history_text += (
+                "3. If player asks the same question again, give the same answer\n"
+            )
             history_text += "4. Example: If you said '5 planks' before, don't change it to '3 planks' now\n\n"
 
         # Check if this is a dialogue/conversation action
         player_input_lower = player_input.lower()
-        dialogue_keywords = ['talk to', 'speak to', 'speak with', 'ask', 'greet', 'tell', 'say to', 'chat with', 'converse', 'question']
-        is_dialogue_action = any(keyword in player_input_lower for keyword in dialogue_keywords)
+        dialogue_keywords = [
+            "talk to",
+            "speak to",
+            "speak with",
+            "ask",
+            "greet",
+            "tell",
+            "say to",
+            "chat with",
+            "converse",
+            "question",
+        ]
+        is_dialogue_action = any(
+            keyword in player_input_lower for keyword in dialogue_keywords
+        )
 
         prompt = f"""You are a Dungeon Master narrating the outcome of a player's action.
 {self._build_world_context(context)}
@@ -2043,28 +2136,44 @@ INTERPRETED INTENT: {intent}
 
 CURRENT GAME STATE (after action was processed):
 
-Location: {location.get('name', 'Unknown')}
-Location details: {location.get('attributes', {})}
+Location: {location.get("name", "Unknown")}
+Location details: {location.get("attributes", {})}
 
-⏰ CURRENT TIME (for lighting only): {context.get('game_time', 'Unknown')}
-CRITICAL: Use time to DETERMINE LIGHTING, but DO NOT MENTION THE TIME in your narrative!
-- If time says "Afternoon" or "2:00 PM" → describe AFTERNOON/DAYTIME lighting (bright sun, warm light)
-- If time says "Evening" or "5:00 PM" or "6:00 PM" → describe EVENING/DUSK lighting (fading sun, long shadows, golden hour)
-- If time says "Night" or "Midnight" or "10:00 PM" → describe NIGHTTIME/DARKNESS (moon/stars, darkness)
-- If time says "Morning" or "8:00 AM" → describe MORNING lighting (rising sun, fresh light)
-- DO NOT include clock times like "at 5:15 PM" or "at 2:00 PM" in the narrative!
-- Players only know exact time if they have a watch/clock/sundial AND explicitly ask "what time is it?"
-- Focus on lighting EFFECTS (shadows, brightness, color of light), not the time itself
+⏰ CURRENT TIME (for lighting only): {context.get("game_time", "Unknown")}
+CRITICAL LIGHTING RULES:
+- Use time to DETERMINE LIGHTING, but DO NOT MENTION THE TIME in your narrative!
+- Morning/Afternoon = bright/daytime lighting; Evening = dusk; Night = darkness
+- DO NOT include clock times like "at 5:15 PM" in the narrative!
+- 🚨 ONLY mention lighting when RELEVANT to the action:
+  ✅ Mention lighting for: looking around, entering new areas, examining distant objects, searching for things
+  ❌ DON'T mention lighting for: eating, drinking, using items, talking, simple inventory actions
+  - Example - eating garlic: Focus on TASTE and SMELL, not "bright morning light"
+  - Example - examining a carried item: Focus on THE ITEM, not ambient lighting
+  - Example - entering a new room: Lighting IS relevant - describe it
+- Keep lighting descriptions subtle and contextual, not overwhelming the main action
 
-Items at this location (on the ground): {[item.get('name') for item in items] if items else 'none'}
-Item details: {items if items else 'none'}
+Items at this location (on the ground): {[item.get("name") for item in items] if items else "none"}
+Item details: {items if items else "none"}
+{self._format_container_contents(context.get("container_contents", {}))}
 
-NPCs at this location: {[npc.get('name') for npc in npcs] if npcs else 'none'}
-NPC details: {npcs if npcs else 'none'}
+NPCs at this location: {[npc.get("name") for npc in npcs] if npcs else "none"}
+NPC details: {npcs if npcs else "none"}
 
-Player inventory (what they are carrying): {[item.get('name') for item in inventory_items] if inventory_items else 'nothing'}
-Inventory details: {inventory_items if inventory_items else 'empty'}
+Player inventory (what they are carrying): {[item.get("name") for item in inventory_items] if inventory_items else "nothing"}
+Inventory details: {inventory_items if inventory_items else "empty"}
 """
+
+        # Add ZIL interpretation hints if ZIL attributes are present
+        # Include items at location, inventory items, AND items in open containers
+        all_relevant_items = list(items) + list(inventory_items)
+
+        # Also add items from open containers
+        container_contents = context.get("container_contents", {})
+        for container_id, contents in container_contents.items():
+            if contents:
+                all_relevant_items.extend(contents)
+
+        prompt += self._build_zil_interpretation_hints(all_relevant_items, location)
 
         # Add state updates section (CRITICAL for narrating what happened)
         if state_updates:
@@ -2078,7 +2187,9 @@ Inventory details: {inventory_items if inventory_items else 'empty'}
             prompt += "\nExamples of how to narrate state updates:\n"
             prompt += "- 'remove_from_inventory' (garlic) → 'You eat the garlic. It's pungent but filling.'\n"
             prompt += "- 'add_to_inventory' (sword) → 'You pick up the sword. It feels well-balanced.'\n"
-            prompt += "- 'move_item' (key, door) → 'You insert the key into the lock.'\n"
+            prompt += (
+                "- 'move_item' (key, door) → 'You insert the key into the lock.'\n"
+            )
             prompt += "- 'update_item_attribute' (door, is_open=true) → 'The door swings open.'\n\n"
 
         prompt += history_text
@@ -2130,7 +2241,6 @@ Example 3 - Merchant (from attributes: personality=greedy):
 Remember: NPCs are characters, not furniture. Give them a VOICE!
 """
 
-
         # Add action context if available
         if action_metadata:
             prompt += "\n\n📋 ACTION CONTEXT (what changed):\n"
@@ -2139,11 +2249,15 @@ Remember: NPCs are characters, not furniture. Give them a VOICE!
                 item_id = action_metadata.get("item_picked_from_ground")
                 prompt += f"- Item '{item_id}' was PICKED UP FROM THE GROUND (not from pack/inventory)\n"
                 prompt += f"- CRITICAL: Say 'you pick it up', 'you grab it', 'you take it', etc.\n"
-                prompt += f"- NEVER say: 'you take it from your pack' or 'from your belt'\n"
+                prompt += (
+                    f"- NEVER say: 'you take it from your pack' or 'from your belt'\n"
+                )
 
             if action_metadata.get("item_was_in_inventory"):
                 item_id = action_metadata.get("item_dropped_from_inventory")
-                prompt += f"- Item '{item_id}' was DROPPED FROM INVENTORY (not picked up)\n"
+                prompt += (
+                    f"- Item '{item_id}' was DROPPED FROM INVENTORY (not picked up)\n"
+                )
                 prompt += f"- Say: 'you drop it on the ground', 'you place it down', 'you set it aside', etc.\n"
                 prompt += f"- NEVER say: 'you pick up' or 'you grab'\n"
 
@@ -2175,7 +2289,9 @@ Generate a vivid, engaging narrative (2-4 sentences) describing what just happen
 - Be dramatic and immersive"""
 
         if not is_valid:
-            prompt += "\n- ACTION FAILED: Explain WHY it failed, don't describe it succeeding"
+            prompt += (
+                "\n- ACTION FAILED: Explain WHY it failed, don't describe it succeeding"
+            )
 
         prompt += """
 
@@ -2233,10 +2349,10 @@ If there was combat, describe the action vividly.
 
         prompt = f"""You are a DM. The player says: "{player_input}"
 
-AVAILABLE ITEMS HERE: {[item.get('name') for item in items]}
-ITEMS IN INVENTORY: {[item.get('name') for item in inventory]}
-NPCS HERE: {[npc.get('name') for npc in npcs]}
-LOCATION: {location.get('name')}
+AVAILABLE ITEMS HERE: {[item.get("name") for item in items]}
+ITEMS IN INVENTORY: {[item.get("name") for item in inventory]}
+NPCS HERE: {[npc.get("name") for npc in npcs]}
+LOCATION: {location.get("name")}
 
 Common action patterns:
 - "take X" / "get X" → {{"type": "add_to_inventory", "params": {{"item_id": "item_id"}}}}
@@ -2270,20 +2386,20 @@ FULL COMBAT ROUND RESULTS (JSON):
 
 COMBAT SEQUENCE:
 1. Player's Attack:
-   - Hit: {'YES' if player_attack.get('hit') else 'NO'}
-   - Damage: {player_attack.get('damage_total', 0)}
-   - Target: {player_attack.get('target_name', 'enemy')}
-   - Target HP After: {player_attack.get('target_hp', 0)}/{player_attack.get('target_max_hp', 0)}
-   - Target Killed: {'YES' if player_attack.get('target_dead') else 'NO'}
+   - Hit: {"YES" if player_attack.get("hit") else "NO"}
+   - Damage: {player_attack.get("damage_total", 0)}
+   - Target: {player_attack.get("target_name", "enemy")}
+   - Target HP After: {player_attack.get("target_hp", 0)}/{player_attack.get("target_max_hp", 0)}
+   - Target Killed: {"YES" if player_attack.get("target_dead") else "NO"}
 
 2. Enemy's Counterattack:
 """
 
         if npc_attack:
-            prompt += f"""   - Hit: {'YES' if npc_attack.get('hit') else 'NO'}
-   - Damage: {npc_attack.get('damage_total', 0)}
-   - Your HP After: {npc_attack.get('target_hp', 0)}/{npc_attack.get('target_max_hp', 0)}
-   - You Died: {'YES' if npc_attack.get('target_dead') else 'NO'}
+            prompt += f"""   - Hit: {"YES" if npc_attack.get("hit") else "NO"}
+   - Damage: {npc_attack.get("damage_total", 0)}
+   - Your HP After: {npc_attack.get("target_hp", 0)}/{npc_attack.get("target_max_hp", 0)}
+   - You Died: {"YES" if npc_attack.get("target_dead") else "NO"}
 """
         else:
             prompt += """   - Enemy was killed, no counterattack
@@ -2310,7 +2426,9 @@ Write your narration (3-4 sentences):
 
         return prompt
 
-    def _build_npc_actions_prompt(self, npc_actions: Dict[str, Any], context: Dict[str, Any]) -> str:
+    def _build_npc_actions_prompt(
+        self, npc_actions: Dict[str, Any], context: Dict[str, Any]
+    ) -> str:
         """Build prompt for narrating NPC actions with game state context."""
         attacks = npc_actions.get("npc_attacks", [])
         chases = npc_actions.get("npc_chases", [])
@@ -2318,7 +2436,9 @@ Write your narration (3-4 sentences):
         # Extract location information
         location = context.get("location", {})
         location_name = location.get("name", "unknown location")
-        location_desc_hints = location.get("attributes", {}).get("description_hints", "")
+        location_desc_hints = location.get("attributes", {}).get(
+            "description_hints", ""
+        )
 
         # Determine the scenario type
         is_chase_attack = bool(chases and attacks)
@@ -2430,6 +2550,171 @@ Generate the narrative now:"""
 
         return prompt
 
+    def _build_container_contents_prompt(
+        self, container: Dict[str, Any], contents: list, context: Dict[str, Any]
+    ) -> str:
+        """Build prompt for describing items in/on a container.
+
+        Args:
+            container: Container item dict with id, name, attributes
+            contents: List of item dicts inside the container
+            context: Full game context (lighting, player attributes, location, etc.)
+
+        Returns:
+            Prompt for generating natural prose description
+        """
+        container_name = container.get("name", "container")
+        container_type = container.get("attributes", {}).get("type", "container")
+
+        # Determine preposition based on container type
+        preposition = (
+            "on"
+            if "table" in container_name.lower() or "surface" in container_type
+            else "in"
+        )
+
+        items_list = []
+        for item in contents:
+            item_name = item.get("name", "unknown item")
+            item_desc = item.get("attributes", {}).get("description_hints", "")
+            items_list.append(
+                f"- {item_name}" + (f" ({item_desc})" if item_desc else "")
+            )
+
+        items_text = "\n".join(items_list)
+
+        # Extract context information
+        lighting_info = context.get("lighting_info", {})
+        lighting_level = lighting_info.get("level", "bright")
+
+        player = context.get("player", {})
+        player_attrs = player.get("attributes", {})
+        location = context.get("location", {})
+        location_name = location.get("name", "Unknown")
+
+        prompt = f"""You are a Dungeon Master describing items in a container.
+
+CURRENT CONTEXT:
+Location: {location_name}
+Lighting: {lighting_level}
+Player attributes: {player_attrs}
+
+CONTAINER: {container_name}
+ITEMS {preposition.upper()} THE {container_name.upper()}:
+{items_text}
+
+🚨 CRITICAL VISIBILITY RULES - Check ALL conditions that affect vision:
+
+1. LIGHTING:
+   - If lighting is "dark" or "pitch_black": Return EMPTY STRING - cannot see
+   - If lighting is "dim": Items barely visible, hard to see details
+
+2. PLAYER CONDITIONS (check player attributes):
+   - If player has "blind": true → Return EMPTY STRING - cannot see
+   - If player has "blindfolded": true → Return EMPTY STRING - cannot see
+   - If player has "blurred_vision" or similar → Mention items are blurry/hard to make out
+   - If player has vision-affecting curse → Adjust description accordingly
+
+3. IF ANY CONDITION PREVENTS VISION: Return EMPTY STRING (no description at all)
+
+Your task:
+Generate 1-2 concise, natural sentences describing what's {preposition} the {container_name}.
+
+Guidelines:
+- Use vivid, evocative language that matches Zork's atmospheric style
+- Mention ALL items listed above (unless cannot see them)
+- Use natural phrasing like "On the table is...", "Inside the chest you see...", "Resting atop the surface..."
+- Incorporate description hints when available (e.g., "elongated brown sack, smelling of hot peppers")
+- Keep it concise but atmospheric
+- Do NOT add items that aren't in the list above
+
+Examples of good descriptions:
+- "On the table is an elongated brown sack, smelling of hot peppers, and a glass bottle containing water."
+- "Inside the trophy case gleams a jewel-encrusted egg and an ancient platinum bar."
+- "Resting on the altar you see a leather-bound book and a silver chalice."
+
+Generate ONLY the description (no preamble, no explanation). If cannot see, return NOTHING:"""
+
+        return prompt
+
+    def _build_zil_interpretation_hints(self, items: list, location: Optional[Dict] = None) -> str:
+        """Build ZIL interpretation hints if any entities have ZIL attributes.
+
+        Args:
+            items: List of item dicts to check for ZIL attributes
+            location: Optional location dict to check for ZIL attributes
+
+        Returns:
+            ZIL interpretation guidance string, or empty if no ZIL attributes found
+        """
+        # Check if any items or location have ZIL attributes
+        has_zil = False
+        entities_to_check = list(items)
+        if location:
+            entities_to_check.append(location)
+
+        for entity in entities_to_check:
+            attrs = entity.get("attributes", {})
+            if any(key.startswith("zil_") for key in attrs.keys()):
+                has_zil = True
+                break
+
+        if not has_zil:
+            return ""
+
+        return """
+
+📜 ZIL INTERPRETATION GUIDE (Zork Implementation Language):
+This world was converted from original Infocom ZIL source code. Items and locations may have special ZIL attributes:
+
+🔑 CRITICAL - zil_adjectives:
+- These are DESCRIPTIVE adjectives from the original game
+- ALWAYS incorporate these into your descriptions
+- Examples:
+  - zil_adjectives: ["BOARDED"] → door is boarded up, cannot be opened
+  - zil_adjectives: ["RUSTY", "IRON"] → describe as "rusty iron gate"
+  - zil_adjectives: ["ELONGATED", "BROWN"] → "elongated brown sack"
+
+🔧 zil_action and zil_action_code:
+- Indicates the item/location has special behavior (custom ZIL function)
+- If zil_action_code is present, it contains the actual ZIL logic
+- Interpret the ZIL code to understand behavior:
+
+  ZIL CODE INTERPRETATION GUIDE:
+  - (VERB? OPEN) → checks if player is trying to OPEN
+  - (VERB? BURN) → checks if player is trying to BURN
+  - (VERB? MUNG) → checks if player is trying to DAMAGE/DESTROY
+  - (TELL "text" CR) → prints message to player
+  - (COND ...) → conditional statements (if/else)
+
+  EXAMPLE - Front Door:
+  zil_action_code: (COND ((VERB? OPEN) (TELL "The door cannot be opened." CR)) ...)
+  → This means: If player tries to OPEN, respond "The door cannot be opened."
+  → Therefore: Door is BLOCKED/BOARDED and cannot be opened
+  → Description should reflect this: "The front door is boarded shut"
+
+  EXAMPLE - Trap Door:
+  zil_action_code: (COND ((VERB? OPEN) (COND (<FSET? ,TRAP-DOOR ,OPENBIT> ...) ...)))
+  → This means: Opening has complex conditions (might need carpet removed first)
+  → Description: Mention it's concealed or requires something to access
+
+- If zil_action is present but no zil_action_code:
+  - Item has custom behavior, but details not provided
+  - Describe cautiously, imply special/unusual properties
+
+🏷️ zil_flags:
+- Technical flags from ZIL (we already converted important ones to is_visible, etc.)
+- Usually you can ignore these, but they may provide additional context
+
+⚠️ COMMON ZIL PATTERNS:
+- If zil_adjectives contains "BOARDED" → describe as boarded up, imply it's blocked
+- If zil_adjectives contains "LOCKED" → describe as locked
+- If zil_action is present → there's custom behavior, describe cautiously
+- If is_visible: false → item is hidden (already handled)
+
+REMEMBER: zil_adjectives are DESCRIPTIVE FACTS, not suggestions. Use them!
+"""
+
     def _build_world_context(self, context: Dict[str, Any]) -> str:
         """Build world context and DM instructions if present."""
         world_ctx = context.get("world_context")
@@ -2438,6 +2723,7 @@ Generate the narrative now:"""
 
         title = world_ctx.get("title", "")
         author = world_ctx.get("author", "")
+        intro = world_ctx.get("intro", "")
         setting = world_ctx.get("setting", "")
         instructions = world_ctx.get("dm_instructions", [])
         tone = world_ctx.get("tone", "")
@@ -2445,16 +2731,61 @@ Generate the narrative now:"""
         instructions_text = "\n".join(f"- {inst}" for inst in instructions)
 
         author_line = f"\nAuthor/Source: {author}" if author else ""
+        intro_section = f"\n\nStory Opening (what the player saw at game start):\n{intro}" if intro else ""
         tone_line = f"\nTone: {tone}" if tone else ""
 
         return f"""
-🌍 WORLD CONTEXT - "{title}"{author_line}
+🌍 WORLD CONTEXT - "{title}"{author_line}{intro_section}
 
 Setting: {setting}{tone_line}
 
 DM INSTRUCTIONS (follow these for this world):
 {instructions_text}
 """
+
+    def _format_container_contents(self, container_contents: Dict[str, Any]) -> str:
+        """Format container contents for display in prompts.
+
+        Args:
+            container_contents: Dict mapping container_id -> list of items inside
+
+        Returns:
+            Formatted string showing contents of open containers
+        """
+        if not container_contents:
+            return ""
+
+        lines = []
+        lines.append("\n🚨 Container contents (items inside open containers):")
+        lines.append("⚠️  CRITICAL: You MUST mention these items in your narrative!")
+        lines.append("   - If player just OPENED a container: Describe what they see inside as part of your response")
+        lines.append("   - If container was already open: Mention contents when relevant to the action")
+        lines.append(
+            "   Use natural language: 'Inside you see...', 'The bag contains...', 'On the table is...', etc."
+        )
+
+        for container_id, contents in container_contents.items():
+            if contents:
+                lines.append(f"  Inside {container_id}:")
+                for item in contents:
+                    lines.append(
+                        chr(10).join(
+                            [
+                                f"  - {item.get('name')} (ID: {item.get('id')})"
+                                + (
+                                    f" - {item.get('description')}"
+                                    if item.get("description")
+                                    else ""
+                                )
+                                + (
+                                    f" - Attributes: {item.get('attributes')}"
+                                    if item.get("attributes")
+                                    else ""
+                                )
+                            ]
+                        )
+                    )
+        return "\n".join(lines)
 
     def _build_plot_instructions(self, context: Dict[str, Any]) -> str:
         """Build plot management instructions if a plot is active."""
@@ -2515,7 +2846,8 @@ EXAMPLES:
 
         # Find unsolved puzzles at current location
         location_puzzles = [
-            p for p in puzzles.values()
+            p
+            for p in puzzles.values()
             if p.get("location") == location_id and not p.get("solved")
         ]
 
@@ -2539,24 +2871,38 @@ EXAMPLES:
 
                 if sol_type == "item_in_inventory":
                     item_id = sol.get("item_id")
-                    item_name = context.get("items", {}).get(item_id, {}).get("name", item_id)
-                    lines.append(f"   {i}. Player has '{item_name}' (ID: {item_id}) in inventory")
+                    item_name = (
+                        context.get("items", {}).get(item_id, {}).get("name", item_id)
+                    )
+                    lines.append(
+                        f"   {i}. Player has '{item_name}' (ID: {item_id}) in inventory"
+                    )
                     lines.append(f"      Accepted verbs: {', '.join(action_verbs)}")
-                    lines.append(f"      Success message: \"{sol.get('success_message', '')}\"")
+                    lines.append(
+                        f'      Success message: "{sol.get("success_message", "")}"'
+                    )
 
                 elif sol_type == "item_with_attribute":
                     attr_check = sol.get("attribute_check")
                     lines.append(f"   {i}. Player has item matching: {attr_check}")
                     lines.append(f"      Accepted verbs: {', '.join(action_verbs)}")
-                    lines.append(f"      Success message: \"{sol.get('success_message', '')}\"")
+                    lines.append(
+                        f'      Success message: "{sol.get("success_message", "")}"'
+                    )
 
                 elif sol_type == "npc_ability":
                     npc_attr = sol.get("npc_attribute")
-                    lines.append(f"   {i}. NPC present with attribute '{npc_attr}' = true")
+                    lines.append(
+                        f"   {i}. NPC present with attribute '{npc_attr}' = true"
+                    )
                     lines.append(f"      Accepted verbs: {', '.join(action_verbs)}")
-                    lines.append(f"      Success message: \"{sol.get('success_message', '')}\"")
+                    lines.append(
+                        f'      Success message: "{sol.get("success_message", "")}"'
+                    )
                     if sol.get("consumes_resource"):
-                        lines.append(f"      WARNING: Consumes resource: {sol['consumes_resource']}")
+                        lines.append(
+                            f"      WARNING: Consumes resource: {sol['consumes_resource']}"
+                        )
 
             # Show blocked actions
             blocked = puzzle.get("deus_ex_machina_prevention", {})
@@ -2566,7 +2912,7 @@ EXAMPLES:
                 for action in blocked_actions:
                     lines.append(f"      - {action}")
                 rejection_msg = blocked.get("rejection_message", "That won't work.")
-                lines.append(f"   Rejection message: \"{rejection_msg}\"")
+                lines.append(f'   Rejection message: "{rejection_msg}"')
 
             # Progressive hints
             failed_attempts = puzzle.get("failed_attempts", 0)
@@ -2576,24 +2922,28 @@ EXAMPLES:
             lines.append(f"\n   💡 HINT SYSTEM:")
             if failed_attempts >= hint_threshold.get("explicit", 999):
                 lines.append(f"   Level: EXPLICIT (failed {failed_attempts} times)")
-                lines.append(f"   Hint: \"{hints.get('explicit', '')}\"")
+                lines.append(f'   Hint: "{hints.get("explicit", "")}"')
             elif failed_attempts >= hint_threshold.get("moderate", 999):
                 lines.append(f"   Level: MODERATE (failed {failed_attempts} times)")
-                lines.append(f"   Hint: \"{hints.get('moderate', '')}\"")
+                lines.append(f'   Hint: "{hints.get("moderate", "")}"')
             else:
                 lines.append(f"   Level: SUBTLE (failed {failed_attempts} times)")
-                lines.append(f"   Hint: \"{hints.get('subtle', '')}\"")
+                lines.append(f'   Hint: "{hints.get("subtle", "")}"')
 
             lines.append(f"\n   🎯 ON VALID SOLUTION:")
             lines.append(f"      - Set is_valid = true")
             lines.append(f"      - Use success_message in narrative")
-            lines.append(f"      - Add state update: {{\"type\": \"update_dm_state\", \"params\": {{\"path\": \"puzzles.{puzzle['id']}.solved\", \"value\": true}}}}")
+            lines.append(
+                f'      - Add state update: {{"type": "update_dm_state", "params": {{"path": "puzzles.{puzzle["id"]}.solved", "value": true}}}}'
+            )
             lines.append(f"      - Exit will be automatically restored by engine")
 
             lines.append(f"\n   ❌ ON INVALID ATTEMPT:")
             lines.append(f"      - Set is_valid = false")
             lines.append(f"      - Provide narrative with current hint level")
-            lines.append(f"      - Increment: {{\"type\": \"update_dm_state\", \"params\": {{\"path\": \"puzzles.{puzzle['id']}.failed_attempts\", \"value\": {failed_attempts + 1}}}}}")
+            lines.append(
+                f'      - Increment: {{"type": "update_dm_state", "params": {{"path": "puzzles.{puzzle["id"]}.failed_attempts", "value": {failed_attempts + 1}}}}}'
+            )
 
         return "\n".join(lines)
 
@@ -2629,7 +2979,9 @@ EXAMPLES:
                 history_text += f"\nTurn -{len(conversation_history) - i + 1}:\n"
                 history_text += f"  Player: {turn.get('player_input', '')}\n"
                 history_text += f"  You (DM): {turn.get('narrative', '')[:150]}...\n"
-            history_text += "\n⚠️  PRONOUN RESOLUTION - INTERACTIVE FICTION CONVENTION:\n"
+            history_text += (
+                "\n⚠️  PRONOUN RESOLUTION - INTERACTIVE FICTION CONVENTION:\n"
+            )
             history_text += "Pronouns (it, them, they, he, she, etc.) refer to entities mentioned in PLAYER INPUT, NOT in your (DM) narrative.\n\n"
             history_text += "Priority for resolving pronouns:\n"
             history_text += "1. Most recent PLAYER INPUT (what the player typed)\n"
@@ -2637,7 +2989,9 @@ EXAMPLES:
             history_text += "3. Only if no clear match in player input, consider narrative context\n\n"
             history_text += "Example:\n"
             history_text += "  Player: 'take antlers'\n"
-            history_text += "  DM: 'You pick up the antlers. You also see berries nearby.'\n"
+            history_text += (
+                "  DM: 'You pick up the antlers. You also see berries nearby.'\n"
+            )
             history_text += "  Player: 'examine them'\n"
             history_text += "  → 'them' = antlers (from player input), NOT berries (from DM narrative)\n\n"
             history_text += "Focus on what the PLAYER mentioned, not what you mentioned in your response.\n"
@@ -2670,7 +3024,7 @@ EXAMPLES:
         prompt = f"""You are a Dungeon Master interpreting a player's action in an adventure game.
 {history_text}
 
-CURRENT LOCATION: {location.get('id', 'unknown')}
+CURRENT LOCATION: {location.get("id", "unknown")}
 
 🚨 EXITS FROM CURRENT LOCATION (THE ONLY VALID MOVES):
 {json.dumps(exit_destinations, indent=2)}
@@ -2695,10 +3049,10 @@ CRITICAL: State update params MUST include required fields:
 - move_item REQUIRES: params={{"item_id": "id", "to_location": "location_id"}}
 
 CURRENT GAME STATE:
-Location: {location.get('name', 'Unknown')} (ID: {location.get('id', 'unknown')})
-Description: {location.get('attributes', {}).get('description_hints', 'A place')}
-Current Time: {context.get('game_time', 'Unknown')}
-Exits: {context.get('exits', [])}
+Location: {location.get("name", "Unknown")} (ID: {location.get("id", "unknown")})
+Description: {location.get("attributes", {}).get("description_hints", "A place")}
+Current Time: {context.get("game_time", "Unknown")}
+Exits: {context.get("exits", [])}
 
 Items at this location (on ground): {item_names_at_location}
 Full item details at location: {items}
@@ -2706,10 +3060,10 @@ Full item details at location: {items}
 Player inventory (carrying): {inventory_names}
 Full inventory details: {inventory_items}
 
-Player attributes (conditions, tracked state): {player.get('attributes', {})}
+Player attributes (conditions, tracked state): {player.get("attributes", {})}
 ⚠️  CHECK PLAYER ATTRIBUTES for validation (e.g., swallowed_items, blind, cursed, etc.)
 
-NPCs at this location: {[npc.get('name') for npc in npcs] if npcs else []}
+NPCs at this location: {[npc.get("name") for npc in npcs] if npcs else []}
 Full NPC details: {npcs}
 
 ⚠️  NPC BEHAVIOR RULES - CHECK HOSTILITY ATTRIBUTE:
@@ -3234,7 +3588,7 @@ Input: "I charm the rat to follow me north"
 
 ⏰ TIME ADVANCEMENT - DM CONTROLS TIME:
 You are responsible for tracking how much in-game time passes with each action.
-Current time is: {context.get('game_time', 'Unknown')}
+Current time is: {context.get("game_time", "Unknown")}
 
 REQUIRED: Always specify time advancement in your response using these fields:
 - "time_advancement": Natural language description (e.g., "10 minutes", "2 hours", "3 days", "a week")
@@ -3302,11 +3656,13 @@ Now interpret the player's action: "{player_input}"
         conversation_history = context.get("conversation_history", [])
         history_text = ""
         if conversation_history:
-            history_text = "\n📜 RECENT CONVERSATION (for context and pronoun resolution):\n"
+            history_text = (
+                "\n📜 RECENT CONVERSATION (for context and pronoun resolution):\n"
+            )
             for i, turn in enumerate(conversation_history, 1):
                 history_text += f"\nTurn -{len(conversation_history) - i + 1}:\n"
                 history_text += f"  Player: {turn.get('player_input', '')}\n"
-                narrative = turn.get('narrative', '')
+                narrative = turn.get("narrative", "")
                 if narrative:
                     # Keep full narrative for consistency (no truncation)
                     history_text += f"  DM: {narrative}\n"
@@ -3322,24 +3678,48 @@ Now interpret the player's action: "{player_input}"
 PLAYER ACTION: "{player_input}"
 
 CURRENT GAME STATE:
-Location: {location.get('name', 'Unknown')} (ID: {location.get('id')})
-Description: {location.get('description', 'No description')}
+Location: {location.get("name", "Unknown")} (ID: {location.get("id")})
+Description: {location.get("description", "No description")}
 Available Exits: {exits}
 Exit Destinations: {exit_destinations}
 
 Items here:
-{chr(10).join([f"  - {item.get('name')} (ID: {item.get('id')})" +
-               (f" - {item.get('description')}" if item.get('description') else "") +
-               (f" - Attributes: {item.get('attributes')}" if item.get('attributes') else "")
-               for item in items]) if items else "  (none)"}
-
+{
+            chr(10).join(
+                [
+                    f"  - {item.get('name')} (ID: {item.get('id')})"
+                    + (
+                        f" - {item.get('description')}"
+                        if item.get("description")
+                        else ""
+                    )
+                    + (
+                        f" - Attributes: {item.get('attributes')}"
+                        if item.get("attributes")
+                        else ""
+                    )
+                    for item in items
+                ]
+            )
+            if items
+            else "  (none)"
+        }
+{self._format_container_contents(context.get("container_contents", {}))}
 NPCs here:
-{chr(10).join([f"  - {npc.get('name')} (ID: {npc.get('id')})" +
-               (f" - {npc.get('description')}" if npc.get('description') else "")
-               for npc in npcs]) if npcs else "  (none)"}
+{
+            chr(10).join(
+                [
+                    f"  - {npc.get('name')} (ID: {npc.get('id')})"
+                    + (f" - {npc.get('description')}" if npc.get("description") else "")
+                    for npc in npcs
+                ]
+            )
+            if npcs
+            else "  (none)"
+        }
 
-Player inventory: {[item.get('name') for item in player.get('inventory_items', [])]}
-Player attributes: {player.get('attributes', dict())}
+Player inventory: {[item.get("name") for item in player.get("inventory", [])]}
+Player attributes: {player.get("attributes", dict())}
 {pronoun_context}{history_text}
 YOUR TASK - STEP 1: INTERPRET INTENT & CHECK PERMISSION
 
@@ -3447,6 +3827,25 @@ CRITICAL VALIDATION RULES:
   - "open the locked door" without key → NOT allowed
   - "open the unlocked door" → allowed (if door exists)
 
+🚨 PLAYER POINT OF VIEW - CRITICAL FOR not_allowed_reason:
+- The not_allowed_reason will be shown DIRECTLY to the player
+- DO NOT reveal information the player cannot perceive
+- Items inside CLOSED containers are HIDDEN from the player
+- Examples:
+  ❌ WRONG: Player says "take leaflet", mailbox is closed
+      → not_allowed_reason: "You'll need to open the mailbox first"
+      (This reveals the leaflet is in the mailbox!)
+  ✅ CORRECT: → not_allowed_reason: "You don't see any leaflet here."
+      (Player genuinely doesn't know where it is)
+
+  ❌ WRONG: Player says "take key", key is in closed drawer
+      → not_allowed_reason: "The key is in the drawer. Open it first."
+  ✅ CORRECT: → not_allowed_reason: "You don't see any key here."
+
+- Only mention closed containers if player can SEE them:
+  ✅ CORRECT: "The chest is closed." (if player can see the chest)
+  ✅ CORRECT: "You don't see any sword here." (if sword is hidden)
+
 IMPORTANT: You are ONLY interpreting and checking permission.
 You will NOT generate state updates or narrative yet - that comes in later steps.
 
@@ -3548,6 +3947,12 @@ Output:
         item_ids_in_inventory = player.get("inventory_ids", [])
         npc_ids_at_location = [npc.get("id") for npc in npcs]
 
+        # Extract item IDs from containers
+        container_contents = context.get("container_contents", {})
+        item_ids_in_containers = []
+        for container_id, contents in container_contents.items():
+            item_ids_in_containers.extend([item.get("id") for item in contents])
+
         # Format conversation history for context
         conversation_history = context.get("conversation_history", [])
         history_text = ""
@@ -3558,8 +3963,12 @@ Output:
                 history_text += f"  Player: {turn.get('player_input', '')}\n"
             history_text += "\n⚠️  USE THIS HISTORY TO:\n"
             history_text += "1. Understand what player has been doing recently\n"
-            history_text += "2. Avoid circular state updates (if player keeps trying same action)\n"
-            history_text += "3. Generate appropriate state updates given recent context\n\n"
+            history_text += (
+                "2. Avoid circular state updates (if player keeps trying same action)\n"
+            )
+            history_text += (
+                "3. Generate appropriate state updates given recent context\n\n"
+            )
 
         prompt = f"""You are a Dungeon Master generating state updates for a player action.
 
@@ -3569,17 +3978,19 @@ This action has been PRE-APPROVED (is_valid=true, is_allowed=true).
 Your job is to generate the state updates to make it happen.
 
 CURRENT GAME STATE:
-Location: {location.get('name')} (ID: {location.get('id')})
+Location: {location.get("name")} (ID: {location.get("id")})
 Exit Destinations: {exit_destinations}
 
 Items at location: {[f"{item.get('name')} ({item.get('id')})" for item in items]}
+{self._format_container_contents(context.get("container_contents", {}))}
 NPCs at location: {[f"{npc.get('name')} ({npc.get('id')})" for npc in npcs]}
 Player inventory IDs: {item_ids_in_inventory}
-Player inventory names: {player.get('inventory_items', [])}
+Player inventory names: {[item.get("name") for item in player.get("inventory", [])]}
 
 VALID IDs YOU MUST USE:
 - Location IDs: {list(all_locations.keys())}
 - Item IDs here: {item_ids_at_location}
+- Item IDs in containers: {item_ids_in_containers}
 - Item IDs in inventory: {item_ids_in_inventory}
 - NPC IDs here: {npc_ids_at_location}
 {history_text}
@@ -3654,6 +4065,16 @@ Intent: "Player wants to animate the statue"
   {{"type": "transform_item_to_npc", "params": {{"item_id": "statue", "npc_name": "animated statue", "npc_attributes": {{"hp": 20, "armor_class": 15, "hostility": "passive"}}}}}}
 ]
 
+Intent: "Player wants to open the mailbox"
+→ [
+  {{"type": "modify_attribute", "params": {{"entity_id": "mailbox", "attribute_path": "open", "value": true}}}}
+]
+
+Intent: "Player wants to close the chest"
+→ [
+  {{"type": "modify_attribute", "params": {{"entity_id": "chest", "attribute_path": "open", "value": false}}}}
+]
+
 CRITICAL RULES:
 
 🚨 CHOOSING BETWEEN transform_item AND destroy_item + create_item:
@@ -3666,6 +4087,25 @@ CRITICAL RULES:
   - Transformation is so drastic a new ID makes sense
 - Default choice: If unsure and it's 1-to-1, prefer transform_item (preserves history)
 
+🚨 CRITICAL: transform_item new_attributes REPLACE old attributes (no auto-merge):
+- You MUST explicitly include ALL attributes you want the transformed item to have
+- Old attributes are stored in prev_attributes but NOT automatically carried forward
+- If transforming a CONTAINER that should remain a container:
+  ✅ MUST include: {{"container": true, "open": true/false, "capacity": N}}
+  - Example: Opening egg container:
+    {{"type": "transform_item", "params": {{"item_id": "egg", "new_name": "open egg",
+     "new_attributes": {{"broken": true, "open": true, "container": true, "capacity": 6, "takeable": true, "description": "..."}}}}}}
+- If transforming INTO something that's NOT a container:
+  ✅ Omit container attributes (they won't be preserved)
+  - Example: Smashing bottle:
+    {{"type": "transform_item", "params": {{"item_id": "bottle", "new_name": "glass shards",
+     "new_attributes": {{"sharp": true, "takeable": false, "description": "..."}}}}}}
+- Common attributes to consider preserving:
+  - container, capacity, open (if it stays a container)
+  - takeable (if it should still be pickupable)
+  - type (generic, weapon, armor, etc.)
+  - Any custom gameplay attributes (magical, cursed, etc.)
+
 🚨 IMPLEMENT THE EXACT INTENT - NO SUBSTITUTIONS:
 - Generate updates that DIRECTLY implement what the intent says
 - DO NOT creatively reinterpret or substitute related actions
@@ -3674,7 +4114,7 @@ CRITICAL RULES:
   - Intent: "examine sword" → WRONG: add_to_inventory (examining ≠ taking!)
   - Intent: "talk to guard" → WRONG: trigger_combat (talking ≠ attacking!)
 - Correct approach:
-  - Intent: "open the door" → modify_attribute on door (opened: true)
+  - Intent: "open the door" → modify_attribute on door (open: true)
   - Intent: "examine sword" → no_change (just observation)
   - Intent: "go through door" → move_player (explicit movement)
 
@@ -3695,6 +4135,13 @@ CRITICAL RULES:
 - Use IDs from the "VALID IDs" lists above
 - For movement, use destination from exit_destinations
 - Don't invent IDs that don't exist
+
+🚨 CONTAINER AND DOOR ATTRIBUTES:
+- Opening/closing containers or doors: Use attribute_path "open" (NOT "opened" or "state.opened")
+- Correct: {{"entity_id": "mailbox", "attribute_path": "open", "value": true}}
+- Wrong: {{"entity_id": "mailbox", "attribute_path": "opened", "value": true}}
+- Wrong: {{"entity_id": "mailbox", "attribute_path": "state.opened", "value": true}}
+- The game checks for the "open" attribute to determine if containers show their contents
 
 🚨 NO NARRATIVE:
 - Do NOT generate narrative text

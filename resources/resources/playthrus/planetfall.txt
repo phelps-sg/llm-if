@@ -1,0 +1,3144 @@
+
+
+
+All Things Jacq
+Home
+
+Writing spacer InteractiveFiction spacer Photography spacer Miscellany
+
+ClubFloyd Transcript:
+Planetfall by Steve Meretzky
+As played on ifMUD on April 3, 2022 April 3, 2022
+
+The idea behind ClubFloyd is that each week at a pre-arranged time, a group of people meet online to cooperatively play a game of interactive fiction.
+
+Below is a transcript of Planetfall written by Steve Meretzky. Planetfall was released in 1983 by Infocom. Planetfall was released in 1983 by Infocom. You can learn more about the game, including how to download it, by visiting IFDB.
+
+WARNING! Below you will find a transcript of people playing this game, and it goes without saying that the transcript is full of spoilers. So, if you've never played this game, and think you might like to at some point, I do not recommend reading any further. Instead, you might want to return to the interactive fiction page.
+ToyShop & Floyditorium
+		
+#ClubFloyd Discussion
+		
+
+Jacqueline says (to ClubFloyd), "load sleepmask planetfall" 		
+CF ] Deck Nine Score: 0, Turns: 4481 		
+CF | PLANETFALL 		
+CF | Infocom interactive fiction - a science fiction story 		
+CF | Copyright (c) 1983 by Infocom, Inc. All rights reserved. 		
+CF | PLANETFALL is a trademark of Infocom, Inc. 		
+CF | Release 37 / Serial number 851003 		
+CF | 		
+CF | Another routine day of drudgery aboard the Stellar Patrol Ship 		
+CF | Feinstein. This morning's assignment for a certain lowly Ensign 		
+CF | Seventh Class: scrubbing the filthy metal deck at the port end of 		
+CF | Level Nine. With your Patrol-issue self-contained multi-purpose 		
+CF | all-weather scrub brush you shine the floor with a diligence born of 		
+CF | the knowledge that at any moment dreaded Ensign First Class Blather, 		
+CF | the bane of your shipboard existence, could appear. 		
+CF | 		
+CF | Deck Nine 		
+CF | This is a featureless corridor similar to every other corridor on the 		
+CF | ship. It curves away to starboard, and a gangway leads up. To port is 		
+CF | the entrance to one of the ship's primary escape pods. The pod 		
+CF | bulkhead is closed. 		
+CF | 		
+CF | > 		DavidW says, "oh. huh"
+		Jade exclaims, "; oh Planetfall!"
+		DavidW says, "If I recall, the first order of business is to get onto the planet ASAP."
+		DavidW says, "I don't remember the details, though."
+DavidW says (to ClubFloyd), "i" 		
+CF ] Deck Nine Score: 0, Turns: 4499 		
+CF | > 		
+CF | > I 		
+CF | 		
+CF | You are carrying: 		
+CF | A Patrol-issue self-contained multi-purpose scrub brush 		
+CF | A Patrol uniform (being worn) 		
+CF | The Patrol uniform contains: 		
+CF | An ID card 		
+CF | A chronometer (being worn) 		
+CF | 		
+CF | > 		Roger says, "deck scrubbing, ahoy"
+Jacqueline says (to ClubFloyd), "x me" 		
+CF ] Deck Nine Score: 0, Turns: 4499 		
+CF | > 		
+CF | > X ME 		
+CF | 		
+CF | I don't know the word "x." 		
+CF | 		
+CF | > 		
+Jacqueline says (to ClubFloyd), "look at me" 		
+CF ] Deck Nine Score: 0, Turns: 4506 		
+CF | > 		
+CF | > LOOK AT ME 		
+CF | 		
+CF | That's difficult unless your eyes are prehensile. 		
+CF | 		
+CF | > 		Jacqueline says, "Ah, the good ol' days."
+		Roger says, "actual old school"
+		DavidW says, "No X for EXAMINE."
+		Knight_Otu says, "Yep."
+Jacqueline says (to ClubFloyd), "look at id" 		
+CF ] Deck Nine Score: 0, Turns: 4538 		
+CF | > 		
+CF | > LOOK AT ID 		
+CF | 		
+CF | "STELLAR PATROL 		
+CF | Special Assignment Task Force 		
+CF | ID Number: 6172-531-541" 		
+CF | 		
+CF | > 		
+Jacqueline says (to ClubFloyd), "look at chronometer" 		
+CF ] Deck Nine Score: 0, Turns: 4545 		
+CF | > 		
+CF | > LOOK AT CHRONOMETER 		
+CF | 		
+CF | It is a standard wrist chronometer with a digital display. According 		
+CF | to the chronometer, the current time is 4538. The back is engraved 		
+CF | with the message "Good luck in the Patrol! Love, Mom and Dad." 		
+CF | 		
+CF | > 		DavidW asks, "Does anyone remember what the copy protection scheme was for this game?"
+Jacqueline says (to ClubFloyd), "look at brush" 		
+CF ] Deck Nine Score: 0, Turns: 4577 		
+CF | > 		
+CF | > LOOK AT BRUSH 		
+CF | 		
+CF | I see nothing special about the Patrol-issue self-contained 		
+CF | multi-purpose scrub brush. 		
+CF | 		
+CF | > 		Jacqueline says (to DW), "Hrm. No. We may want to look into that, or maybe just wait until the game prompts us, if it prompts us."
+Jacqueline says (to ClubFloyd), "look at uniform" 		
+CF ] Deck Nine Score: 0, Turns: 4584 		
+CF | > 		
+CF | > LOOK AT UNIFORM 		
+CF | 		
+CF | It is a standard-issue one-pocket Stellar Patrol uniform, a miracle of 		
+CF | modern technology. It will keep its owner warm in cold climates and 		
+CF | cool in warm locales. It provides protection against mild radiation, 		
+CF | repels all insects, absorbs sweat, promotes healthy skin tone, and on 		
+CF | top of everything else, it is super-comfy. 		
+CF | 		
+CF | > 		Jacqueline says, "Just when I think I've figured out how wide the display is for this game (more than 80 characters, certainly) I hit a new line that makes me change my window size."
+		Jade says, "perhaps someting in the feelies"
+		DavidW says, "I remember that Stationfall requires three pages of star coordinates near the beginning."
+DavidW says (to ClubFloyd), "u" 		
+CF ] Gangway Score: 0, Turns: 4604 		
+CF | > 		
+CF | > U 		
+CF | 		
+CF | Gangway 		
+CF | This is a steep metal gangway connecting Deck Eight, above, and Deck 		
+CF | Nine, below. 		
+CF | You hear a distant bellowing ... something about an Ensign Seventh 		
+CF | Class whose life is in danger. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "d" 		
+CF ] Deck Nine Score: 0, Turns: 4614 		
+CF | > 		
+CF | > D 		
+CF | 		
+CF | Deck Nine 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "d" 		
+CF ] Deck Nine Score: 0, Turns: 4621 		
+CF | > 		
+CF | > D 		
+CF | 		
+CF | You can't go that way. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "sb" 		
+CF ] Reactor Lobby Score: 0, Turns: 4636 		
+CF | > 		
+CF | > SB 		
+CF | 		
+CF | Reactor Lobby 		
+CF | The corridor widens here as it nears the main drive area. To starboard 		
+CF | is the Ion Reactor that powers the vessel, and aft of here is the 		
+CF | Auxiliary Control Room. The corridor continues to port. 		
+CF | 		
+CF | Ensign Blather, his uniform immaculate, enters and notices you are 		
+CF | away from your post. "Twenty demerits, Ensign Seventh Class!" bellows 		
+CF | Blather. "Forty if you're not back on Deck Nine in five seconds!" He 		
+CF | curls his face into a hideous mask of disgust at your unbelievable 		
+CF | negligence. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "aft" 		
+CF ] Reactor Lobby Score: 0, Turns: 4643 		
+CF | > 		
+CF | > AFT 		
+CF | 		
+CF | Ensign Blather pushes you roughly back toward your post. 		
+CF | 		
+CF | "I said to return to your post, Ensign Seventh Class!" bellows 		
+CF | Blather, turning a deepening shade of crimson. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "p" 		
+CF ] Deck Nine Score: 0, Turns: 4658 		
+CF | > 		
+CF | > P 		
+CF | 		
+CF | Deck Nine 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "l" 		
+CF ] Deck Nine Score: 0, Turns: 4667 		
+CF | > 		
+CF | > L 		
+CF | 		
+CF | Deck Nine 		
+CF | This is a featureless corridor similar to every other corridor on the 		
+CF | ship. It curves away to starboard, and a gangway leads up. To port is 		
+CF | the entrance to one of the ship's primary escape pods. The pod 		
+CF | bulkhead is closed. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "x bulkhead" 		
+CF ] Deck Nine Score: 0, Turns: 4667 		
+CF | > 		
+CF | > X BULKHEAD 		
+CF | 		
+CF | I don't know the word "x." 		
+CF | 		
+CF | > 		Jacqueline says, "The number of turns..."
+DavidW says (to ClubFloyd), "examine bulkhead" 		
+CF ] Deck Nine Score: 0, Turns: 4699 		
+CF | > 		
+CF | > EXAMINE BULKHEAD 		
+CF | 		
+CF | The escape pod bulkhead is closed. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "open it" 		
+CF ] Deck Nine Score: 0, Turns: 4706 		
+CF | > 		
+CF | > OPEN IT 		
+CF | 		
+CF | Why open the door to the emergency escape pod if there's no emergency? 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "scrub floor" 		
+CF ] Deck Nine Score: 0, Turns: 4713 		
+CF | > 		
+CF | > SCRUB FLOOR 		
+CF | 		
+CF | The floor is a bit shinier now. 		
+CF | 		
+CF | > 		Jacqueline says, "We *started* with 4481 turns. heh."
+		Knight_Otu says, "Yeah."
+		Roger says, "all the feelies: [LINK]"
+		Pinkunz says, "We're also gaining about 7 turns each turn."
+		Roger says, "Turns is synched to our chronometer, I would gather"
+		Jacqueline says, "So, in summary: turns are either meaningless or very odd and important."
+		Jade says, "oh, the chonometer, ok"
+DavidW says (to ClubFloyd), "u" 		
+CF ] Gangway Score: 0, Turns: 4733 		
+CF | > 		
+CF | > U 		
+CF | 		
+CF | Gangway 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "look" 		
+CF ] Gangway Score: 0, Turns: 4742 		
+CF | > 		
+CF | > LOOK 		
+CF | 		
+CF | Gangway 		
+CF | This is a steep metal gangway connecting Deck Eight, above, and Deck 		
+CF | Nine, below. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "u" 		
+CF ] Deck Eight Score: 0, Turns: 4762 		
+CF | > 		
+CF | > U 		
+CF | 		
+CF | Deck Eight 		
+CF | This is a featureless corridor leading port and starboard. A gangway 		
+CF | leads down, and to fore is the Hyperspatial Jump Machinery Room. 		
+CF | 		
+CF | Ensign Blather, his uniform immaculate, enters and notices you are 		
+CF | away from your post. "Twenty demerits, Ensign Seventh Class!" bellows 		
+CF | Blather. "Forty if you're not back on Deck Nine in five seconds!" He 		
+CF | curls his face into a hideous mask of disgust at your unbelievable 		
+CF | negligence. 		
+CF | 		
+CF | > 		Knight_Otu says, "That person gain."
+		Knight_Otu says, "*again"
+		Roger says, "at least he'll die horribly soon"
+		DavidW asks, "I vaguely seem to remember that immaculate uniform being relevant? That we need to get it dirty?"
+		DavidW asks, "or am I misremembering?"
+DavidW says (to ClubFloyd), "fore" 		
+CF ] Deck Eight Score: 0, Turns: 4769 		
+CF | > 		
+CF | > FORE 		
+CF | 		
+CF | Blather blocks your path, growling about extra galley duty. 		
+CF | 		
+CF | "I said to return to your post, Ensign Seventh Class!" bellows 		
+CF | Blather, turning a deepening shade of crimson. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "uniform" 		
+CF ] Deck Eight Score: 0, Turns: 4769 		
+CF | > 		
+CF | > UNIFORM 		
+CF | 		
+CF | I can't find a verb in that sentence! 		
+CF | 		
+CF | > 		
+Jacqueline says (to ClubFloyd), "hit blather with mop" 		
+CF ] Deck Eight Score: 0, Turns: 4769 		
+CF | > 		
+CF | > HIT BLATHER WITH MOP 		
+CF | 		
+CF | Blather removes several of your appendages and internal organs. 		
+CF | 		
+CF | **** You have died **** 		
+CF | 		
+CF | Your score would be 0 (out of 80 points). It is Day 1 of your 		
+CF | adventure. Current Galactic Standard Time (adjusted to your local 		
+CF | day-cycle) is 4769. 		
+CF | This score gives you the rank of Beginner. 		
+CF | 		
+CF | Oh, well. According to the Treaty of Gishen IV, signed in 8747 GY, all 		
+CF | adventure game players must be given another chance after dying. In 		
+CF | the interests of interstellar peace... 		
+CF | 		
+CF | Would you like to restart the game from the beginning, restore a saved 		
+CF | game position, or end this session of the game? (Type RESTART, 		
+CF | RESTORE, or QUIT.) 		
+CF | 		
+CF | > 		Roger says, "hurrah"
+		Jacqueline says, "gosh"
+		Jacqueline says, "I expected it to be bad, but not that bad."
+		Jacqueline asks, "So... save any time we achieve anything?"
+		Pinkunz says, "Very Space-Questy."
+Jacqueline says (to ClubFloyd), "restart" 		
+CF ] Deck Nine Score: 0, Turns: 4474 		
+CF | PLANETFALL 		
+CF | Infocom interactive fiction - a science fiction story 		
+CF | Copyright (c) 1983 by Infocom, Inc. All rights reserved. 		
+CF | PLANETFALL is a trademark of Infocom, Inc. 		
+CF | Release 37 / Serial number 851003 		
+CF | 		
+CF | Another routine day of drudgery aboard the Stellar Patrol Ship 		
+CF | Feinstein. This morning's assignment for a certain lowly Ensign 		
+CF | Seventh Class: scrubbing the filthy metal deck at the port end of 		
+CF | Level Nine. With your Patrol-issue self-contained multi-purpose 		
+CF | all-weather scrub brush you shine the floor with a diligence born of 		
+CF | the knowledge that at any moment dreaded Ensign First Class Blather, 		
+CF | the bane of your shipboard existence, could appear. 		
+CF | 		
+CF | Deck Nine 		
+CF | This is a featureless corridor similar to every other corridor on the 		
+CF | ship. It curves away to starboard, and a gangway leads up. To port is 		
+CF | the entrance to one of the ship's primary escape pods. The pod 		
+CF | bulkhead is closed. 		
+CF | 		
+CF | > 		DavidW says, "yeah, but we haven't achieved anything yet."
+		Jacqueline says, "Yeah"
+		Jacqueline says, "But if we ever do, I mean."
+DavidW says (to ClubFloyd), "i" 		
+CF ] Deck Nine Score: 0, Turns: 4492 		
+CF | > 		
+CF | > I 		
+CF | 		
+CF | You are carrying: 		
+CF | A Patrol-issue self-contained multi-purpose scrub brush 		
+CF | A Patrol uniform (being worn) 		
+CF | The Patrol uniform contains: 		
+CF | An ID card 		
+CF | A chronometer (being worn) 		
+CF | 		
+CF | The alien ambassador from the planet Blow'k-bibben-Gordo ambles toward 		
+CF | you from down the corridor. He is munching on something resembling an 		
+CF | enormous stalk of celery, and he leaves a trail of green slime on the 		
+CF | deck. He stops nearby, and you wince as a pool of slime begins forming 		
+CF | beneath him on your newly-polished deck. The ambassador wheezes loudly 		
+CF | and hands you a brochure outlining his planet's major exports. 		
+CF | 		
+CF | > 		Jade asks, "lol?"
+		DavidW says, "We don't actually have a mop, unless the brush counts."
+DavidW says (to ClubFloyd), "look mop" 		
+CF ] Deck Nine Score: 0, Turns: 4499 		
+CF | > 		
+CF | > LOOK MOP 		
+CF | 		
+CF | This isn't a primitive two-word-parser adventure game. If you want to 		
+CF | look AT that object, please say so. 		
+CF | 		
+CF | The ambassador introduces himself as Br'gun-te'elkner-ipg'nun. 		
+CF | 		
+CF | > 		Jacqueline says, "Oh, yeah. I was thinking the brush."
+Roger says (to floyd), "undo" 		
+CF ] Deck Nine Score: 0, Turns: 4499 		
+CF | > 		
+CF | > UNDO 		
+CF | 		
+CF | I don't know the word "undo." 		
+CF | 		
+CF | > 		Roger says, "uh oh"
+		Jacqueline asks, "I guess for hit it just ignored the noun?"
+		DavidW says, "oh, I missed the ambassador."
+		Roger says, "it's new"
+		Jade exclaims, "wasps!"
+DavidW says (to ClubFloyd), "read brochure" 		
+CF ] Deck Nine Score: 0, Turns: 4517 		
+CF | > 		
+CF | > READ BROCHURE 		
+CF | 		
+CF | "The leading export of Blow'k-bibben-Gordo is the adventure game 		
+CF | 		
+CF | *** PLANETFALL *** 		
+CF | 		
+CF | written by S. Eric Meretzky. 		
+CF | Buy one today. Better yet, buy a thousand." 		
+CF | 		
+CF | The ambassador asks where Admiral Smithers can be found. 		
+CF | 		
+CF | > 		Jacqueline says, "Those asterisks scared me."
+DavidW says (to ClubFloyd), "look at ambassador" 		
+CF ] Deck Nine Score: 0, Turns: 4524 		
+CF | > 		
+CF | > LOOK AT AMBASSADOR 		
+CF | 		
+CF | The ambassador has around twenty eyes, seven of which are currently 		
+CF | open. Half of his six legs are retracted. Green slime oozes from 		
+CF | multiple orifices in his scaly skin. He speaks through a mechanical 		
+CF | translator slung around his neck. 		
+CF | 		
+CF | The ambassador recites a plea for coexistence between your races. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "take slime" 		
+CF ] Deck Nine Score: 0, Turns: 4531 		
+CF | > 		
+CF | > TAKE SLIME 		
+CF | 		
+CF | It feels like slime. Aren't you glad you didn't step in it? 		
+CF | 		
+CF | The ambassador grunts a polite farewell, and disappears up the 		
+CF | gangway, leaving a trail of dripping slime. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "i" 		
+CF ] Deck Nine Score: 0, Turns: 4549 		
+CF | > 		
+CF | > I 		
+CF | 		
+CF | You are carrying: 		
+CF | A brochure 		
+CF | A Patrol-issue self-contained multi-purpose scrub brush 		
+CF | A Patrol uniform (being worn) 		
+CF | The Patrol uniform contains: 		
+CF | An ID card 		
+CF | A chronometer (being worn) 		
+CF | 		
+CF | > 		Jacqueline says, "Sadly, no slime in our inventory."
+		DavidW says, "no. I think we need to get slime on Blather's uniform somehow, though."
+DavidW says (to ClubFloyd), "scrub slime" 		
+CF ] Deck Nine Score: 0, Turns: 4556 		
+CF | > 		
+CF | > SCRUB SLIME 		
+CF | 		
+CF | Whew. You've cleaned up maybe one ten-thousandth of the slime. If you 		
+CF | hurry, it might be all cleaned up before Ensign Blather gets here. 		
+CF | 		
+CF | > 		
+Jacqueline says (to ClubFloyd), "eat slime" 		
+CF ] Deck Nine Score: 0, Turns: 4563 		
+CF | > 		
+CF | > EAT SLIME 		
+CF | 		
+CF | It tastes like slime. Aren't you glad you didn't step in it? 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "step in slime" 		
+CF ] Deck Nine Score: 0, Turns: 4570 		
+CF | > 		
+CF | > STEP IN SLIME 		
+CF | 		
+CF | That's a silly thing to do. 		
+CF | 		
+CF | > 		Jacqueline says, "heh"
+		Roger says, "It'll make it easy to pause this for Spring Thing if we manage to not accomplish anything at all"
+DavidW says (to ClubFloyd), "scrub slime" 		
+CF ] Deck Nine Score: 0, Turns: 4577 		
+CF | > 		
+CF | > SCRUB SLIME 		
+CF | 		
+CF | Whew. You've cleaned up maybe one ten-thousandth of the slime. If you 		
+CF | hurry, it might be all cleaned up before Ensign Blather gets here. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "sb" 		
+CF ] Reactor Lobby Score: 0, Turns: 4592 		
+CF | > 		
+CF | > SB 		
+CF | 		
+CF | Reactor Lobby 		
+CF | The corridor widens here as it nears the main drive area. To starboard 		
+CF | is the Ion Reactor that powers the vessel, and aft of here is the 		
+CF | Auxiliary Control Room. The corridor continues to port. 		
+CF | 		
+CF | Ensign Blather, his uniform immaculate, enters and notices you are 		
+CF | away from your post. "Twenty demerits, Ensign Seventh Class!" bellows 		
+CF | Blather. "Forty if you're not back on Deck Nine in five seconds!" He 		
+CF | curls his face into a hideous mask of disgust at your unbelievable 		
+CF | negligence. 		
+CF | 		
+CF | > 		
+Jacqueline says (to ClubFloyd), "Blather, hello" 		
+CF ] Reactor Lobby Score: 0, Turns: 4592 		
+CF | > 		
+CF | > BLATHER, HELLO 		
+CF | 		
+CF | Blather shouts "Speak when you're spoken to, Ensign Seventh Class!" He 		
+CF | breaks three pencil points in a frenzied rush to give you more 		
+CF | demerits. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "tell blather about slime" 		
+CF ] Reactor Lobby Score: 0, Turns: 4592 		
+CF | > 		
+CF | > TELL BLATHER ABOUT SLIME 		
+CF | 		
+CF | I don't know the word "about." 		
+CF | 		
+CF | > 		
+Jacqueline says (to ClubFloyd), "talk to Blather" 		
+CF ] Reactor Lobby Score: 0, Turns: 4599 		
+CF | > 		
+CF | > TALK TO BLATHER 		
+CF | 		
+CF | Blather shouts "Speak when you're spoken to, Ensign Seventh Class!" He 		
+CF | breaks three pencil points in a frenzied rush to give you more 		
+CF | demerits. 		
+CF | 		
+CF | "I said to return to your post, Ensign Seventh Class!" bellows 		
+CF | Blather, turning a deepening shade of crimson. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "show brochure to blather" 		
+CF ] Reactor Lobby Score: 0, Turns: 4606 		
+CF | > 		
+CF | > SHOW BROCHURE TO BLATHER 		
+CF | 		
+CF | The Ensign First Class looks at the brochure. 		
+CF | 		
+CF | "I said to return to your post, Ensign Seventh Class!" bellows 		
+CF | Blather, turning a deepening shade of crimson. 		
+CF | 		
+CF | > 		Jacqueline asks, "give it to him?"
+DavidW says (to ClubFloyd), "give brochure to blather" 		
+CF ] Reactor Lobby Score: 0, Turns: 4613 		
+CF | > 		
+CF | > GIVE BROCHURE TO BLATHER 		
+CF | 		
+CF | The Ensign First Class declines your offer. 		
+CF | 		
+CF | "I said to return to your post, Ensign Seventh Class!" bellows 		
+CF | Blather, turning a deepening shade of crimson. 		
+CF | 		
+CF | > 		DavidW asks, "Should we return?"
+		Jacqueline says, "Sure"
+DavidW says (to ClubFloyd), "p" 		
+CF ] Deck Nine Score: 0, Turns: 4628 		
+CF | > 		
+CF | > P 		
+CF | 		
+CF | Deck Nine 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "verbose" 		
+CF ] Deck Nine Score: 0, Turns: 4628 		
+CF | > 		
+CF | > VERBOSE 		
+CF | 		
+CF | Maximum verbosity. 		
+CF | 		
+CF | Deck Nine 		
+CF | This is a featureless corridor similar to every other corridor on the 		
+CF | ship. It curves away to starboard, and a gangway leads up. To port is 		
+CF | the entrance to one of the ship's primary escape pods. The pod 		
+CF | bulkhead is closed. 		
+CF | 		
+CF | > 		Jacqueline says, "I kinda wish we'd spoken to the ambassador."
+DavidW says (to ClubFloyd), "u" 		
+CF ] Gangway Score: 0, Turns: 4648 		
+CF | > 		
+CF | > U 		
+CF | 		
+CF | Gangway 		
+CF | This is a steep metal gangway connecting Deck Eight, above, and Deck 		
+CF | Nine, below. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "x slime" 		
+CF ] Gangway Score: 0, Turns: 4648 		
+CF | > 		
+CF | > X SLIME 		
+CF | 		
+CF | I don't know the word "x." 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "look at slime" 		
+CF ] Gangway Score: 0, Turns: 4655 		
+CF | > 		
+CF | > LOOK AT SLIME 		
+CF | 		
+CF | You can't see any slime here! 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "d" 		
+CF ] Deck Nine Score: 0, Turns: 4665 		
+CF | > 		
+CF | > D 		
+CF | 		
+CF | Deck Nine 		
+CF | This is a featureless corridor similar to every other corridor on the 		
+CF | ship. It curves away to starboard, and a gangway leads up. To port is 		
+CF | the entrance to one of the ship's primary escape pods. The pod 		
+CF | bulkhead is closed. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "look at slime" 		
+CF ] Deck Nine Score: 0, Turns: 4672 		
+CF | > 		
+CF | > LOOK AT SLIME 		
+CF | 		
+CF | It looks like slime. Aren't you glad you didn't step in it? 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "look at brush" 		
+CF ] Deck Nine Score: 0, Turns: 4704 		
+CF | > 		
+CF | > LOOK AT BRUSH 		
+CF | 		
+CF | I see nothing special about the Patrol-issue self-contained 		
+CF | multi-purpose scrub brush. 		
+CF | 		
+CF | > 		Jade says, "slime game"
+DavidW says (to ClubFloyd), "scoop slime" 		
+CF ] Deck Nine Score: 0, Turns: 4704 		
+CF | > 		
+CF | > SCOOP SLIME 		
+CF | 		
+CF | I don't know the word "scoop." 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "take slime with brochure" 		
+CF ] Deck Nine Score: 0, Turns: 4711 		
+CF | > 		
+CF | > TAKE SLIME WITH BROCHURE 		
+CF | 		
+CF | Nothing interesting happens. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "take slime with brush" 		
+CF ] Deck Nine Score: 0, Turns: 4718 		
+CF | > 		
+CF | > TAKE SLIME WITH BRUSH 		
+CF | 		
+CF | Nothing interesting happens. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "remove uniform" 		
+CF ] Deck Nine Score: 0, Turns: 4725 		
+CF | > 		
+CF | > REMOVE UNIFORM 		
+CF | 		
+CF | You have removed your Patrol uniform. 		
+CF | 		
+CF | > 		Jacqueline says, "I was surprisde it let me eat the slime..."
+Jacqueline says (to ClubFloyd), "lick slime" 		
+CF ] Deck Nine Score: 0, Turns: 4725 		
+CF | > 		
+CF | > LICK SLIME 		
+CF | 		
+CF | I don't know the word "lick." 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "look at me" 		
+CF ] Deck Nine Score: 0, Turns: 4732 		
+CF | > 		
+CF | > LOOK AT ME 		
+CF | 		
+CF | That's difficult unless your eyes are prehensile. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "put uniform in slime" 		
+CF ] Deck Nine Score: 0, Turns: 4739 		
+CF | > 		
+CF | > PUT UNIFORM IN SLIME 		
+CF | 		
+CF | You can't do that. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "put slime on uniform" 		
+CF ] Deck Nine Score: 0, Turns: 4746 		
+CF | > 		
+CF | > PUT SLIME ON UNIFORM 		
+CF | 		
+CF | Nice try. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "wear uniform" 		
+CF ] Deck Nine Score: 0, Turns: 4764 		
+CF | > 		
+CF | > WEAR UNIFORM 		
+CF | 		
+CF | You are wearing the Patrol uniform. 		
+CF | 		
+CF | Ensign First Class Blather swaggers in. He studies your work with 		
+CF | half-closed eyes. "You call this polishing, Ensign Seventh Class?" he 		
+CF | sneers. "We have a position for an Ensign Ninth Class in the 		
+CF | toilet-scrubbing division, you know. Thirty demerits." He glares at 		
+CF | you, his arms crossed. 		
+CF | 		
+CF | > 		Jacqueline says (to DW), "Nice try, David."
+		DavidW says, "ok, Blather is here now. That's interesting."
+DavidW says (to ClubFloyd), "scrub slime" 		
+CF ] Deck Nine Score: 0, Turns: 4771 		
+CF | > 		
+CF | > SCRUB SLIME 		
+CF | 		
+CF | Whew. You've cleaned up maybe one ten-thousandth of the slime. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "talk to blather" 		
+CF ] Deck Nine Score: 0, Turns: 4778 		
+CF | > 		
+CF | > TALK TO BLATHER 		
+CF | 		
+CF | Blather shouts "Speak when you're spoken to, Ensign Seventh Class!" He 		
+CF | breaks three pencil points in a frenzied rush to give you more 		
+CF | demerits. 		
+CF | 		
+CF | > 		Jade says, "yes, it is interesting"
+DavidW says (to ClubFloyd), "push blather" 		
+CF ] Deck Nine Score: 0, Turns: 4785 		
+CF | > 		
+CF | > PUSH BLATHER 		
+CF | 		
+CF | Pushing the Ensign First Class has no effect. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "throw slime at blather" 		
+CF ] Deck Nine Score: 0, Turns: 4785 		
+CF | > 		
+CF | > THROW SLIME AT BLATHER 		
+CF | 		
+CF | You don't have the slime. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "put slime on blather" 		
+CF ] Deck Nine Score: 0, Turns: 4792 		
+CF | > 		
+CF | > PUT SLIME ON BLATHER 		
+CF | 		
+CF | Nice try. 		
+CF | 		
+CF | Blather, adding fifty more demerits for good measure, moves off in 		
+CF | search of more young ensigns to terrorize. 		
+CF | 		
+CF | > 		DavidW says, "drat"
+		Knight_Otu says, "Hm."
+DavidW says (to ClubFloyd), "sb" 		
+CF ] Reactor Lobby Score: 0, Turns: 4807 		
+CF | > 		
+CF | > SB 		
+CF | 		
+CF | Reactor Lobby 		
+CF | The corridor widens here as it nears the main drive area. To starboard 		
+CF | is the Ion Reactor that powers the vessel, and aft of here is the 		
+CF | Auxiliary Control Room. The corridor continues to port. 		
+CF | 		
+CF | Ensign Blather, his uniform immaculate, enters and notices you are 		
+CF | away from your post. "Twenty demerits, Ensign Seventh Class!" bellows 		
+CF | Blather. "Forty if you're not back on Deck Nine in five seconds!" He 		
+CF | curls his face into a hideous mask of disgust at your unbelievable 		
+CF | negligence. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "p" 		
+CF ] Deck Nine Score: 0, Turns: 4822 		
+CF | > 		
+CF | > P 		
+CF | 		
+CF | Deck Nine 		
+CF | This is a featureless corridor similar to every other corridor on the 		
+CF | ship. It curves away to starboard, and a gangway leads up. To port is 		
+CF | the entrance to one of the ship's primary escape pods. The pod 		
+CF | bulkhead is closed. 		
+CF | 		
+CF | A massive explosion rocks the ship. Echoes from the explosion resound 		
+CF | deafeningly down the halls. The door to port slides open. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "p" 		
+CF ] Escape Pod Score: 3, Turns: 4837 		
+CF | > 		
+CF | > P 		
+CF | 		
+CF | Escape Pod 		
+CF | This is one of the Feinstein's primary escape pods, for use in extreme 		
+CF | emergencies. A mass of safety webbing, large enough to hold several 		
+CF | dozen people, fills half the pod. The controls are entirely automated. 		
+CF | The bulkhead leading out is open. 		
+CF | 		
+CF | The ship shakes again. You hear, from close by, the sounds of 		
+CF | emergency bulkheads closing. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "close bulkhead" 		
+CF ] Escape Pod Score: 3, Turns: 4844 		
+CF | > 		
+CF | > CLOSE BULKHEAD 		
+CF | 		
+CF | You can't close it yourself. 		
+CF | 		
+CF | The pod door clangs shut as heavy explosions continue to buffet the 		
+CF | Feinstein. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "enter webbing" 		
+CF ] Escape Pod Score: 3, Turns: 4851 		
+CF | > 		
+CF | > ENTER WEBBING 		
+CF | 		
+CF | You are now safely cushioned within the web. 		
+CF | 		
+CF | You feel the pod begin to slide down its ejection tube as explosions 		
+CF | shake the mother ship. 		
+CF | 		
+CF | > 		DavidW says, "I think we missed something."
+DavidW says (to ClubFloyd), "z" 		
+CF ] Escape Pod Score: 3, Turns: 4891 		
+CF | > 		
+CF | > Z 		
+CF | 		
+CF | Time passes... 		
+CF | 		
+CF | Through the viewport of the pod you see the Feinstein dwindle as you 		
+CF | head away. Bursts of light dot its hull. Suddenly, a huge explosion 		
+CF | blows the Feinstein into tiny pieces, sending the escape pod tumbling 		
+CF | away! 		
+CF | 		
+CF | As the escape pod tumbles away from the former location of the 		
+CF | Feinstein, its gyroscopes whine. The pod slowly stops tumbling. Lights 		
+CF | on the control panel blink furiously as the autopilot searches for a 		
+CF | reasonable destination. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "z" 		
+CF ] Escape Pod Score: 3, Turns: 4945 		
+CF | > 		
+CF | > Z 		
+CF | 		
+CF | Time passes... 		
+CF | 		
+CF | The auxiliary rockets fire briefly, and a nearby planet swings into 		
+CF | view through the port. It appears to be almost entirely ocean, with 		
+CF | just a few visible islands and an unusually small polar ice cap. A 		
+CF | moment later, the system's sun swings into view, and the viewport 		
+CF | polarizes into a featureless black rectangle. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "z" 		
+CF ] Escape Pod Score: 3, Turns: 4999 		
+CF | > 		
+CF | > Z 		
+CF | 		
+CF | Time passes... 		
+CF | 		
+CF | The main thrusters fire a long, gentle burst. A monotonic voice issues 		
+CF | from the control panel. "Approaching planet...human-habitable." 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "z" 		
+CF ] Escape Pod Score: 3, Turns: 5053 		
+CF | > 		
+CF | > Z 		
+CF | 		
+CF | Time passes... 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "look" 		
+CF ] Escape Pod Score: 3, Turns: 5107 		
+CF | > 		
+CF | > LOOK 		
+CF | 		
+CF | Escape Pod, in the safety web 		
+CF | This is one of the Feinstein's primary escape pods, for use in extreme 		
+CF | emergencies. A mass of safety webbing, large enough to hold several 		
+CF | dozen people, fills half the pod. The controls are entirely automated. 		
+CF | The bulkhead leading out is closed. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "look at controls" 		
+CF ] Escape Pod Score: 3, Turns: 5161 		
+CF | > 		
+CF | > LOOK AT CONTROLS 		
+CF | 		
+CF | The controls are entirely automated. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "z" 		
+CF ] Escape Pod Score: 3, Turns: 5215 		
+CF | > 		
+CF | > Z 		
+CF | 		
+CF | Time passes... 		
+CF | 		
+CF | The pod is buffeted as it enters the planet's atmosphere. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "z" 		
+CF ] Escape Pod Score: 3, Turns: 5269 		
+CF | > 		
+CF | > Z 		
+CF | 		
+CF | Time passes... 		
+CF | 		
+CF | You feel the temperature begin to rise, and the pod's climate control 		
+CF | system roars as it labors to compensate. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "z" 		
+CF ] Escape Pod Score: 3, Turns: 5323 		
+CF | > 		
+CF | > Z 		
+CF | 		
+CF | Time passes... 		
+CF | 		
+CF | The viewport suddenly becomes transparent again, giving you a view of 		
+CF | endless ocean below. The lights on the control panel flash madly as 		
+CF | the pod's computer searches for a suitable landing site. The thrusters 		
+CF | fire long and hard, slowing the pod's descent. 		
+CF | 		
+CF | > 		Jacqueline says, "huh"
+DavidW says (to ClubFloyd), "z" 		
+CF ] Escape Pod Score: 3, Turns: 5377 		
+CF | > 		
+CF | > Z 		
+CF | 		
+CF | Time passes... 		
+CF | 		
+CF | The pod is now approaching the closer of a pair of islands. It appears 		
+CF | to be surrounded by sheer cliffs rising from the water, and is topped 		
+CF | by a wide plateau. The plateau seems to be covered by a sprawling 		
+CF | complex of buildings. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "z" 		
+CF ] Escape Pod Score: 3, Turns: 5431 		
+CF | > 		
+CF | > Z 		
+CF | 		
+CF | Time passes... 		
+CF | 		
+CF | The pod lands with a thud. Through the viewport you can see a rocky 		
+CF | cleft and some water below. The pod rocks gently back and forth as if 		
+CF | it was precariously balanced. A previously unseen panel slides open, 		
+CF | revealing some emergency provisions, including a survival kit and a 		
+CF | towel. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "take kit and towel" 		
+CF ] Escape Pod Score: 3, Turns: 5438 		
+CF | > 		
+CF | > TAKE KIT AND TOWEL 		
+CF | 		
+CF | survival kit: You can't reach it from here. 		
+CF | towel: You can't reach it from here. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "stand" 		
+CF ] Escape Pod Score: 3, Turns: 5445 		
+CF | > 		
+CF | > STAND 		
+CF | 		
+CF | As you stand, the pod shifts slightly and you feel it falling. A 		
+CF | moment later, the fall stops with a shock, and you see water rising 		
+CF | past the viewport. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "take towel and kit" 		
+CF ] Escape Pod Score: 3, Turns: 5452 		
+CF | > 		
+CF | > TAKE TOWEL AND KIT 		
+CF | 		
+CF | towel: Taken. 		
+CF | survival kit: Taken. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "out" 		
+CF ] Escape Pod Score: 3, Turns: 5459 		
+CF | > 		
+CF | > OUT 		
+CF | 		
+CF | The pod door is closed. 		
+CF | 		
+CF | The pod is now completely submerged, and you feel it smash against 		
+CF | underwater rocks. Bubbles streaming upward past the window indicate 		
+CF | that the pod is continuing to sink. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "open door" 		
+CF ] Escape Pod Score: 3, Turns: 5466 		
+CF | > 		
+CF | > OPEN DOOR 		
+CF | 		
+CF | The bulkhead opens and cold ocean water rushes in! 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "out" 		
+CF ] Underwater Score: 3, Turns: 5496 		
+CF | > 		
+CF | > OUT 		
+CF | 		
+CF | Underwater 		
+CF | You are momentarily disoriented as you enter the turbulent waters. 		
+CF | Currents buffet you against the sharp rocks of an underwater cliff. A 		
+CF | dim light filters down from above. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "u" 		
+CF ] Crag Score: 6, Turns: 5531 		
+CF | > 		
+CF | > U 		
+CF | 		
+CF | Crag 		
+CF | You have reached a cleft in the cliff wall where the island rises from 		
+CF | the water. The edge of the cleft displays recently exposed rock where 		
+CF | it collapsed under the weight of the escape pod. About two meters 		
+CF | below, turbulent waters swirl against sharp rocks. A small structure 		
+CF | clings to the face of the cliff about eight meters above you. Even an 		
+CF | out-of-shape Ensign Seventh Class could probably climb up to it. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "u" 		
+CF ] Balcony Score: 6, Turns: 5571 		
+CF | > 		
+CF | > U 		
+CF | 		
+CF | Balcony 		
+CF | This is an octagonal room, half carved into and half built out from 		
+CF | the cliff wall. Through the shattered windows which ring the outer 		
+CF | wall you can see ocean to the horizon. A weathered metal plaque with 		
+CF | barely readable lettering rests below the windows. The language seems 		
+CF | to be a corrupt form of Galalingua. A steep stairway, roughly cut into 		
+CF | the face of the cliff, leads upward. A rocky crag can be seen about 		
+CF | eight meters below. 		
+CF | 		
+CF | > 		Jade says, "guided"
+DavidW says (to ClubFloyd), "read plaque" 		
+CF ] Balcony Score: 6, Turns: 5578 		
+CF | > 		
+CF | > READ PLAQUE 		
+CF | 		
+CF | 		
+CF | SEENIK VISTA 		Jacqueline says, "ha"
+CF | Xis stuneeng vuu uf xee Kalamontee Valee kuvurz oovur fortee skwaar 		
+CF | miilz uf xat faamus tuurist spot. Xee larj bildeeng at xee bend in xee 		
+CF | Gulmaan Rivur iz xee formur pravincul kapitul bildeeng. 		
+CF | 		
+CF | > 		Jade asks, "what?"
+		Roger says, "try reading it aloud"
+		DavidW says, "It's a phonetic variant of English."
+		Roger says, "also, perhaps a save is in order"
+		Jacqueline says, "This stunning view of the Kelamontee valee curves over 40 square miles of that famous tourist spot. The large building at the bend in the Gulman River is the former provincial capital building."
+		Jacqueline says, "Oops. Kelamontee Valley"
+		Jade says, "I was figuring out, thank you"
+		Jacqueline says, "You're welcome"
+		Knight_Otu is reminded of Unnkulia.
+		DavidW says, "I'm sure I've seen that version of English before, but I can't be certain where."
+		Roger says, "yeah it was kind of in vogue for a while"
+		DavidW asks, "I think some humourist invented it?"
+DavidW says (to ClubFloyd), "look" 		
+CF ] Balcony Score: 6, Turns: 5587 		
+CF | > 		
+CF | > LOOK 		
+CF | 		
+CF | Balcony 		
+CF | This is an octagonal room, half carved into and half built out from 		
+CF | the cliff wall. Through the shattered windows which ring the outer 		
+CF | wall you can see ocean to the horizon. A weathered metal plaque with 		
+CF | barely readable lettering rests below the windows. The language seems 		
+CF | to be a corrupt form of Galalingua. A steep stairway, roughly cut into 		
+CF | the face of the cliff, leads upward. A rocky crag can be seen about 		
+CF | eight meters below. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "look through windows" 		
+CF ] Balcony Score: 6, Turns: 5594 		
+CF | > 		
+CF | > LOOK THROUGH WINDOWS 		
+CF | 		
+CF | Water. Lots and lots of water. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "u" 		
+CF ] Winding Stair Score: 6, Turns: 5624 		
+CF | > 		
+CF | > U 		
+CF | 		
+CF | Winding Stair 		
+CF | The middle of a long, steep stairway carved into the face of a cliff. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "u" 		
+CF ] Courtyard Score: 6, Turns: 5654 		
+CF | > 		
+CF | > U 		
+CF | 		
+CF | Courtyard 		
+CF | You are in the courtyard of an ancient stone edifice, vaguely 		
+CF | reminiscent of the castles you saw during your leave on Ramos Two. It 		
+CF | has decayed to the point where it can probably be termed a ruin. 		
+CF | Openings lead north and west, and a stairway downward is visible to 		
+CF | the south. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "look at kit" 		
+CF ] Courtyard Score: 6, Turns: 5686 		
+CF | > 		
+CF | > LOOK AT KIT 		
+CF | 		
+CF | The survival kit is closed. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "open it" 		
+CF ] Courtyard Score: 6, Turns: 5693 		
+CF | > 		
+CF | > OPEN IT 		
+CF | 		
+CF | Opening the survival kit reveals a blob of red goo, a blob of green 		
+CF | goo, and a blob of brown goo. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "smell red goo" 		
+CF ] Courtyard Score: 6, Turns: 5700 		
+CF | > 		
+CF | > SMELL RED GOO 		
+CF | 		
+CF | It smells just like a blob of red goo. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "close kit" 		
+CF ] Courtyard Score: 6, Turns: 5707 		
+CF | > 		
+CF | > CLOSE KIT 		
+CF | 		
+CF | Closed. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "look at towel" 		
+CF ] Courtyard Score: 6, Turns: 5714 		
+CF | > 		
+CF | > LOOK AT TOWEL 		
+CF | 		
+CF | A pretty ordinary towel. Something is written in its corner. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "read towel" 		
+CF ] Courtyard Score: 6, Turns: 5732 		
+CF | > 		
+CF | > READ TOWEL 		
+CF | 		
+CF | "S.P.S. FEINSTEIN 		
+CF | Escape Pod #42 		
+CF | Don't Panic!" 		
+CF | 		
+CF | > 		Knight_Otu says, "Very helpful smell description."
+		DavidW asks, "HHGG ref?"
+		Knight_Otu says, "Certainly."
+		DavidW says, "I think the goos are food and limited."
+DavidW says (to ClubFloyd), "n" 		
+CF ] Plain Hall Score: 6, Turns: 5752 		
+CF | > 		
+CF | > N 		
+CF | 		
+CF | Plain Hall 		
+CF | This is a featureless hall leading north and south. Although the 		
+CF | hallway is old and dusty, the construction is of a much more modern 		
+CF | style than the castle to the south. A similar hall branches off to the 		
+CF | northeast. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "ne" 		
+CF ] Rec Corridor Score: 6, Turns: 5777 		
+CF | > 		
+CF | > NE 		
+CF | 		
+CF | Rec Corridor 		
+CF | This is a wide, east-west hallway. Portals lead north and south, and 		
+CF | another corridor branches southwest. 		
+CF | 		
+CF | > 		DavidW says, "oo, it's gonna be easy to get lost."
+		Roger asks (of DW), "Have you assumed the traditional mapping duties?"
+		DavidW says, "NO. I've been typing."
+		DavidW says, "If I was mapping and playing, I'd be taking a lot longer."
+DavidW says (to ClubFloyd), "n" 		
+CF ] Dorm B Score: 6, Turns: 5797 		
+CF | > 		
+CF | > N 		
+CF | 		
+CF | Dorm B 		
+CF | This is a very long room lined with multi-tiered bunks. Flimsy 		
+CF | partitions between the tiers may have provided a modicum of privacy. 		
+CF | These spartan living quarters could have once housed many hundreds, 		
+CF | but it seems quite deserted now. There are openings at the north and 		
+CF | south ends of the room. 		
+CF | 		
+CF | > 		DavidW says, "huh. We have a Dorm B on the mud."
+DavidW says (to ClubFloyd), "n" 		
+CF ] SanFac B Score: 6, Turns: 5817 		
+CF | > 		
+CF | > N 		
+CF | 		
+CF | SanFac B 		
+CF | This must be the sanitary facility for the adjacent dormitory. The 		
+CF | fixtures are dry and dusty, the room dead and deserted. You marvel at 		
+CF | how little the millenia and cultural gulfs have changed toilet bowl 		
+CF | design. The only exit is south. 		
+CF | 		
+CF | > 		DavidW says, "oh, right. There's about six or eight of these bathrooms."
+DavidW says (to ClubFloyd), "s" 		
+CF ] Dorm B Score: 6, Turns: 5837 		
+CF | > 		
+CF | > S 		
+CF | 		
+CF | Dorm B 		
+CF | This is a very long room lined with multi-tiered bunks. Flimsy 		
+CF | partitions between the tiers may have provided a modicum of privacy. 		
+CF | These spartan living quarters could have once housed many hundreds, 		
+CF | but it seems quite deserted now. There are openings at the north and 		
+CF | south ends of the room. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "s" 		
+CF ] Rec Corridor Score: 6, Turns: 5857 		
+CF | > 		
+CF | > S 		
+CF | 		
+CF | Rec Corridor 		
+CF | This is a wide, east-west hallway. Portals lead north and south, and 		
+CF | another corridor branches southwest. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "s" 		
+CF ] Dorm A Score: 6, Turns: 5877 		
+CF | > 		
+CF | > S 		
+CF | 		
+CF | Dorm A 		
+CF | This is a very long room lined with multi-tiered bunks. Flimsy 		
+CF | partitions between the tiers may have provided a modicum of privacy. 		
+CF | These spartan living quarters could have once housed many hundreds, 		
+CF | but it seems quite deserted now. There are openings at the north and 		
+CF | south ends of the room. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "s" 		
+CF ] SanFac A Score: 6, Turns: 5897 		
+CF | > 		
+CF | > S 		
+CF | 		
+CF | SanFac A 		
+CF | This must be the sanitary facility for the adjacent dormitory. The 		
+CF | fixtures are dry and dusty, the room dead and deserted. You marvel at 		
+CF | how little the millenia and cultural gulfs have changed toilet bowl 		
+CF | design. The only exit is north. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "n" 		
+CF ] Dorm A Score: 6, Turns: 5917 		
+CF | > 		
+CF | > N 		
+CF | 		
+CF | Dorm A 		
+CF | This is a very long room lined with multi-tiered bunks. Flimsy 		
+CF | partitions between the tiers may have provided a modicum of privacy. 		
+CF | These spartan living quarters could have once housed many hundreds, 		
+CF | but it seems quite deserted now. There are openings at the north and 		
+CF | south ends of the room. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "search bunks" 		
+CF ] Dorm A Score: 6, Turns: 5917 		
+CF | > 		
+CF | > SEARCH BUNKS 		
+CF | 		
+CF | I don't know the word "bunks." 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "search beds" 		
+CF ] Dorm A Score: 6, Turns: 5917 		
+CF | > 		
+CF | > SEARCH BEDS 		
+CF | 		
+CF | I don't know the word "beds." 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "n" 		
+CF ] Rec Corridor Score: 6, Turns: 5937 		
+CF | > 		
+CF | > N 		
+CF | 		
+CF | Rec Corridor 		
+CF | This is a wide, east-west hallway. Portals lead north and south, and 		
+CF | another corridor branches southwest. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "w" 		
+CF ] Rec Area Score: 6, Turns: 5957 		
+CF | > 		
+CF | > W 		
+CF | 		
+CF | Rec Area 		
+CF | This is a recreational facility of some sort. Games and tapes are 		
+CF | scattered about the room. Hallways head off to the east and south, and 		
+CF | to the north is a door which is closed and locked. A dial on the door 		
+CF | is currently set to 0. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "examine door" 		
+CF ] Rec Area Score: 6, Turns: 5989 		
+CF | > 		
+CF | > EXAMINE DOOR 		
+CF | 		
+CF | The door is closed. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "examine dial" 		
+CF ] Rec Area Score: 6, Turns: 5996 		
+CF | > 		
+CF | > EXAMINE DIAL 		
+CF | 		
+CF | The dial can be turned to any number between 0 and 1000. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "examine games" 		
+CF ] Rec Area Score: 6, Turns: 6003 		
+CF | > 		
+CF | > EXAMINE GAMES 		
+CF | 		
+CF | All the usual games -- Chess, Cribbage, Galactic Overlord, Double 		
+CF | Fannucci... 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "examine tapes" 		
+CF ] Rec Area Score: 6, Turns: 6010 		
+CF | > 		
+CF | > EXAMINE TAPES 		
+CF | 		
+CF | Let's see...here are some musical selections, here are some 		
+CF | bestselling romantic novels, here is a biography of a famous Double 		
+CF | Fannucci champion... 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "examine biography" 		
+CF ] Rec Area Score: 6, Turns: 6010 		
+CF | > 		
+CF | > EXAMINE BIOGRAPHY 		
+CF | 		
+CF | I don't know the word "biography." 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "look" 		
+CF ] Rec Area Score: 6, Turns: 6019 		
+CF | > 		
+CF | > LOOK 		
+CF | 		
+CF | Rec Area 		
+CF | This is a recreational facility of some sort. Games and tapes are 		
+CF | scattered about the room. Hallways head off to the east and south, and 		
+CF | to the north is a door which is closed and locked. A dial on the door 		
+CF | is currently set to 0. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "s" 		
+CF ] Plain Hall Score: 6, Turns: 6039 		
+CF | > 		
+CF | > S 		
+CF | 		
+CF | Plain Hall 		
+CF | This is a featureless hall leading north and south. Although the 		
+CF | hallway is old and dusty, the construction is of a much more modern 		
+CF | style than the castle to the south. A similar hall branches off to the 		
+CF | northeast. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "s" 		
+CF ] Courtyard Score: 6, Turns: 6059 		
+CF | > 		
+CF | > S 		
+CF | 		
+CF | Courtyard 		
+CF | You are in the courtyard of an ancient stone edifice, vaguely 		
+CF | reminiscent of the castles you saw during your leave on Ramos Two. It 		
+CF | has decayed to the point where it can probably be termed a ruin. 		
+CF | Openings lead north and west, and a stairway downward is visible to 		
+CF | the south. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "w" 		
+CF ] West Wing Score: 6, Turns: 6079 		
+CF | > 		
+CF | > W 		
+CF | 		
+CF | West Wing 		
+CF | This was once the west wing of the castle, but the walls are now 		
+CF | mostly rubble, allowing a view of the cliff and ocean below. Rubble 		
+CF | blocks all exits save one, eastward to the courtyard. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "examine cliff" 		
+CF ] West Wing Score: 6, Turns: 6111 		
+CF | > 		
+CF | > EXAMINE CLIFF 		
+CF | 		
+CF | I see nothing special about the cliff. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "examine ocean" 		
+CF ] West Wing Score: 6, Turns: 6118 		
+CF | > 		
+CF | > EXAMINE OCEAN 		
+CF | 		
+CF | It stretches as far as you can see. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "examine rubble" 		
+CF ] West Wing Score: 6, Turns: 6150 		
+CF | > 		
+CF | > EXAMINE RUBBLE 		
+CF | 		
+CF | I see nothing special about the rubble. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "e" 		
+CF ] Courtyard Score: 6, Turns: 6170 		
+CF | > 		
+CF | > E 		
+CF | 		
+CF | Courtyard 		
+CF | You are in the courtyard of an ancient stone edifice, vaguely 		
+CF | reminiscent of the castles you saw during your leave on Ramos Two. It 		
+CF | has decayed to the point where it can probably be termed a ruin. 		
+CF | Openings lead north and west, and a stairway downward is visible to 		
+CF | the south. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "n" 		
+CF ] Plain Hall Score: 6, Turns: 6190 		
+CF | > 		
+CF | > N 		
+CF | 		
+CF | Plain Hall 		
+CF | This is a featureless hall leading north and south. Although the 		
+CF | hallway is old and dusty, the construction is of a much more modern 		
+CF | style than the castle to the south. A similar hall branches off to the 		
+CF | northeast. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "ne" 		
+CF ] Rec Corridor Score: 6, Turns: 6215 		
+CF | > 		
+CF | > NE 		
+CF | 		
+CF | Rec Corridor 		
+CF | This is a wide, east-west hallway. Portals lead north and south, and 		
+CF | another corridor branches southwest. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "e" 		
+CF ] Mess Corridor Score: 6, Turns: 6235 		
+CF | > 		
+CF | > E 		
+CF | 		
+CF | Mess Corridor 		
+CF | This is a wide, east-west hallway with a large portal to the south. A 		
+CF | small door to the north is closed and hooked with a simple steel 		
+CF | padlock which is also closed. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "s" 		
+CF ] Mess Hall Score: 6, Turns: 6255 		
+CF | > 		
+CF | > S 		
+CF | 		
+CF | Mess Hall 		
+CF | This is a large hall lined with tables and benches. An opening to the 		
+CF | north leads back to the corridor. A door to the south is closed. Next 		
+CF | to the door is a small slot. 		
+CF | Although the room is quite barren, an octagonally-shaped canteen is 		
+CF | sitting on one of the benches. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "take canteen" 		
+CF ] Mess Hall Score: 6, Turns: 6262 		
+CF | > 		
+CF | > TAKE CANTEEN 		
+CF | 		
+CF | Taken. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "examine slot" 		
+CF ] Mess Hall Score: 6, Turns: 6269 		
+CF | > 		
+CF | > EXAMINE SLOT 		
+CF | 		
+CF | The slot is about ten centimeters wide, but only about two centimeters 		
+CF | deep. It is surrounded on its long sides by parallel ridges of metal. 		
+CF | 		
+CF | > 		DavidW asks, "Is that for a keycard or something else?"
+DavidW says (to ClubFloyd), "open door" 		
+CF ] Mess Hall Score: 6, Turns: 6276 		
+CF | > 		
+CF | > OPEN DOOR 		
+CF | 		
+CF | A light flashes "Pleez yuuz kitcin akses kard." 		
+CF | 		
+CF | > 		Jade says, "it seems to be"
+		Knight_Otu says, "Probably yes,... rght."
+		DavidW says, "Place your kitchen access card."
+DavidW says (to ClubFloyd), "open canteen" 		
+CF ] Mess Hall Score: 6, Turns: 6283 		
+CF | > 		
+CF | > OPEN CANTEEN 		
+CF | 		
+CF | Opened. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "look in it" 		
+CF ] Mess Hall Score: 6, Turns: 6290 		
+CF | > 		
+CF | > LOOK IN IT 		
+CF | 		
+CF | The canteen is empty. 		
+CF | 		
+CF | > 		Roger says, "I do appreciate how games of this era would sometimes describe things without just telling you what they are"
+DavidW says (to ClubFloyd), "look" 		
+CF ] Mess Hall Score: 6, Turns: 6299 		
+CF | > 		
+CF | > LOOK 		
+CF | 		
+CF | Mess Hall 		
+CF | This is a large hall lined with tables and benches. An opening to the 		
+CF | north leads back to the corridor. A door to the south is closed. Next 		
+CF | to the door is a small slot. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "n" 		
+CF ] Mess Corridor Score: 6, Turns: 6319 		
+CF | > 		
+CF | > N 		
+CF | 		
+CF | Mess Corridor 		
+CF | This is a wide, east-west hallway with a large portal to the south. A 		
+CF | small door to the north is closed and hooked with a simple steel 		
+CF | padlock which is also closed. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "examine door" 		
+CF ] Mess Corridor Score: 6, Turns: 6351 		
+CF | > 		
+CF | > EXAMINE DOOR 		
+CF | 		
+CF | The door is closed. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "e" 		
+CF ] Dorm Corridor Score: 6, Turns: 6371 		
+CF | > 		
+CF | > E 		
+CF | 		
+CF | Dorm Corridor 		
+CF | This is a wide, east-west hallway with openings to the north and 		
+CF | south. To the east, the corridor stretches off into the distance. That 		
+CF | section of the hallway is lined with a motorized walkway (no longer 		
+CF | running) that was probably intended to transport people or cargo down 		
+CF | that tremendously long hall. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "n" 		
+CF ] Dorm D Score: 6, Turns: 6391 		
+CF | > 		
+CF | > N 		
+CF | 		
+CF | Dorm D 		
+CF | This is a very long room lined with multi-tiered bunks. Flimsy 		
+CF | partitions between the tiers may have provided a modicum of privacy. 		
+CF | These spartan living quarters could have once housed many hundreds, 		
+CF | but it seems quite deserted now. There are openings at the north and 		
+CF | south ends of the room. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "n" 		
+CF ] SanFac D Score: 6, Turns: 6411 		
+CF | > 		
+CF | > N 		
+CF | 		
+CF | SanFac D 		
+CF | This must be the sanitary facility for the adjacent dormitory. The 		
+CF | fixtures are dry and dusty, the room dead and deserted. You marvel at 		
+CF | how little the millenia and cultural gulfs have changed toilet bowl 		
+CF | design. The only exit is south. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "s" 		
+CF ] Dorm D Score: 6, Turns: 6431 		
+CF | > 		
+CF | > S 		
+CF | 		
+CF | Dorm D 		
+CF | This is a very long room lined with multi-tiered bunks. Flimsy 		
+CF | partitions between the tiers may have provided a modicum of privacy. 		
+CF | These spartan living quarters could have once housed many hundreds, 		
+CF | but it seems quite deserted now. There are openings at the north and 		
+CF | south ends of the room. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "s" 		
+CF ] Dorm Corridor Score: 6, Turns: 6451 		
+CF | > 		
+CF | > S 		
+CF | 		
+CF | Dorm Corridor 		
+CF | This is a wide, east-west hallway with openings to the north and 		
+CF | south. To the east, the corridor stretches off into the distance. That 		
+CF | section of the hallway is lined with a motorized walkway (no longer 		
+CF | running) that was probably intended to transport people or cargo down 		
+CF | that tremendously long hall. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "s" 		
+CF ] Dorm C Score: 6, Turns: 6471 		
+CF | > 		
+CF | > S 		
+CF | 		
+CF | Dorm C 		
+CF | This is a very long room lined with multi-tiered bunks. Flimsy 		
+CF | partitions between the tiers may have provided a modicum of privacy. 		
+CF | These spartan living quarters could have once housed many hundreds, 		
+CF | but it seems quite deserted now. There are openings at the north and 		
+CF | south ends of the room. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "s" 		
+CF ] SanFac C Score: 6, Turns: 6491 		
+CF | > 		
+CF | > S 		
+CF | 		
+CF | SanFac C 		
+CF | This must be the sanitary facility for the adjacent dormitory. The 		
+CF | fixtures are dry and dusty, the room dead and deserted. You marvel at 		
+CF | how little the millenia and cultural gulfs have changed toilet bowl 		
+CF | design. The only exit is north. 		
+CF | 		
+CF | A growl from your stomach warns that you're getting pretty hungry and 		
+CF | thirsty. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "fill canteen" 		
+CF ] SanFac C Score: 6, Turns: 6491 		
+CF | > 		
+CF | > FILL CANTEEN 		
+CF | 		
+CF | I don't know the word "fill." 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "examine fixtures" 		
+CF ] SanFac C Score: 6, Turns: 6498 		
+CF | > 		
+CF | > EXAMINE FIXTURES 		
+CF | 		
+CF | The fixtures are all dry and dusty. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "open kit" 		
+CF ] SanFac C Score: 6, Turns: 6505 		
+CF | > 		
+CF | > OPEN KIT 		
+CF | 		
+CF | Opening the survival kit reveals a blob of red goo, a blob of green 		
+CF | goo, and a blob of brown goo. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "eat red goo" 		
+CF ] SanFac C Score: 6, Turns: 6520 		
+CF | > 		
+CF | > EAT RED GOO 		
+CF | 		
+CF | Mmmm...that tasted just like scrumptious cherry pie. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "close kit" 		
+CF ] SanFac C Score: 6, Turns: 6527 		
+CF | > 		
+CF | > CLOSE KIT 		
+CF | 		
+CF | Closed. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "n" 		
+CF ] Dorm C Score: 6, Turns: 6547 		
+CF | > 		
+CF | > N 		
+CF | 		
+CF | Dorm C 		
+CF | This is a very long room lined with multi-tiered bunks. Flimsy 		
+CF | partitions between the tiers may have provided a modicum of privacy. 		
+CF | These spartan living quarters could have once housed many hundreds, 		
+CF | but it seems quite deserted now. There are openings at the north and 		
+CF | south ends of the room. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "n" 		
+CF ] Dorm Corridor Score: 6, Turns: 6567 		
+CF | > 		
+CF | > N 		
+CF | 		
+CF | Dorm Corridor 		
+CF | This is a wide, east-west hallway with openings to the north and 		
+CF | south. To the east, the corridor stretches off into the distance. That 		
+CF | section of the hallway is lined with a motorized walkway (no longer 		
+CF | running) that was probably intended to transport people or cargo down 		
+CF | that tremendously long hall. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "e" 		
+CF ] Corridor Junction Score: 6, Turns: 6727 		
+CF | > 		
+CF | > E 		
+CF | 		
+CF | You walk down the long, featureless hallway for a long time. Finally, 		
+CF | you see an intersection ahead... 		
+CF | 		
+CF | Corridor Junction 		
+CF | A north-south corridor intersects the main corridor here. To the west, 		
+CF | the main corridor extends as far as you can see; a non-working walkway 		
+CF | from that direction ends here. To the east, the corridor widens into a 		
+CF | well-lit area. 		
+CF | 		
+CF | > 		Jade asks, "oh, we need to eat if we survive?"
+		Knight_Otu says, "It is an old game, so yes."
+		DavidW says, "I think we die if we never eat, yes."
+		DavidW asks, "Which way? North, east, or south?"
+		DavidW says, "We may need to get the water working ASAP."
+		Knight_Otu says, "Maybe east first."
+DavidW says (to ClubFloyd), "e" 		
+CF ] Elevator Lobby Score: 6, Turns: 6757 		
+CF | > 		
+CF | > E 		
+CF | 		
+CF | Elevator Lobby 		
+CF | This is a wide, brightly lit lobby. A blue metal door to the north is 		
+CF | closed and a larger red metal door to the south is also closed. Beside 		
+CF | the blue door is a blue button, and beside the red door is a red 		
+CF | button. A corridor leads west. To the east is a small room about the 		
+CF | size of a telephone booth. 		
+CF | 		
+CF | > 		Knight_Otu says, "Hrm."
+		DavidW says, "The elevator probably needs its own card too, I think."
+		Roger asks, "might there be a way to get water from that river?"
+		DavidW asks, "What river? We've only seen ocean, haven't we?"
+		Roger says, "Oh was that an ocean? It seemed riverlike to me, but you're probably right"
+		Jacqueline says, "Sorry, have been away due to a pet-related issue."
+		Jacqueline asks, "Should we have waited to eat until things were more dire?"
+		DavidW says, "Maybe the ocean water is drinkable but it's totally far from us now."
+		DavidW says (to Jacqueline), "Maybe, but there's no way to optimize just yet."
+		DavidW says, "I'm willing to let someone else drive if I'm doing it all wrong."
+		Jacqueline says, "No, no. You're fine."
+DavidW says (to ClubFloyd), "push blue button" 		
+CF ] Elevator Lobby Score: 6, Turns: 6764 		
+CF | > 		
+CF | > PUSH BLUE BUTTON 		
+CF | 		
+CF | You hear a faint whirring noise from behind the blue door. 		
+CF | 		
+CF | > 		Roger says, "yeah looks good to me"
+		Jade says, "I think this sort of games are more of the try and wait type"
+DavidW says (to ClubFloyd), "open blue door" 		
+CF ] Elevator Lobby Score: 6, Turns: 6771 		
+CF | > 		
+CF | > OPEN BLUE DOOR 		
+CF | 		
+CF | It won't budge. 		
+CF | 		
+CF | > 		DavidW asks, "Should I wait for the blue door to open, then?"
+		Roger says, "hmmm yeah elevators sometimes work like that"
+		Knight_Otu says, "I guess."
+		DavidW says, "I don't think the blue door is for an elevator, but maybe."
+DavidW says (to ClubFloyd), "z" 		
+CF ] Elevator Lobby Score: 6, Turns: 6811 		
+CF | > 		
+CF | > Z 		
+CF | 		
+CF | Time passes... 		
+CF | 		
+CF | The door at the north end of the room slides open. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "n" 		
+CF ] Upper Elevator Score: 6, Turns: 6818 		
+CF | > 		
+CF | > N 		
+CF | 		
+CF | Upper Elevator 		
+CF | You have entered a tiny room with a sliding door to the south which is 		
+CF | open. A control panel contains an Up button, a Down button, and a 		
+CF | narrow slot. 		
+CF | 		
+CF | > 		DavidW says, "oh, okay."
+DavidW says (to ClubFloyd), "push up button" 		
+CF ] Upper Elevator Score: 6, Turns: 6825 		
+CF | > 		
+CF | > PUSH UP BUTTON 		
+CF | 		
+CF | Nothing happens. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "push down button" 		
+CF ] Upper Elevator Score: 6, Turns: 6832 		
+CF | > 		
+CF | > PUSH DOWN BUTTON 		
+CF | 		
+CF | Nothing happens. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "examine slot" 		
+CF ] Upper Elevator Score: 6, Turns: 6839 		
+CF | > 		
+CF | > EXAMINE SLOT 		
+CF | 		
+CF | The slot is about ten centimeters wide, but only about two centimeters 		
+CF | deep. It is surrounded on its long sides by parallel ridges of metal. 		
+CF | 		
+CF | > 		DavidW says, "We need a keycard here."
+DavidW says (to ClubFloyd), "s" 		
+CF ] Elevator Lobby Score: 6, Turns: 6846 		
+CF | > 		
+CF | > S 		
+CF | 		
+CF | Elevator Lobby 		
+CF | This is a wide, brightly lit lobby. A blue metal door to the north is 		
+CF | open and a larger red metal door to the south is closed. Beside the 		
+CF | blue door is a blue button, and beside the red door is a red button. A 		
+CF | corridor leads west. To the east is a small room about the size of a 		
+CF | telephone booth. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "push red button" 		
+CF ] Elevator Lobby Score: 6, Turns: 6853 		
+CF | > 		
+CF | > PUSH RED BUTTON 		
+CF | 		
+CF | The red door begins vibrating a bit. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "z" 		
+CF ] Elevator Lobby Score: 6, Turns: 6893 		
+CF | > 		
+CF | > Z 		
+CF | 		
+CF | Time passes... 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "z" 		
+CF ] Elevator Lobby Score: 6, Turns: 6933 		
+CF | > 		
+CF | > Z 		
+CF | 		
+CF | Time passes... 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "z" 		
+CF ] Elevator Lobby Score: 6, Turns: 6973 		
+CF | > 		
+CF | > Z 		
+CF | 		
+CF | Time passes... 		
+CF | 		
+CF | The door at the south end of the room slides open. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "s" 		
+CF ] Lower Elevator Score: 6, Turns: 6980 		
+CF | > 		
+CF | > S 		
+CF | 		
+CF | Lower Elevator 		
+CF | This is a medium-sized room with a door to the north which is open. A 		
+CF | control panel contains an Up button, a Down button, and a narrow slot. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "push up" 		
+CF ] Lower Elevator Score: 6, Turns: 6980 		
+CF | > 		
+CF | > PUSH UP 		
+CF | 		
+CF | What do you want to push up? 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "push up button" 		
+CF ] Lower Elevator Score: 6, Turns: 6987 		
+CF | > 		
+CF | > PUSH UP BUTTON 		
+CF | 		
+CF | Nothing happens. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "n" 		
+CF ] Elevator Lobby Score: 6, Turns: 6994 		
+CF | > 		
+CF | > N 		
+CF | 		
+CF | Elevator Lobby 		
+CF | This is a wide, brightly lit lobby. A blue metal door to the north is 		
+CF | open and a larger red metal door to the south is also open. Beside the 		
+CF | blue door is a blue button, and beside the red door is a red button. A 		
+CF | corridor leads west. To the east is a small room about the size of a 		
+CF | telephone booth. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "e" 		
+CF ] Booth 2 Score: 6, Turns: 7014 		
+CF | > 		
+CF | > E 		
+CF | 		
+CF | Booth 2 		
+CF | This is a tiny room with a large "2" painted on the wall. A panel 		
+CF | contains a slot about ten centimeters wide, a brown button labelled 		
+CF | "1" and a tan button labelled "3." 		
+CF | 		
+CF | > 		DavidW says, "This one has a slot too."
+DavidW says (to ClubFloyd), "w" 		
+CF ] Elevator Lobby Score: 6, Turns: 7034 		
+CF | > 		
+CF | > W 		
+CF | 		
+CF | Elevator Lobby 		
+CF | This is a wide, brightly lit lobby. A blue metal door to the north is 		
+CF | open and a larger red metal door to the south is also open. Beside the 		
+CF | blue door is a blue button, and beside the red door is a red button. A 		
+CF | corridor leads west. To the east is a small room about the size of a 		
+CF | telephone booth. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "w" 		
+CF ] Corridor Junction Score: 6, Turns: 7064 		
+CF | > 		
+CF | > W 		
+CF | 		
+CF | Corridor Junction 		
+CF | A north-south corridor intersects the main corridor here. To the west, 		
+CF | the main corridor extends as far as you can see; a non-working walkway 		
+CF | from that direction ends here. To the east, the corridor widens into a 		
+CF | well-lit area. 		
+CF | 		
+CF | > 		DavidW asks, "North or south?"
+		DavidW says, "I suppose it doesn't matter."
+DavidW says (to ClubFloyd), "n" 		
+CF ] Admin Corridor South Score: 6, Turns: 7084 		
+CF | > 		
+CF | > N 		
+CF | 		
+CF | Admin Corridor South 		
+CF | This section of hallway seems to have suffered some minor structural 		
+CF | damage. The walls are cracked, and a jagged crevice crosses the floor. 		
+CF | An opening leads east and the corridor heads north and south. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "look in crevice" 		
+CF ] Admin Corridor South Score: 6, Turns: 7091 		
+CF | > 		
+CF | > LOOK IN CREVICE 		
+CF | 		
+CF | Lying at the bottom of the narrow crack, partly covered by layers of 		
+CF | dust, is a shiny steel key! 		
+CF | 		
+CF | > 		
+Knight_Otu KEY! 		Knight_Otu says, "Oops."
+		DavidW says, "I'm almost certain we need a magnet to get that."
+		Jade exclaims, "yes!"
+		DavidW says, "Also, I remember that magnets destroy keycards in this game. A very nasty trick if you carry them together."
+DavidW says (to ClubFloyd), "n" 		
+CF ] Admin Corridor Score: 6, Turns: 7111 		
+CF | > 		
+CF | > N 		
+CF | 		
+CF | Admin Corridor 		
+CF | The hallway, in fact the entire building, has been rent apart here, 		
+CF | presumably by seismic upheaval. You can see the sky through the 		
+CF | severed roof above, and the ground is thick with rubble. To the north 		
+CF | is a gaping rift, at least eight meters across and thirty meters deep. 		
+CF | A wide doorway, labelled "Sistumz Moniturz," leads west. 		
+CF | 		
+CF | > 		Jade says, "ah, good to know."
+DavidW says (to ClubFloyd), "examine rift" 		
+CF ] Admin Corridor Score: 6, Turns: 7118 		
+CF | > 		
+CF | > EXAMINE RIFT 		
+CF | 		
+CF | The rift is at least eight meters wide and more than thirty meters 		
+CF | deep. The bottom is covered with sharp and nasty rocks. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "w" 		
+CF ] Systems Monitors Score: 6, Turns: 7138 		
+CF | > 		
+CF | > W 		
+CF | 		
+CF | Systems Monitors 		
+CF | This is a large room filled with tables full of strange equipment. The 		
+CF | far wall is filled with a number of monitors. Of these, the ones 		
+CF | labelled LIIBREREE, REEAKTURZ, and LIIF SUPORT are green, but the ones 		
+CF | labelled PLANATEREE DEFENS, PLANATEREE KORS KUNTROOL, KUMUUNIKAASHUNZ, 		
+CF | and PRAJEKT KUNTROOL indicate a malfunctioning condition. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "examine defens" 		
+CF ] Systems Monitors Score: 6, Turns: 7138 		
+CF | > 		
+CF | > EXAMINE DEFENS 		
+CF | 		
+CF | I don't know the word "defens." 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "examine equipment" 		
+CF ] Systems Monitors Score: 6, Turns: 7145 		
+CF | > 		
+CF | > EXAMINE EQUIPMENT 		
+CF | 		
+CF | The equipment here is so complicated that you couldn't even begin to 		
+CF | figure out how to operate it. 		
+CF | 		
+CF | > 		Roger says, "as far as enduring tropes go, 'The Future Is Metric' is way up there"
+Jacqueline says (to ClubFloyd), "examine defence" 		
+CF ] Systems Monitors Score: 6, Turns: 7145 		
+CF | > 		
+CF | > EXAMINE DEFENCE 		
+CF | 		
+CF | I don't know the word "defence." 		
+CF | 		
+CF | > 		DavidW says, "I don't think we can do anything here."
+		DavidW says, "I'm not sure if we need to get across the rift or not."
+DavidW says (to ClubFloyd), "e" 		
+CF ] Admin Corridor Score: 6, Turns: 7165 		
+CF | > 		
+CF | > E 		
+CF | 		
+CF | Admin Corridor 		
+CF | The hallway, in fact the entire building, has been rent apart here, 		
+CF | presumably by seismic upheaval. You can see the sky through the 		
+CF | severed roof above, and the ground is thick with rubble. To the north 		
+CF | is a gaping rift, at least eight meters across and thirty meters deep. 		
+CF | A wide doorway, labelled "Sistumz Moniturz," leads west. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "SAVE" 		
+DavidW says (to ClubFloyd), "cf3" 		
+CF | > 		
+CF | > SAVE 		
+CF | %% Enter a save filename to write: 		
+CF ] Admin Corridor Score: 6, Turns: 7165 		
+CF | > SAVEOk. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "jump over rift" 		
+CF ] Admin Corridor Score: 6, Turns: 7165 		
+CF | > 		
+CF | > JUMP OVER RIFT 		
+CF | 		
+CF | You get a brief (but much closer) view of the sharp and nasty rocks at 		
+CF | the bottom of the rift. 		
+CF | 		
+CF | **** You have died **** 		
+CF | 		
+CF | Your score would be 6 (out of 80 points). It is Day 1 of your 		
+CF | adventure. Current Galactic Standard Time (adjusted to your local 		
+CF | day-cycle) is 7165. 		
+CF | This score gives you the rank of Beginner. 		
+CF | 		
+CF | Oh, well. According to the Treaty of Gishen IV, signed in 8747 GY, all 		
+CF | adventure game players must be given another chance after dying. In 		
+CF | the interests of interstellar peace... 		
+CF | 		
+CF | Would you like to restart the game from the beginning, restore a saved 		
+CF | game position, or end this session of the game? (Type RESTART, 		
+CF | RESTORE, or QUIT.) 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "restore" 		
+CF | > 		
+CF | > RESTORE 		
+CF | %% Enter a save filename to read: 		
+DavidW says (to ClubFloyd), "cf3" 		
+CF ] Admin Corridor Score: 6, Turns: 7165 		
+CF | > RESTOREOk. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "s" 		
+CF ] Admin Corridor South Score: 6, Turns: 7185 		
+CF | > 		
+CF | > S 		
+CF | 		
+CF | Admin Corridor South 		
+CF | This section of hallway seems to have suffered some minor structural 		
+CF | damage. The walls are cracked, and a jagged crevice crosses the floor. 		
+CF | An opening leads east and the corridor heads north and south. 		
+CF | Lying at the bottom of a narrow crevice is a shiny object. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "e" 		
+CF ] SanFac E Score: 6, Turns: 7205 		
+CF | > 		
+CF | > E 		
+CF | 		
+CF | SanFac E 		
+CF | Here is another sanitary facility. Like the others, it is dusty and 		
+CF | non-functional. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "w" 		
+CF ] Admin Corridor South Score: 6, Turns: 7225 		
+CF | > 		
+CF | > W 		
+CF | 		
+CF | Admin Corridor South 		
+CF | This section of hallway seems to have suffered some minor structural 		
+CF | damage. The walls are cracked, and a jagged crevice crosses the floor. 		
+CF | An opening leads east and the corridor heads north and south. 		
+CF | Lying at the bottom of a narrow crevice is a shiny object. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "s" 		
+CF ] Corridor Junction Score: 6, Turns: 7245 		
+CF | > 		
+CF | > S 		
+CF | 		
+CF | Corridor Junction 		
+CF | A north-south corridor intersects the main corridor here. To the west, 		
+CF | the main corridor extends as far as you can see; a non-working walkway 		
+CF | from that direction ends here. To the east, the corridor widens into a 		
+CF | well-lit area. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "s" 		
+CF ] Mech Corridor North Score: 6, Turns: 7265 		
+CF | > 		
+CF | > S 		
+CF | 		
+CF | Mech Corridor North 		
+CF | Entrances to rooms lie to the east and west from this north-south 		
+CF | hall. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "s" 		
+CF ] Mech Corridor Score: 6, Turns: 7285 		
+CF | > 		
+CF | > S 		
+CF | 		
+CF | Mech Corridor 		
+CF | Entrances to rooms lie to the east and west from this north-south 		
+CF | hall. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "s" 		
+CF ] Mech Corridor South Score: 6, Turns: 7305 		
+CF | > 		
+CF | > S 		
+CF | 		
+CF | Mech Corridor South 		
+CF | The corridor ends here with doorways to the southwest, south, and 		
+CF | southeast. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "s" 		
+CF ] Machine Shop Score: 6, Turns: 7325 		
+CF | > 		
+CF | > S 		
+CF | 		
+CF | Machine Shop 		
+CF | This room is probably some sort of machine shop filled with a variety 		
+CF | of unusual machines. Doorways lead north, east, and west. 		
+CF | 		
+CF | Standing against the rear wall is a large dispensing machine with a 		
+CF | spout. The dispenser is lined with brightly-colored buttons. The first 		
+CF | four buttons, labelled "KUULINTS 1 - 4", are colored red, blue, green, 		
+CF | and yellow. The next three buttons, labelled "KATALISTS 1 - 3", are 		
+CF | colored gray, brown, and black. The last two buttons are both white. 		
+CF | One of these is square and says "BAAS." The other white button is 		
+CF | round and says "ASID." 		
+CF | 		
+CF | > 		DavidW asks, "A chemisty puzzle, I guess?"
+DavidW says (to ClubFloyd), "w" 		
+CF ] Tool Room Score: 6, Turns: 7345 		
+CF | > 		
+CF | > W 		
+CF | 		
+CF | Tool Room 		
+CF | This is apparently a storage room for tools. Exits lead northeast and 		
+CF | east. 		
+CF | Sitting on the floor below the lowest shelf is a large glass flask. 		
+CF | A small device, labelled "Akmee Portabul Laazur", is resting on one of 		
+CF | the lower shelves. 		
+CF | The laser contains: 		
+CF | An old battery 		
+CF | On an upper shelf is a metal bar, curved into a U-shape. 		
+CF | There is a pair of wide-nosed pliers here. 		
+CF | 		
+CF | > 		Knight_Otu says, "Oh dear Akme."
+		DavidW says, "The metal bar is probably the magnet."
+DavidW says (to ClubFloyd), "take flask, laazur, magnet, pliers" 		
+CF ] Tool Room Score: 6, Turns: 7345 		
+CF | > 		
+CF | > TAKE FLASK, LAAZUR, MAGNET, PLIERS 		
+CF | 		
+CF | I don't know the word "laazur." 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "take flask, laser, magnet, pliers" 		
+CF ] Tool Room Score: 6, Turns: 7352 		
+CF | > 		
+CF | > TAKE FLASK, LASER, MAGNET, PLIERS 		
+CF | 		
+CF | glass flask: Taken. 		
+CF | laser: Your load is too heavy. 		
+CF | curved metal bar: Oh, no. The glass flask slips from your arms while 		
+CF | taking the curved metal bar and both tumble to the ground. 		
+CF | pair of wide-nosed pliers: Taken. 		
+CF | 		
+CF | > 		Jade says, "It seems to be"
+		DavidW says, "We seem to have carrying capacity issues."
+		Jacqueline says, "Inventory management, how I've not missed you."
+		Jacqueline says, "I noticed the uniform description mentioned one pocket and I was like... yeah. That's gonna be an issue at some point, maybe."
+		DavidW says, "At least the flask didn't break, and the laser's battery probably needs replacing."
+		Jacqueline says, "But we do have a pocket."
+DavidW says (to ClubFloyd), "look in pocket" 		
+CF ] Tool Room Score: 6, Turns: 7359 		
+CF | > 		
+CF | > LOOK IN POCKET 		
+CF | 		
+CF | The Patrol uniform contains: 		
+CF | An ID card 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "put pliers in pocket" 		
+CF ] Tool Room Score: 6, Turns: 7366 		
+CF | > 		
+CF | > PUT PLIERS IN POCKET 		
+CF | 		
+CF | There's no room. 		
+CF | 		
+CF | > 		Jade asks, "into?"
+		DavidW says, "IN and INTO are the same."
+		DavidW says, "And the problem is that there's no room, not that it didn't understand 'in'."
+		DavidW says, "I'll leave the flask and laser here."
+DavidW says (to ClubFloyd), "e" 		
+CF ] Machine Shop Score: 6, Turns: 7386 		
+CF | > 		
+CF | > E 		
+CF | 		
+CF | Machine Shop 		
+CF | This room is probably some sort of machine shop filled with a variety 		
+CF | of unusual machines. Doorways lead north, east, and west. 		
+CF | 		
+CF | Standing against the rear wall is a large dispensing machine with a 		
+CF | spout. The dispenser is lined with brightly-colored buttons. The first 		
+CF | four buttons, labelled "KUULINTS 1 - 4", are colored red, blue, green, 		
+CF | and yellow. The next three buttons, labelled "KATALISTS 1 - 3", are 		
+CF | colored gray, brown, and black. The last two buttons are both white. 		
+CF | One of these is square and says "BAAS." The other white button is 		
+CF | round and says "ASID." 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "e" 		
+CF ] Robot Shop Score: 6, Turns: 7406 		
+CF | > 		
+CF | > E 		
+CF | 		
+CF | Robot Shop 		
+CF | This room, with exits west and northwest, is filled with robot-like 		
+CF | devices of every conceivable description, all in various states of 		
+CF | disassembly. 		
+CF | Only one robot, about four feet high, looks even remotely close to 		
+CF | being in working order. 		
+CF | 		
+CF | > 		Jade says, "ah! Of course"
+		DavidW asks, "Floyd?"
+DavidW says (to ClubFloyd), "examine robot" 		
+CF ] Robot Shop Score: 6, Turns: 7413 		
+CF | > 		
+CF | > EXAMINE ROBOT 		
+CF | 		
+CF | The de-activated robot is leaning against the wall, its head lolling 		
+CF | to the side. It is short, and seems to be equipped for general-purpose 		
+CF | work. It has apparently been turned off. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "turn on robot" 		
+CF ] Robot Shop Score: 8, Turns: 7420 		
+CF | > 		
+CF | > TURN ON ROBOT 		
+CF | 		
+CF | Nothing happens. 		
+CF | 		
+CF | > 		Roger says, "yay! ohhhh...."
+DavidW says (to ClubFloyd), "examine head" 		
+CF ] Robot Shop Score: 8, Turns: 7420 		
+CF | > 		
+CF | > EXAMINE HEAD 		
+CF | 		
+CF | I don't know the word "head." 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "take robot" 		
+CF ] Robot Shop Score: 8, Turns: 7427 		
+CF | > 		
+CF | > TAKE ROBOT 		
+CF | 		
+CF | An interesting idea... 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "turn robot on" 		
+CF ] Robot Shop Score: 8, Turns: 7434 		
+CF | > 		
+CF | > TURN ROBOT ON 		
+CF | 		
+CF | Nothing happens. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "nw" 		
+CF ] Mech Corridor South Score: 8, Turns: 7459 		
+CF | > 		
+CF | > NW 		
+CF | 		
+CF | Mech Corridor South 		
+CF | The corridor ends here with doorways to the southwest, south, and 		
+CF | southeast. 		
+CF | 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "n" 		
+CF ] Mech Corridor Score: 8, Turns: 7479 		
+CF | > 		
+CF | > N 		
+CF | 		
+CF | Mech Corridor 		
+CF | Entrances to rooms lie to the east and west from this north-south 		
+CF | hall. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "e" 		
+CF ] Reactor Control Score: 8, Turns: 7499 		
+CF | > 		
+CF | > E 		
+CF | 		
+CF | Reactor Control 		
+CF | This room contains many dials and gauges for controlling a massive 		
+CF | planetary power reactor which, according to a diagram on the wall, 		
+CF | must be buried far below this very complex. The exit is to the west. 		
+CF | To the east is a metal door, and next to it, a button. A dark stairway 		
+CF | winds downward. 		
+CF | 		
+CF | The robot you were fiddling with in the Robot Shop bounds into the 		
+CF | room. "Hi!" he says, with a wide and friendly smile. "You turn Floyd 		
+CF | on? Be Floyd's friend, yes?" 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "yes" 		
+CF ] Reactor Control Score: 8, Turns: 7506 		
+CF | > 		
+CF | > YES 		
+CF | 		
+CF | You sound rather positive. 		
+CF | Floyd absent-mindedly oils one of his joints. 		Jade says, "yeah! Floyd"
+CF | 		
+CF | > 		Knight_Otu says, "Floyd knows THAT trick."
+DavidW says (to ClubFloyd), "talk to floyd" 		
+CF ] Reactor Control Score: 8, Turns: 7513 		
+CF | > 		
+CF | > TALK TO FLOYD 		
+CF | 		
+CF | "Hi!" Floyd grins and bounces up and down. 		
+CF | 		
+CF | > 		Jacqueline exclaims (at Floyd), "Hi!"
+DavidW says (to ClubFloyd), "ask floyd about floyd" 		
+CF ] Reactor Control Score: 8, Turns: 7513 		
+CF | > 		
+CF | > ASK FLOYD ABOUT FLOYD 		
+CF | 		
+CF | I don't know the word "about." 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "d" 		
+CF ] Reactor Access Stairs Score: 8, Turns: 7533 		
+CF | > 		
+CF | > D 		
+CF | 		
+CF | It is pitch black. You might be eaten by a grue. 		
+CF | Floyd follows you. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "u" 		
+CF ] Reactor Control Score: 8, Turns: 7563 		
+CF | > 		
+CF | > U 		
+CF | 		
+CF | Reactor Control 		
+CF | This room contains many dials and gauges for controlling a massive 		
+CF | planetary power reactor which, according to a diagram on the wall, 		
+CF | must be buried far below this very complex. The exit is to the west. 		
+CF | To the east is a metal door, and next to it, a button. A dark stairway 		
+CF | winds downward. 		
+CF | Floyd follows you. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "push button" 		
+CF ] Reactor Control Score: 8, Turns: 7570 		
+CF | > 		
+CF | > PUSH BUTTON 		
+CF | 		
+CF | The metal doors slide open, revealing a small room to the east. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "e" 		
+CF ] Reactor Elevator Score: 8, Turns: 7590 		
+CF | > 		
+CF | > E 		
+CF | 		
+CF | Reactor Elevator 		
+CF | This is an elevator with a door to the west, currently open. A control 		
+CF | panel contains an Up button, a Down button, and a small slot. 		
+CF | Floyd follows you. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "w" 		
+CF ] Reactor Control Score: 8, Turns: 7610 		
+CF | > 		
+CF | > W 		
+CF | 		
+CF | Reactor Control 		
+CF | This room contains many dials and gauges for controlling a massive 		
+CF | planetary power reactor which, according to a diagram on the wall, 		
+CF | must be buried far below this very complex. The exit is to the west. 		
+CF | To the east is a metal door, and next to it, a button. A dark stairway 		
+CF | winds downward. 		
+CF | 		
+CF | The elevator door slides shut. 		
+CF | Floyd follows you. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "w" 		
+CF ] Mech Corridor Score: 8, Turns: 7630 		
+CF | > 		
+CF | > W 		
+CF | 		
+CF | Mech Corridor 		
+CF | Entrances to rooms lie to the east and west from this north-south 		
+CF | hall. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "w" 		
+CF ] Physical Plant Score: 8, Turns: 7650 		
+CF | > 		
+CF | > W 		
+CF | 		
+CF | Physical Plant 		
+CF | This is a huge, dim room with exits in the northeast and southeast 		
+CF | corners. The room is criss-crossed with catwalks and is filled with 		
+CF | heavy equipment presumably intended to heat and ventilate this 		
+CF | complex. Hardly any of the equipment is still operating. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "look at equipment" 		
+CF ] Physical Plant Score: 8, Turns: 7657 		
+CF | > 		
+CF | > LOOK AT EQUIPMENT 		
+CF | 		
+CF | The equipment here is so complicated that you couldn't even begin to 		
+CF | figure out how to operate it. 		
+CF | 		
+CF | Floyd bounds into the room. "Floyd here now!" he cries. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "ne" 		
+CF ] Mech Corridor North Score: 8, Turns: 7677 		
+CF | > 		
+CF | > NE 		
+CF | 		
+CF | Mech Corridor North 		
+CF | Entrances to rooms lie to the east and west from this north-south 		
+CF | hall. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "e" 		
+CF ] Storage East Score: 8, Turns: 7697 		
+CF | > 		
+CF | > E 		
+CF | 		
+CF | Storage East 		
+CF | A small room for storage. The exit is to the west. 		
+CF | One dusty shelf, otherwise bare, holds a small oil can. 		
+CF | On the floor beneath the shelves sits a small cardboard box. 		
+CF | The cardboard box contains: 		
+CF | A cracked seventeen-centimeter fromitz board 		
+CF | A good ninety-ohm bedistor 		
+CF | A K-series megafuse 		
+CF | A B-series megafuse 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "take box" 		
+CF ] Storage East Score: 8, Turns: 7704 		
+CF | > 		
+CF | > TAKE BOX 		
+CF | 		
+CF | Your load is too heavy. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "floyd, take box" 		
+CF ] Storage East Score: 8, Turns: 7704 		
+CF | > 		
+CF | > FLOYD, TAKE BOX 		
+CF | 		
+CF | You can't see any Floyd here! 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "i" 		
+CF ] Storage East Score: 8, Turns: 7722 		
+CF | > 		
+CF | > I 		
+CF | 		
+CF | You are carrying: 		
+CF | A pair of wide-nosed pliers 		
+CF | A canteen 		
+CF | A survival kit 		
+CF | A towel 		
+CF | A brochure 		
+CF | A Patrol-issue self-contained multi-purpose scrub brush 		
+CF | A Patrol uniform (being worn) 		
+CF | The Patrol uniform contains: 		
+CF | An ID card 		
+CF | A chronometer (being worn) 		
+CF | 		
+CF | > 		Roger says, "more-charming in distant retrospect"
+DavidW says (to ClubFloyd), "drop brochure" 		
+CF ] Storage East Score: 8, Turns: 7729 		
+CF | > 		
+CF | > DROP BROCHURE 		
+CF | 		
+CF | Dropped. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "take box" 		
+CF ] Storage East Score: 8, Turns: 7736 		
+CF | > 		
+CF | > TAKE BOX 		
+CF | 		
+CF | Your load is too heavy. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "w" 		
+CF ] Mech Corridor North Score: 8, Turns: 7756 		
+CF | > 		
+CF | > W 		
+CF | 		
+CF | Mech Corridor North 		
+CF | Entrances to rooms lie to the east and west from this north-south 		
+CF | hall. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "n" 		
+CF ] Corridor Junction Score: 8, Turns: 7776 		
+CF | > 		
+CF | > N 		
+CF | 		
+CF | Corridor Junction 		
+CF | A north-south corridor intersects the main corridor here. To the west, 		
+CF | the main corridor extends as far as you can see; a non-working walkway 		
+CF | from that direction ends here. To the east, the corridor widens into a 		
+CF | well-lit area. 		
+CF | 		
+CF | Floyd rushes into the room and barrels into you. "Oops, sorry," he 		
+CF | says. "Floyd not looking at where he was going to." 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "n" 		
+CF ] Admin Corridor South Score: 8, Turns: 7796 		
+CF | > 		
+CF | > N 		
+CF | 		
+CF | Admin Corridor South 		
+CF | This section of hallway seems to have suffered some minor structural 		
+CF | damage. The walls are cracked, and a jagged crevice crosses the floor. 		
+CF | An opening leads east and the corridor heads north and south. 		
+CF | Lying at the bottom of a narrow crevice is a shiny object. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "take key with magnet" 		
+CF ] Admin Corridor South Score: 8, Turns: 7803 		
+CF | > 		
+CF | > TAKE KEY WITH MAGNET 		
+CF | 		
+CF | You can't see any magnet here! 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "i" 		
+CF ] Admin Corridor South Score: 8, Turns: 7821 		
+CF | > 		
+CF | > I 		
+CF | 		
+CF | You are carrying: 		
+CF | A pair of wide-nosed pliers 		
+CF | A canteen 		
+CF | A survival kit 		
+CF | A towel 		
+CF | A Patrol-issue self-contained multi-purpose scrub brush 		
+CF | A Patrol uniform (being worn) 		
+CF | The Patrol uniform contains: 		
+CF | An ID card 		
+CF | A chronometer (being worn) 		
+CF | 		
+CF | Floyd bounds into the room. "Floyd here now!" he cries. 		
+CF | 		
+CF | > 		DavidW says, "I thought I had the magnet. I guess I only got the pliers"
+		Jade says, "the magnet could be useful here"
+		DavidW says (to Jade), "I know that."
+DavidW says (to ClubFloyd), "s" 		
+CF ] Corridor Junction Score: 8, Turns: 7841 		
+CF | > 		
+CF | > S 		
+CF | 		
+CF | Corridor Junction 		
+CF | A north-south corridor intersects the main corridor here. To the west, 		
+CF | the main corridor extends as far as you can see; a non-working walkway 		
+CF | from that direction ends here. To the east, the corridor widens into a 		
+CF | well-lit area. 		
+CF | 		
+CF | Floyd bounds into the room. "Floyd here now!" he cries. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "drop pliers, brush" 		
+CF ] Corridor Junction Score: 8, Turns: 7848 		
+CF | > 		
+CF | > DROP PLIERS, BRUSH 		
+CF | 		
+CF | pair of wide-nosed pliers: Dropped. 		
+CF | Patrol-issue self-contained multi-purpose scrub brush: Dropped. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "s" 		
+CF ] Mech Corridor North Score: 8, Turns: 7868 		
+CF | > 		
+CF | > S 		
+CF | 		
+CF | Mech Corridor North 		
+CF | Entrances to rooms lie to the east and west from this north-south 		
+CF | hall. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "s" 		
+CF ] Mech Corridor Score: 8, Turns: 7888 		
+CF | > 		
+CF | > S 		
+CF | 		
+CF | Mech Corridor 		
+CF | Entrances to rooms lie to the east and west from this north-south 		
+CF | hall. 		
+CF | 		
+CF | > 		Jade says, "ah, perhaps too"
+DavidW says (to ClubFloyd), "s" 		
+CF ] Mech Corridor South Score: 8, Turns: 7908 		
+CF | > 		
+CF | > S 		
+CF | 		
+CF | Mech Corridor South 		
+CF | The corridor ends here with doorways to the southwest, south, and 		
+CF | southeast. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "sw" 		
+CF ] Tool Room Score: 8, Turns: 7933 		
+CF | > 		
+CF | > SW 		
+CF | 		
+CF | Tool Room 		
+CF | This is apparently a storage room for tools. Exits lead northeast and 		
+CF | east. 		
+CF | On an upper shelf is a metal bar, curved into a U-shape. 		
+CF | A small device, labelled "Akmee Portabul Laazur", is resting on one of 		
+CF | the lower shelves. 		
+CF | The laser contains: 		
+CF | An old battery 		
+CF | There is a glass flask here. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "take magnet" 		
+CF ] Tool Room Score: 8, Turns: 7940 		
+CF | > 		
+CF | > TAKE MAGNET 		
+CF | 		
+CF | Taken. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "ne" 		
+CF ] Mech Corridor South Score: 8, Turns: 7965 		
+CF | > 		
+CF | > NE 		
+CF | 		
+CF | Mech Corridor South 		
+CF | The corridor ends here with doorways to the southwest, south, and 		
+CF | southeast. 		
+CF | 		
+CF | A growl from your stomach warns that you're getting pretty hungry and 		
+CF | thirsty. 		
+CF | 		
+CF | > 		DavidW says, "damn. Hungry again."
+DavidW says (to ClubFloyd), "n" 		
+CF ] Mech Corridor Score: 8, Turns: 7985 		
+CF | > 		
+CF | > N 		
+CF | 		
+CF | Mech Corridor 		
+CF | Entrances to rooms lie to the east and west from this north-south 		
+CF | hall. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "n" 		
+CF ] Mech Corridor North Score: 8, Turns: 8005 		
+CF | > 		
+CF | > N 		
+CF | 		
+CF | Mech Corridor North 		
+CF | Entrances to rooms lie to the east and west from this north-south 		
+CF | hall. 		
+CF | 		
+CF | Floyd bounds into the room. "Floyd here now!" he cries. 		
+CF | 		
+CF | > 		Jade exclaims, "oops!"
+		Knight_Otu says, "Darn our fast metabolism."
+DavidW says (to ClubFloyd), "n" 		
+CF ] Corridor Junction Score: 8, Turns: 8025 		
+CF | > 		
+CF | > N 		
+CF | 		
+CF | Corridor Junction 		
+CF | A north-south corridor intersects the main corridor here. To the west, 		
+CF | the main corridor extends as far as you can see; a non-working walkway 		
+CF | from that direction ends here. To the east, the corridor widens into a 		
+CF | well-lit area. 		
+CF | There is a Patrol-issue self-contained multi-purpose scrub brush here. 		
+CF | There is a pair of wide-nosed pliers here. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "n" 		
+CF ] Admin Corridor South Score: 8, Turns: 8045 		
+CF | > 		
+CF | > N 		
+CF | 		
+CF | Admin Corridor South 		
+CF | This section of hallway seems to have suffered some minor structural 		
+CF | damage. The walls are cracked, and a jagged crevice crosses the floor. 		
+CF | An opening leads east and the corridor heads north and south. 		
+CF | Lying at the bottom of a narrow crevice is a shiny object. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "take key with magnet" 		
+CF ] Admin Corridor South Score: 8, Turns: 8052 		
+CF | > 		
+CF | > TAKE KEY WITH MAGNET 		
+CF | 		
+CF | With a spray of dust and a loud clank, a piece of metal leaps from the 		
+CF | crevice and affixes itself to the magnet. It is a steel key! With a 		
+CF | tug, you remove the key from the magnet. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "drop magnet" 		
+CF ] Admin Corridor South Score: 8, Turns: 8059 		
+CF | > 		
+CF | > DROP MAGNET 		
+CF | 		
+CF | Dropped. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "s" 		
+CF ] Corridor Junction Score: 8, Turns: 8079 		
+CF | > 		
+CF | > S 		
+CF | 		
+CF | Corridor Junction 		
+CF | A north-south corridor intersects the main corridor here. To the west, 		
+CF | the main corridor extends as far as you can see; a non-working walkway 		
+CF | from that direction ends here. To the east, the corridor widens into a 		
+CF | well-lit area. 		
+CF | There is a Patrol-issue self-contained multi-purpose scrub brush here. 		
+CF | There is a pair of wide-nosed pliers here. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "w" 		
+CF ] Dorm Corridor Score: 8, Turns: 8239 		
+CF | > 		
+CF | > W 		
+CF | 		
+CF | You walk down the long, featureless hallway for a long time. Finally, 		
+CF | you see some doorways ahead... 		
+CF | 		
+CF | Dorm Corridor 		
+CF | This is a wide, east-west hallway with openings to the north and 		
+CF | south. To the east, the corridor stretches off into the distance. That 		
+CF | section of the hallway is lined with a motorized walkway (no longer 		
+CF | running) that was probably intended to transport people or cargo down 		
+CF | that tremendously long hall. 		
+CF | 		
+CF | You begin to feel weary. It might be time to think about finding a 		
+CF | nice safe place to sleep. 		
+CF | 		
+CF | > 		DavidW says, "damn. sleep daemon too."
+		Jade says, "cool"
+		Jacqueline says, "Dang. All the old school stuff is here today."
+DavidW says (to ClubFloyd), "w" 		
+CF ] Mess Corridor Score: 8, Turns: 8259 		
+CF | > 		
+CF | > W 		
+CF | 		
+CF | Mess Corridor 		
+CF | This is a wide, east-west hallway with a large portal to the south. A 		
+CF | small door to the north is closed and hooked with a simple steel 		
+CF | padlock which is also closed. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "unlock padlock with key" 		
+CF ] Mess Corridor Score: 8, Turns: 8266 		
+CF | > 		
+CF | > UNLOCK PADLOCK WITH KEY 		
+CF | 		
+CF | The padlock springs open. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "drop key" 		
+CF ] Mess Corridor Score: 8, Turns: 8273 		
+CF | > 		
+CF | > DROP KEY 		
+CF | 		
+CF | Dropped. 		
+CF | 		
+CF | Floyd bounds into the room. "Floyd here now!" he cries. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "open door" 		
+CF ] Mess Corridor Score: 8, Turns: 8280 		
+CF | > 		
+CF | > OPEN DOOR 		
+CF | 		
+CF | The door cannot be opened until the padlock is removed. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "take padlock" 		
+CF ] Mess Corridor Score: 8, Turns: 8287 		
+CF | > 		
+CF | > TAKE PADLOCK 		
+CF | 		
+CF | Taken. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "drop it" 		
+CF ] Mess Corridor Score: 8, Turns: 8294 		
+CF | > 		
+CF | > DROP IT 		
+CF | 		
+CF | Dropped. 		
+CF | Floyd recalls the time he bruised his knee. 		
+CF | 		
+CF | > 		Jade says, "floyd on his own, wandering"
+DavidW says (to ClubFloyd), "open door" 		
+CF ] Mess Corridor Score: 8, Turns: 8301 		
+CF | > 		
+CF | > OPEN DOOR 		
+CF | 		
+CF | Opened. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "n" 		
+CF ] Storage West Score: 12, Turns: 8321 		
+CF | > 		
+CF | > N 		
+CF | 		
+CF | Storage West 		
+CF | This is a small room obviously intended as a storage area. 		
+CF | On a small shelf is a large, unopened tin can. It has a plain white 		
+CF | label which reads "Spam and Egz." 		
+CF | A heavy-duty extendable ladder is leaning against the rear wall. 		
+CF | Floyd follows you. 		
+CF | 		
+CF | > 		DavidW says, "oh. That ladder might help get us past the rift."
+		Jade says, "pherhaps there was food near canteen"
+		Jade says, "yes it could be possible using the ladder"
+DavidW says (to ClubFloyd), "take ladder" 		
+CF ] Storage West Score: 12, Turns: 8328 		
+CF | > 		
+CF | > TAKE LADDER 		
+CF | 		
+CF | Your load is too heavy. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "i" 		
+CF ] Storage West Score: 12, Turns: 8346 		
+CF | > 		
+CF | > I 		
+CF | 		
+CF | You are carrying: 		
+CF | A canteen 		
+CF | A survival kit 		
+CF | A towel 		
+CF | A Patrol uniform (being worn) 		
+CF | The Patrol uniform contains: 		
+CF | An ID card 		
+CF | A chronometer (being worn) 		
+CF | Floyd recalls the time he bruised his knee. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "s" 		
+CF ] Mess Corridor Score: 12, Turns: 8366 		
+CF | > 		
+CF | > S 		
+CF | 		
+CF | Mess Corridor 		
+CF | This is a wide, east-west hallway with a large portal to the south. A 		
+CF | small door to the north is open. 		
+CF | There is a padlock here. 		
+CF | There is a key here. 		
+CF | Floyd follows you. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "e" 		
+CF ] Dorm Corridor Score: 12, Turns: 8386 		
+CF | > 		
+CF | > E 		
+CF | 		
+CF | Dorm Corridor 		
+CF | This is a wide, east-west hallway with openings to the north and 		
+CF | south. To the east, the corridor stretches off into the distance. That 		
+CF | section of the hallway is lined with a motorized walkway (no longer 		
+CF | running) that was probably intended to transport people or cargo down 		
+CF | that tremendously long hall. 		
+CF | 		
+CF | Floyd bounds into the room. "Floyd here now!" he cries. 		
+CF | 		
+CF | > 		Jade says, "we need a central place where drop our inventary"
+DavidW says (to ClubFloyd), "s" 		
+CF ] Dorm C Score: 12, Turns: 8406 		
+CF | > 		
+CF | > S 		
+CF | 		
+CF | Dorm C 		
+CF | This is a very long room lined with multi-tiered bunks. Flimsy 		
+CF | partitions between the tiers may have provided a modicum of privacy. 		
+CF | These spartan living quarters could have once housed many hundreds, 		
+CF | but it seems quite deserted now. There are openings at the north and 		
+CF | south ends of the room. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "sleep" 		
+CF ] Dorm C Score: 12, Turns: 8413 		
+CF | > 		
+CF | > SLEEP 		
+CF | 		
+CF | Civilized members of society usually sleep in beds. 		
+CF | 		
+CF | Floyd bounds into the room. "Floyd here now!" he cries. 		
+CF | 		
+CF | > 		Jacqueline listens to how Floyd once bruised his knee and wonders if someone once stole Floyd's sweetroll.
+DavidW says (to ClubFloyd), "enter bed" 		
+CF ] Dorm C Score: 12, Turns: 8420 		
+CF | > 		
+CF | > ENTER BED 		
+CF | 		
+CF | Ahhh...the bed is soft and comfortable. You should be asleep in short 		
+CF | order. 		
+CF | 		
+CF | You're now really ravenous and your lips are quite parched. 		
+CF | 		
+CF | > 		Jacqueline says, "oh man"
+DavidW says (to ClubFloyd), "open kit" 		
+CF ] Dorm C Score: 12, Turns: 8427 		
+CF | > 		
+CF | > OPEN KIT 		
+CF | 		
+CF | You can't reach it from here. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "stand" 		
+CF ] Dorm C Score: 12, Turns: 8434 		
+CF | > 		
+CF | > STAND 		
+CF | 		
+CF | How could you suggest such a thing when you're so tired and this bed 		
+CF | is so comfy? 		
+CF | 		
+CF | You slowly sink into a deep and restful sleep. 		
+CF | 		
+CF | ...At last, the Feinstein has arrived at the historic Nebulon system. 		
+CF | It's been five months since the last shore leave, and you're anxious 		
+CF | for Planetfall. You and some other Ensigns Seventh Class enter the 		
+CF | shuttle for surfaceside. Suddenly, you're alone on the shuttle, and 		
+CF | it's tumbling out of control! It lands in the ocean and begins 		
+CF | sinking! You try to clamber out, but you are stuck in a giant spider 		
+CF | web. A giant spider crawls closer and closer... 		
+CF | 		
+CF | ***** SEPTEM 7, 11344 ***** 		
+CF | 		
+CF | You wake up feeling refreshed and ready to face the challenges of this 		
+CF | mysterious world. You are also incredibly famished. Better get some 		
+CF | breakfast! 		
+CF | Floyd bounces impatiently at the foot of the bed. "About time you woke 		
+CF | up, you lazy bones! Let's explore around some more!" 		
+CF | 		
+CF | > 		Jade exclaims, "find a bed in a dorm, big task!"
+DavidW says (to ClubFloyd), "stand" 		
+CF ] Dorm C Score: 12, Turns: 1643 		
+CF | > 		
+CF | > STAND 		
+CF | 		
+CF | You're on your own feet again. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "i" 		
+CF ] Dorm C Score: 12, Turns: 1661 		
+CF | > 		
+CF | > I 		
+CF | 		
+CF | You are carrying: 		
+CF | A Patrol uniform (being worn) 		
+CF | The Patrol uniform contains: 		
+CF | An ID card 		
+CF | A chronometer (being worn) 		
+CF | 		
+CF | > 		DavidW says, "We drop everything unworn when we sleep, it seems."
+DavidW says (to ClubFloyd), "take all" 		
+CF ] Dorm C Score: 12, Turns: 1668 		
+CF | > 		
+CF | > TAKE ALL 		
+CF | 		
+CF | multiple purpose robot: You manage to lift Floyd a few inches off the 		
+CF | ground, but he is too heavy and you drop him suddenly. Floyd gives a 		
+CF | surprised squeal and moves a respectable distance away. 		
+CF | towel: Taken. 		
+CF | survival kit: Taken. 		
+CF | canteen: Taken. 		
+CF | 		
+CF | > 		Jade says, "yep"
+DavidW says (to ClubFloyd), "n" 		
+CF ] Dorm Corridor Score: 12, Turns: 1688 		
+CF | > 		
+CF | > N 		
+CF | 		
+CF | Dorm Corridor 		
+CF | This is a wide, east-west hallway with openings to the north and 		
+CF | south. To the east, the corridor stretches off into the distance. That 		
+CF | section of the hallway is lined with a motorized walkway (no longer 		
+CF | running) that was probably intended to transport people or cargo down 		
+CF | that tremendously long hall. 		
+CF | Floyd follows you. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "w" 		
+CF ] Mess Corridor Score: 12, Turns: 1708 		
+CF | > 		
+CF | > W 		
+CF | 		
+CF | Mess Corridor 		
+CF | This is a wide, east-west hallway with a large portal to the south. A 		
+CF | small door to the north is open. 		
+CF | There is a padlock here. 		
+CF | There is a key here. 		
+CF | 		
+CF | Floyd bounds into the room. "Floyd here now!" he cries. 		
+CF | 		
+CF | > 		
+DavidW says (to ClubFloyd), "n" 		
+CF ] Storage West Score: 12, Turns: 1728 		
+CF | > 		
+CF | > N 		
+CF | 		
+CF | Storage West 		
+CF | This is a small room obviously intended as a storage area. 		
+CF | On a small shelf is a large, unopened tin can. It has a plain white 		
+CF | label which reads "Spam and Egz." 		
+CF | A heavy-duty extendable ladder is leaning against the rear wall. 		
+CF | 		
+CF | You collapse from extreme thirst and hunger. 		
+CF | 		
+CF | **** You have died **** 		
+CF | 		
+CF | Your score would be 12 (out of 80 points). It is Day 2 of your 		
+CF | adventure. Current Galactic Standard Time (adjusted to your local 		
+CF | day-cycle) is 1728. 		
+CF | This score gives you the rank of Beginner. 		
+CF | 		
+CF | Oh, well. According to the Treaty of Gishen IV, signed in 8747 GY, all 		
+CF | adventure game players must be given another chance after dying. In 		
+CF | the interests of interstellar peace... 		
+CF | 		
+CF | Would you like to restart the game from the beginning, restore a saved 		
+CF | game position, or end this session of the game? (Type RESTART, 		
+CF | RESTORE, or QUIT.) 		
+CF | 		
+CF | > 		Knight_Otu exclaims, "AKH!"
+		DavidW says, "ok, I thought I had more time there."
+		DavidW says, "And there's no UNDO."
+		DavidW asks, "Anyone else care to drive?"
+		Jacqueline says, "Okay, now I feel guilty for suggesting to wait."
+		Jade says, "I am preparing my diner"
+		Jacqueline asks, "That's wild how it gave us... was it just the warning before we slept?"
+		DavidW says, "yeah"
+		Jacqueline asks, "We really don't have much food, do we?"
+		Jacqueline says, "Like, is the game really just this short? I rather doubt it."
+		DavidW says, "Not much food, no, but I think you have to optimize and maybe find food. The spam and eggs can might be openable."
+		Knight_Otu says, "There was a warning around when we went back for the magnet, one when we went to sleep, and of course the warning when we woke up, I believe."
+		Roger says, "it's a grim future"
+		Knight_Otu says, "I don't think I'm up for driving today, but maybe next time we tackle Planetfall."
+		DavidW says, "There must be a way to carry more stuff."
+		DavidW says, "Maybe there's a backpack on the ship or something."
+		Jacqueline says, "I dunno, in the early days wasn't inventory management one of the joys, along with this daemons and ... man, I can't wait to see if this game has a maze."
+		DavidW says, "And maybe we need to tell Floyd to follow us so it isn't wandering on its own like that."
+		DavidW says, "I think the maze is when we shrink down onto the broken electronic board and fight the spider."
+		Jade says, "Floyd is playing with us"
+		DavidW says, "Or maybe the ameoba."
+		DavidW says, "We also need a lightsource somewhere."
+		Jade says, "I don't know what are you talking about."
+		DavidW says, "It's been 40 years or so since I played this game, but I still remember some things about it."
+		Jade says, "ah, of course, only 40 years"
+		DavidW says, "There's a helicopter. And there's a train that connects the two islands together."
+		DavidW asks, "so are we done for today?"
+		Roger says, "If the last save is a good place to leave it, sure"
+		DavidW says, "We can (hopefully) play a Spring Thing entry next week."
+		Jade says, "ok, thank you for your guide"
+		Jade says, "I have Planetfall in my TODO list"
+		Jacqueline says, "We're at two hours, so a pause here seems ideal."
+		Jacqueline exclaims, "Thank you for this glimpse, David!"
+		Jade says, "yes, thanks"
+		DavidW says, "I wonder if the brown goo tastes like meat or like chocolate."
+		olethros says, "chocolate chicken"
+		DavidW says, "I bet there is such a thing."
+		Roger says, "it's Mexican, I think"
+		olethros says, "yes, and it's tasty"
+		olethros says, "at least the home-made one I tried"
+		DavidW says, "oh, okay. nice."
+
+
+
+
+[ TOP OF THIS PAGE | MORE CLUBFLOYD TRANSCRIPTS | HOME ]
+
+link to contact page
