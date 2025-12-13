@@ -1817,6 +1817,78 @@ Return JSON: {{"id": "...", "name": "...", "attributes": {{}}, "location": "..."
                 "new_time": None,
             }
 
+    def check_world_events(self, context: Dict[str, Any]) -> Dict[str, Any]:
+        """Check if any autonomous world events should trigger.
+
+        This is called each turn after player actions to handle:
+        - Scripted events (like Planetfall ship explosion)
+        - NPC autonomous movement (like Blather wandering)
+        - Time-based or condition-based triggers
+
+        Args:
+            context: Current game context including game_scripts and turn_count
+
+        Returns:
+            Dictionary with:
+            - events_triggered: Boolean, whether any events happened
+            - state_updates: List of state changes
+            - narrative: Narration for triggered events (empty string if none)
+        """
+        from vertexai.generative_models import GenerationConfig
+
+        game_scripts = context.get("game_scripts")
+        if not game_scripts:
+            return {"events_triggered": False, "state_updates": [], "narrative": ""}
+
+        prompt = self._build_world_events_prompt(context)
+
+        # Define schema for structured output
+        response_schema = {
+            "type": "OBJECT",
+            "properties": {
+                "events_triggered": {"type": "BOOLEAN"},
+                "state_updates": {
+                    "type": "ARRAY",
+                    "items": {
+                        "type": "OBJECT",
+                        "properties": {
+                            "type": {"type": "STRING"},
+                            "target": {"type": "STRING", "nullable": True},
+                            "params": {
+                                "type": "OBJECT",
+                                "additionalProperties": True,
+                            },
+                        },
+                        "required": ["type", "params"],
+                    },
+                },
+                "narrative": {"type": "STRING"},
+            },
+            "required": ["events_triggered", "state_updates", "narrative"],
+        }
+
+        generation_config = GenerationConfig(
+            response_mime_type="application/json",
+            response_schema=response_schema,
+            temperature=0.7,
+        )
+
+        try:
+            response = self.model.generate_content(
+                prompt, generation_config=generation_config
+            )
+            parsed = json.loads(response.text)
+            return parsed
+
+        except json.JSONDecodeError as e:
+            logger.warning(f"World events JSON parsing error: {e}")
+            # Return safe default: no events
+            return {
+                "events_triggered": False,
+                "state_updates": [],
+                "narrative": "",
+            }
+
     def _build_location_prompt(
         self,
         location: Dict[str, Any],
@@ -4161,4 +4233,142 @@ Return ONLY valid JSON:
 }}
 """
 
+        return prompt
+
+    def _build_world_events_prompt(self, context: Dict[str, Any]) -> str:
+        """Build prompt for checking autonomous world events.
+
+        Args:
+            context: Game context including game_scripts, turn_count, player state
+
+        Returns:
+            Prompt string for LLM
+        """
+        game_scripts = context.get("game_scripts", {})
+        turn_count = context.get("turn_count", 0)
+        player = context.get("player", {})
+        player_location = context.get("location", {}).get("id", "unknown")
+        dm_state = context.get("dm_state", {})
+
+        prompt = f"""You are a Dungeon Master managing autonomous world events.
+{self._build_world_context(context)}
+
+CURRENT TURN: {turn_count}
+PLAYER LOCATION: {player_location}
+
+DM STATE (hidden from player, tracks event progress):
+{json.dumps(dm_state, indent=2) if dm_state else "{}"}
+
+GAME SCRIPTS (autonomous events):
+{json.dumps(game_scripts, indent=2)}
+
+YOUR TASK: Check if any autonomous events should trigger this turn
+
+EXAMPLES:
+
+Example 1 - Ship Explosion Starts:
+Turn: 265
+DM State: {{}}
+Scripts: ship_explosion_sequence triggers randomly between turns 240-330
+
+Response:
+{{
+  "events_triggered": true,
+  "state_updates": [
+    {{"type": "modify_attribute", "params": {{"entity_id": "pod_door", "attribute_path": "open", "value": true}}}},
+    {{"type": "remove_npc", "params": {{"npc_id": "blather"}}}},
+    {{"type": "set_flag", "params": {{"flag_name": "explosion_stage", "value": 1}}}},
+    {{"type": "set_flag", "params": {{"flag_name": "explosion_start_turn", "value": 265}}}}
+  ],
+  "narrative": "A massive explosion rocks the ship. Echoes from the explosion resound deafeningly down the halls. The door to port slides open. Blather, confused by this nonroutine occurrence, orders you to continue swabbing, then rushes away."
+}}
+
+Example 2 - Explosion Stage 2:
+Turn: 266
+DM State: {{"explosion_stage": 1, "explosion_start_turn": 265}}
+Scripts: ship_explosion_sequence has 5 stages with turn_offset
+
+Response:
+{{
+  "events_triggered": true,
+  "state_updates": [
+    {{"type": "modify_attribute", "params": {{"entity_id": "corridor_door", "attribute_path": "open", "value": false}}}},
+    {{"type": "modify_attribute", "params": {{"entity_id": "gangway_door", "attribute_path": "open", "value": false}}}},
+    {{"type": "set_flag", "params": {{"flag_name": "explosion_stage", "value": 2}}}}
+  ],
+  "narrative": "More distant explosions! A narrow emergency bulkhead at the base of the gangway and a wider one along the corridor to starboard both crash shut!"
+}}
+
+Example 3 - No Events:
+Turn: 50
+DM State: {{}}
+Scripts: Blather appears randomly at deck_nine (5% chance), but player not at deck_nine
+
+Response:
+{{
+  "events_triggered": false,
+  "state_updates": [],
+  "narrative": ""
+}}
+
+Example 4 - Blather Appears:
+Turn: 51
+Player Location: deck_nine
+DM State: {{}}
+Scripts: Blather has 5% chance to appear at deck_nine
+
+Response (assuming 5% roll succeeds):
+{{
+  "events_triggered": true,
+  "state_updates": [
+    {{"type": "move_npc", "params": {{"npc_id": "blather", "to_location": "deck_nine"}}}}
+  ],
+  "narrative": "Ensign First Class Blather swaggers in. He studies your work with half-closed eyes. \\"You call this polishing, Ensign Seventh Class?\\" he sneers. \\"We have a position for an Ensign Ninth Class in the toilet-scrubbing division, you know. Thirty demerits.\\" He glares at you, his arms crossed."
+}}
+
+RULES:
+
+1. **Check Triggers**: Evaluate each event's trigger condition
+   - Turn ranges: "between turns 240-330" means turn >= 240 AND turn <= 330
+   - Random chances: Use your judgment for probabilities (5% = rare, 20% = occasional)
+   - Conditions: Check player location, dm_state flags, etc.
+
+2. **Track Event Progress in dm_state**:
+   - Use set_flag to store: explosion_stage, explosion_start_turn, blather_leave_count, etc.
+   - Check dm_state to see what events are already active
+   - Sequential events use turn_offset from start_turn
+
+3. **Follow Stage Sequences**:
+   - If event has stages, execute them in order based on turn_offset
+   - Stage 1 at turn X, Stage 2 at turn X+1, etc.
+   - Use dm_state flags to track current stage
+
+4. **Generate Appropriate State Updates**:
+   - Opening/closing doors: modify_attribute with "open" path
+   - Moving NPCs: move_npc
+   - Player death: (TODO: implement jigs_up/game_over state update)
+   - Moving player: move_player
+
+5. **Narrative Style**:
+   - Match the game's tone (Planetfall: retro sci-fi, urgent)
+   - Describe what player sees/hears/feels
+   - Don't reveal meta information (stages, turn numbers)
+   - Empty string if no events
+
+6. **Multiple Events Can Trigger**:
+   - Check ALL events, not just the first one
+   - Combine state_updates from multiple events
+   - Merge narratives with line breaks
+
+7. **No Events is Valid**:
+   - Most turns, nothing happens
+   - events_triggered: false, state_updates: [], narrative: ""
+
+Return ONLY valid JSON:
+{{
+  "events_triggered": true/false,
+  "state_updates": [...],
+  "narrative": "..."
+}}
+"""
         return prompt

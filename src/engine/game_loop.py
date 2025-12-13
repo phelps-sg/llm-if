@@ -538,6 +538,9 @@ class GameLoop:
             npc_narrative = self.gemini.narrate_npc_actions(npc_actions, context)
             print(f"\n{npc_narrative}")
 
+        # WORLD TICK: Allow DM to trigger autonomous events after player's action
+        self._process_world_tick()
+
         # Increment turn
         self.game_state.add_history_entry(
             {
@@ -546,6 +549,58 @@ class GameLoop:
                 "interpretation": interpretation,
             }
         )
+
+    def _process_world_tick(self) -> None:
+        """Process autonomous world events independent of player actions.
+
+        This is called after the player's action is complete. The DM can:
+        - Move NPCs
+        - Trigger scripted events (like Planetfall's ship explosion)
+        - Update world state based on time/conditions
+        """
+        logger.debug(f"World Tick: Turn {self.game_state.turn_count}")
+
+        # Check if world has game_scripts
+        if not self.game_state.world_context:
+            logger.debug("World Tick: No world_context found")
+            return
+
+        if "game_scripts" not in self.game_state.world_context:
+            logger.debug("World Tick: No game_scripts in world_context")
+            # TODO: In future, allow DM to be creative with autonomous events
+            # even without explicit scripts
+            return
+
+        game_scripts = self.game_state.world_context["game_scripts"]
+        logger.debug(f"World Tick: game_scripts found, checking events...")
+
+        # Build context for DM
+        context = self._build_context()
+        context["game_scripts"] = game_scripts
+        context["turn_count"] = self.game_state.turn_count
+        context["dm_state"] = self.game_state.flags  # Use flags to track event state
+
+        # Ask DM if any autonomous events should trigger
+        logger.debug(f"World Tick: Calling DM to check events...")
+        world_tick_result = self.gemini.check_world_events(context)
+        logger.debug(f"World Tick: DM returned: {world_tick_result}")
+
+        if not world_tick_result or not world_tick_result.get("events_triggered"):
+            logger.debug("World Tick: No events triggered")
+            return
+
+        logger.debug(f"World Tick: Events triggered!")
+
+        # Apply state updates from autonomous events
+        state_updates = world_tick_result.get("state_updates", [])
+        if state_updates:
+            logger.debug(f"World Tick: Applying {len(state_updates)} autonomous state updates")
+            self.action_processor.apply_state_updates(state_updates, self.game_state)
+
+        # Show narrative for autonomous events
+        narrative = world_tick_result.get("narrative", "")
+        if narrative:
+            print(f"\n{narrative}")
 
     def _show_location(self) -> None:
         """Show current location description."""
