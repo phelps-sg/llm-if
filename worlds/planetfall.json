@@ -5328,37 +5328,6 @@
                     ]
                   },
                   {
-                    "op": "COND",
-                    "cases": [
-                      [
-                        {
-                          "op": "FSET?",
-                          "args": [
-                            ",GANGWAY-DOOR",
-                            ",OPENBIT"
-                          ]
-                        },
-                        {
-                          "op": "TELL",
-                          "text": [
-                            "."
-                          ]
-                        }
-                      ],
-                      {
-                        "op": "T",
-                        "args": [
-                          {
-                            "op": "TELL",
-                            "text": [
-                              ", but both of these are blocked by closed bulkheads."
-                            ]
-                          }
-                        ]
-                      }
-                    ]
-                  },
-                  {
                     "op": "TELL",
                     "text": [
                       " To port is the entrance to one of the ship's primary escape pods. The\npod bulkhead is "
@@ -32782,7 +32751,7 @@
       "events": [
         {
           "name": "ship_explosion_sequence",
-          "trigger": "Starts randomly between turns 240-330 from game start",
+          "trigger": "Starts randomly between turns 4-10 from game start",
           "description": "The Feinstein explodes in 5 stages over 5 turns. Player must reach escape pod before turn 5 or dies.",
           "stages": [
             {
@@ -32849,9 +32818,12 @@
               "description": "Pod enters atmosphere"
             },
             {
-              "description": "Pod crashes on Resida (the planet)",
+              "description": "Pod crashes on the planet"
+            },
+            {
+              "description": "Pod opens",
               "state_changes": [
-                "Move pod and player to crag location"
+                "pod opens with exit to crag.  A previously unseen panel slides open, revealing some emergency provisions, including a survival kit and a towel."
               ]
             }
           ]

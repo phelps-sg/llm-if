@@ -1,6 +1,7 @@
 """Main game loop."""
 
 import logging
+import json
 from typing import Optional, Dict, Any
 from ..models.game_state import GameState
 from ..llm.gemini_client import GeminiClient
@@ -83,6 +84,8 @@ class GameLoop:
                     "attributes": self.game_state.player.attributes,
                 }
 
+                world_context = self.game_state.world_context
+
                 # Gather cached descriptions for consistency
                 cached_descriptions = self._get_cached_descriptions_for_location(
                     location.id, items, npcs
@@ -94,6 +97,7 @@ class GameLoop:
                     [item.model_dump() for item in items],
                     [npc.model_dump() for npc in npcs],
                     player_context=player_context,
+                    world_context=world_context,
                     lighting_info=lighting,
                     cached_descriptions=cached_descriptions,
                 )
@@ -580,6 +584,12 @@ class GameLoop:
         context["turn_count"] = self.game_state.turn_count
         context["dm_state"] = self.game_state.flags  # Use flags to track event state
 
+        if self.game_state.world_context:
+            context["dm_instructions"] = self.game_state.world_context.get("dm_instructions")
+            context["author"] = self.game_state.world_context.get("author")
+            context["setting"] = self.game_state.world_context.get("setting")
+            context["tone"] = self.game_state.world_context.get("tone")
+
         # Ask DM if any autonomous events should trigger
         logger.debug(f"World Tick: Calling DM to check events...")
         world_tick_result = self.gemini.check_world_events(context)
@@ -631,6 +641,8 @@ class GameLoop:
             "game_time": self.game_state.game_time,  # Current in-game time
         }
 
+        world_context = self.game_state.world_context
+
         # Gather cached descriptions for consistency
         cached_descriptions = self._get_cached_descriptions_for_location(
             location.id, items, npcs
@@ -641,6 +653,7 @@ class GameLoop:
             [item.model_dump() for item in items],
             [npc.model_dump() for npc in npcs],
             player_context=player_context,
+            world_context=world_context,
             lighting_info=lighting,
             cached_descriptions=cached_descriptions,
         )

@@ -23936,10 +23936,10 @@
   "world_context": {
     "title": "Zork I: The Great Underground Empire",
     "author": "Marc Blank and Dave Lebling / Infocom (1980)",
-    "setting": "You are a nameless adventurer standing near a white house in a small clearing. A path leads into the forest to the east. Nearby is a small mailbox. This is the entrance to the Great Underground Empire, a vast subterranean realm filled with treasures, puzzles, and deadly dangers. Your goal is to explore the ancient ruins, solve its mysteries, collect the Twenty Treasures of Zork, and survive the perils that lurk in the darkness.",
+    "setting": "You are a nameless adventurer set in the Great Underground Empire, a vast subterranean realm filled with treasures, puzzles, and deadly dangers. Your goal is to explore the ancient ruins, solve its mysteries, collect the Twenty Treasures of Zork, and survive the perils that lurk in the darkness.",
     "tone": "Classic text adventure with a mix of whimsy, danger, and archaeological mystery. Maintain the iconic Infocom humor ('You are likely to be eaten by a grue') while treating the underground realm with genuine wonder and threat.",
     "dm_instructions": [
-      "This is the original Zork - the quintessential text adventure. Honor its classic status with vivid descriptions.",
+      "This is the original Zork - the quintessential text adventure, But jazz it up with vivid and verbose descriptions.",
       "The Great Underground Empire should feel ancient, mysterious, and vast. Emphasize the archaeological wonder.",
       "Puzzles are logical but often require lateral thinking or finding the right tool/item.",
       "Treasures are the primary goal - each should feel valuable and unique when discovered.",

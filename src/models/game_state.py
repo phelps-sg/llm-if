@@ -68,7 +68,7 @@ class GameState(BaseModel):
 
     # World context (optional - for setting, style, authorial voice)
     world_context: Optional[Dict[str, Any]] = Field(
-        default=None,
+        default_factory=dict,
         description="World background and DM instructions (setting, author, style, tone)"
     )
 

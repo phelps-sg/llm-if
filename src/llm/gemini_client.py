@@ -121,6 +121,7 @@ class GeminiClient:
         items: List[Any],
         npcs: List[Any],
         player_context: Optional[Dict[str, Any]] = None,
+        world_context: Optional[Dict[str, Any]] = None,
         lighting_info: Optional[Dict[str, Any]] = None,
         cached_descriptions: Optional[Dict[str, Any]] = None,
     ) -> str:
@@ -139,7 +140,7 @@ class GeminiClient:
             Narrative description
         """
         prompt = self._build_location_prompt(
-            location, items, npcs, player_context, lighting_info, cached_descriptions
+            location, items, npcs, player_context, world_context, lighting_info, cached_descriptions
         )
         return self.generate(prompt)
 
@@ -1895,6 +1896,7 @@ Return JSON: {{"id": "...", "name": "...", "attributes": {{}}, "location": "..."
         items: List[Any],
         npcs: List[Any],
         player_context: Optional[Dict[str, Any]],
+        world_context: Optional[Dict[str, Any]],
         lighting_info: Optional[Dict[str, Any]] = None,
         cached_descriptions: Optional[Dict[str, Any]] = None,
     ) -> str:
@@ -1907,6 +1909,13 @@ Return JSON: {{"id": "...", "name": "...", "attributes": {{}}, "location": "..."
         if not game_time and lighting_info:
             # Try to get from lighting_info if not in player_context
             game_time = "Unknown"
+
+        def context_if_present(label: str, key: str) -> str:
+            if world_context:
+                if value := world_context.get(key, None):
+                    logger.debug("context value", f"{label}: {json.dumps(value)}")
+                    return f"{label}: {json.dumps(value)}"
+            return ""
 
         prompt = f"""You are a Dungeon Master describing a location.
 
@@ -1923,7 +1932,15 @@ Attributes: {location.get("attributes", {})}
 - UNACCEPTABLE: "bathed in soft light", "awash in gentle light", "streaming through windows"
 - If it's daytime and there are no visibility issues, you can often SKIP mentioning lighting entirely
 - Only emphasize lighting if it's unusual (pitch black, sunset, candlelight) or affects gameplay
+"""
 
+        if world_context:
+                prompt = prompt + f"""
+Game context:
+ {context_if_present("Author", "author")}
+ {context_if_present("Instructions", "dm_instructions")}
+ {context_if_present("Setting", "setting")}
+ {context_if_present("Tone", "tone")}
 """
 
         # Add cached descriptions if available
@@ -4249,9 +4266,15 @@ Return ONLY valid JSON:
         player = context.get("player", {})
         player_location = context.get("location", {}).get("id", "unknown")
         dm_state = context.get("dm_state", {})
+        setting = context.get("setting", None)
 
         prompt = f"""You are a Dungeon Master managing autonomous world events.
 {self._build_world_context(context)}
+
+SETTING: {setting}
+
+CONTEXTUAL INSTRUCTIONS: 
+{json.dumps(dm_state, indent=2) if dm_state else "{}"}
 
 CURRENT TURN: {turn_count}
 PLAYER LOCATION: {player_location}
