@@ -3724,6 +3724,7 @@ Now interpret the player's action: "{player_input}"
         NO state updates, NO narrative generation yet.
         """
         location = context.get("location", {})
+        lighting = context.get("lighting", {})
         items = context.get("items", [])
         npcs = context.get("npcs", [])
         player = context.get("player", {})
@@ -3769,6 +3770,7 @@ PLAYER ACTION: "{player_input}"
 CURRENT GAME STATE:
 Location: {location.get("name", "Unknown")} (ID: {location.get("id")})
 Description: {location.get("description", "No description")}
+Lighting: {lighting}
 Available Exits: {exits}
 Exit Destinations: {exit_destinations}
 

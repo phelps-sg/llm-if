@@ -1,8 +1,7 @@
 """Main game loop."""
 
 import logging
-import json
-from typing import Optional, Dict, Any
+from typing import List, Optional, Dict, Any, Set
 from ..models.game_state import GameState
 from ..llm.gemini_client import GeminiClient
 from ..rules.rule_engine import RuleEngine
@@ -576,7 +575,7 @@ class GameLoop:
             return
 
         game_scripts = self.game_state.world_context["game_scripts"]
-        logger.debug(f"World Tick: game_scripts found, checking events...")
+        logger.debug("World Tick: game_scripts found, checking events...")
 
         # Build context for DM
         context = self._build_context()
@@ -591,7 +590,7 @@ class GameLoop:
             context["tone"] = self.game_state.world_context.get("tone")
 
         # Ask DM if any autonomous events should trigger
-        logger.debug(f"World Tick: Calling DM to check events...")
+        logger.debug("World Tick: Calling DM to check events...")
         world_tick_result = self.gemini.check_world_events(context)
         logger.debug(f"World Tick: DM returned: {world_tick_result}")
 
@@ -599,7 +598,7 @@ class GameLoop:
             logger.debug("World Tick: No events triggered")
             return
 
-        logger.debug(f"World Tick: Events triggered!")
+        logger.debug("World Tick: Events triggered!")
 
         # Apply state updates from autonomous events
         state_updates = world_tick_result.get("state_updates", [])
@@ -834,7 +833,7 @@ You can also type natural language commands and the AI will interpret them.
                 f"  🎲 Attack Roll: {attack.get('attack_roll')} {mod_str} = {attack.get('attack_total')}"
             )
             print(f"  🛡️  Target AC: {attack.get('target_ac')}")
-            print(f"  ✅ HIT!")
+            print("  ✅ HIT!")
 
             # Format damage roll
             damage_notation = attack.get("damage_notation", "1d6")
@@ -864,7 +863,7 @@ You can also type natural language commands and the AI will interpret them.
                 f"  🎲 Attack Roll: {attack.get('attack_roll')} {mod_str} = {attack.get('attack_total')}"
             )
             print(f"  🛡️  Target AC: {attack.get('target_ac')}")
-            print(f"  ❌ MISS!")
+            print("  ❌ MISS!")
 
     def _update_reference_tracking(
         self,
@@ -987,13 +986,16 @@ You can also type natural language commands and the AI will interpret them.
 
         return metadata
 
-    def _build_context(self) -> dict:
+    def _build_context(self, only_include: Optional[Set[str]] = None) -> dict:
         """Build context for LLM with detailed state information."""
         location = self.game_state.get_player_location()
         items_at_location = self.game_state.get_items_at_location(
             self.game_state.player_location
         )
         npcs_at_location = self.game_state.get_npcs_at_location(
+            self.game_state.player_location
+        )
+        lighting = self.game_state.get_effective_lighting(
             self.game_state.player_location
         )
 
@@ -1126,6 +1128,7 @@ You can also type natural language commands and the AI will interpret them.
         # Build detailed context
         context = {
             "location": location.model_dump() if location else None,
+            "lighting": lighting, 
             "exits": location.get_available_exits() if location else [],
             "exit_destinations": exit_destinations,  # direction -> location_id map
             "items": [
@@ -1161,6 +1164,10 @@ You can also type natural language commands and the AI will interpret them.
         if self.game_state.world_context:
             context["world_context"] = self.game_state.world_context
 
+        if only_include is not None:
+            for omit_key in only_include:
+                del context[omit_key]
+
         return context
 
     def _handle_level_transition(self) -> None:
@@ -1178,7 +1185,7 @@ You can also type natural language commands and the AI will interpret them.
         print("\n" + "=" * 60)
         print(f"🎊 LEVEL {current_level} COMPLETE!")
         print("=" * 60)
-        print(f"\nDescending deeper into the dungeon...")
+        print("\nDescending deeper into the dungeon...")
         print(f"Generating Level {next_level}...")
 
         # Generate next level
