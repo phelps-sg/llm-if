@@ -1,4 +1,4 @@
-"""Gemini LLM client for narrative generation using Vertex AI."""
+
 
 import logging
 import os
@@ -22,6 +22,7 @@ class GeminiClient:
         # model_name: str = "gemini-2.5-pro",
         # model_name: str = "gemini-2.0-flash-001",
         model_name: str = "gemini-2.5-flash",
+        # model_name: str = "gemini-2.5-flash-lite",
     ):
         """Initialize Gemini client with gcloud authentication.
 
@@ -544,7 +545,7 @@ Return JSON with:
         config = GenerationConfig(
             response_mime_type="application/json",
             response_schema=schema,
-            temperature=0.9,
+            temperature=0.2,
         )
 
         response = self.model.generate_content(prompt, generation_config=config)
@@ -641,7 +642,7 @@ Return JSON:
         config = GenerationConfig(
             response_mime_type="application/json",
             response_schema=schema,
-            temperature=0.8,
+            temperature=0.2,
         )
 
         response = self.model.generate_content(prompt, generation_config=config)
@@ -699,7 +700,7 @@ Return JSON:
         config = GenerationConfig(
             response_mime_type="application/json",
             response_schema=schema,
-            temperature=0.8,
+            temperature=0.2,
         )
 
         response = self.model.generate_content(prompt, generation_config=config)
@@ -755,7 +756,7 @@ Return JSON: {{"theme": "Your Theme Here"}}
         config = GenerationConfig(
             response_mime_type="application/json",
             response_schema=schema,
-            temperature=0.9,
+            temperature=0.2,
         )
 
         response = self.model.generate_content(prompt, generation_config=config)
@@ -1086,7 +1087,7 @@ Return JSON: {{"id": "item{level_number}_light_starter", "name": "...", "attribu
         config = GenerationConfig(
             response_mime_type="application/json",
             response_schema=schema,
-            temperature=0.8,
+            temperature=0.2,
         )
 
         response = self.model.generate_content(prompt, generation_config=config)
@@ -1170,7 +1171,7 @@ Return JSON: {{"id": "...", "name": "...", "connections": {{}}, "attributes": {{
         config = GenerationConfig(
             response_mime_type="application/json",
             response_schema=schema,
-            temperature=0.8,
+            temperature=0.2,
         )
 
         response = self.model.generate_content(prompt, generation_config=config)
@@ -1304,7 +1305,7 @@ Return JSON: {{"id": "...", "name": "...", "attributes": {{}}, "location": "..."
         config = GenerationConfig(
             response_mime_type="application/json",
             response_schema=schema,
-            temperature=0.85,
+            temperature=0.2,
         )
 
         response = self.model.generate_content(prompt, generation_config=config)
@@ -1435,7 +1436,7 @@ Return JSON: {{"id": "...", "name": "...", "attributes": {{}}, "location": "..."
         config = GenerationConfig(
             response_mime_type="application/json",
             response_schema=schema,
-            temperature=0.85,
+            temperature=0.2,
         )
 
         response = self.model.generate_content(prompt, generation_config=config)
@@ -1548,7 +1549,7 @@ Return JSON: {{"id": "...", "name": "...", "attributes": {{}}, "location": "..."
             generation_config = GenerationConfig(
                 response_mime_type="application/json",
                 response_schema=response_schema,
-                temperature=0.7,  # Lower temperature for more consistent JSON
+                temperature=0.2,  # Lower temperature for more consistent JSON
             )
 
             response = self.model.generate_content(
@@ -1708,7 +1709,7 @@ Return JSON: {{"id": "...", "name": "...", "attributes": {{}}, "location": "..."
         generation_config = GenerationConfig(
             response_mime_type="application/json",
             response_schema=response_schema,
-            temperature=0.7,
+            temperature=0.2,
         )
 
         try:
@@ -1793,7 +1794,7 @@ Return JSON: {{"id": "...", "name": "...", "attributes": {{}}, "location": "..."
         generation_config = GenerationConfig(
             response_mime_type="application/json",
             response_schema=response_schema,
-            temperature=0.7,
+            temperature=0.2,
         )
 
         try:
@@ -1871,7 +1872,7 @@ Return JSON: {{"id": "...", "name": "...", "attributes": {{}}, "location": "..."
         generation_config = GenerationConfig(
             response_mime_type="application/json",
             response_schema=response_schema,
-            temperature=0.7,
+            temperature=0.2,
         )
 
         try:
