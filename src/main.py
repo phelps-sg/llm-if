@@ -410,9 +410,10 @@ def run_single_step_mode(args, gcp_project: str) -> None:
 
     # 3. Initialize game components
     print("Initializing game engine...")
-    gemini = GeminiClient(project=gcp_project)
+    gemini = GeminiClient(project=gcp_project)  # Uses default: gemini-2.5-flash-lite (DM)
+    zil_translator = GeminiClient(project=gcp_project, model_name="gemini-2.5-flash")  # More capable for ZIL translation
     rule_engine = initialize_rule_engine()
-    game_loop = GameLoop(game_state, gemini, rule_engine)
+    game_loop = GameLoop(game_state, gemini, rule_engine, zil_translator_client=zil_translator)
 
     # 4. Execute single command
     print(f"Executing command: {args.command}")
@@ -524,12 +525,13 @@ def main() -> None:
     # Initialize components
     try:
         print("Initializing Gemini client...")
-        gemini = GeminiClient(project=gcp_project)
+        gemini = GeminiClient(project=gcp_project)  # Uses default: gemini-2.5-flash-lite (DM)
+        zil_translator = GeminiClient(project=gcp_project, model_name="gemini-2.5-flash")  # More capable for ZIL translation
 
         rule_engine = initialize_rule_engine()
 
         # Create game loop
-        game = GameLoop(game_state, gemini, rule_engine)
+        game = GameLoop(game_state, gemini, rule_engine, zil_translator_client=zil_translator)
 
         # Start game
         game.start()

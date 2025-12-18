@@ -4,6 +4,7 @@ import logging
 from typing import List, Optional, Dict, Any, Set
 from ..models.game_state import GameState
 from ..llm.gemini_client import GeminiClient
+from ..llm.zil_translator import ensure_zil_translations
 from ..rules.rule_engine import RuleEngine
 from .action_processor import ActionProcessor
 
@@ -18,6 +19,7 @@ class GameLoop:
         game_state: GameState,
         gemini_client: GeminiClient,
         rule_engine: RuleEngine,
+        zil_translator_client: Optional[GeminiClient] = None,
     ):
         self.game_state = game_state
         self.gemini = gemini_client
@@ -26,6 +28,8 @@ class GameLoop:
         self.running = False
         self.last_referenced_item: Optional[str] = None  # For pronoun resolution
         self.last_referenced_npc: Optional[str] = None
+        # Use separate client for ZIL translation (more capable model)
+        self.zil_translator = zil_translator_client if zil_translator_client else gemini_client
 
     def execute_single_step(self, command: str) -> dict:
         """Execute a single command and return full result.
@@ -85,16 +89,24 @@ class GameLoop:
 
                 world_context = self.game_state.world_context
 
+                # Ensure ZIL translations are available and get dictified versions
+                location_dict, items_dicts, npcs_dicts = ensure_zil_translations(
+                    self.zil_translator,
+                    location=location,
+                    items=items,
+                    npcs=npcs
+                )
+
                 # Gather cached descriptions for consistency
                 cached_descriptions = self._get_cached_descriptions_for_location(
                     location.id, items, npcs
                 )
 
-                # Generate description
+                # Generate description using translated dicts
                 narrative = self.gemini.describe_location(
-                    location.model_dump(),
-                    [item.model_dump() for item in items],
-                    [npc.model_dump() for npc in npcs],
+                    location_dict,
+                    items_dicts,
+                    npcs_dicts,
                     player_context=player_context,
                     world_context=world_context,
                     lighting_info=lighting,
@@ -220,6 +232,23 @@ class GameLoop:
         """
         # STEP 1: Build context and interpret intent
         context = self._build_context()
+
+        # Ensure ZIL translations are available (on-demand translation with caching)
+        # Update context with translated versions
+        location_dict, items_dicts, npcs_dicts = ensure_zil_translations(
+            self.zil_translator,
+            location=context.get("location"),
+            items=context.get("items", []),
+            npcs=context.get("npcs", [])
+        )
+
+        # Update context with translated dictionaries
+        if location_dict:
+            context["location"] = location_dict
+        if items_dicts:
+            context["items"] = items_dicts
+        if npcs_dicts:
+            context["npcs"] = npcs_dicts
 
         # Add pronoun resolution hints to context
         if self.last_referenced_item:
@@ -642,15 +671,23 @@ class GameLoop:
 
         world_context = self.game_state.world_context
 
+        # Ensure ZIL translations are available and get dictified versions
+        location_dict, items_dicts, npcs_dicts = ensure_zil_translations(
+            self.zil_translator,
+            location=location,
+            items=items,
+            npcs=npcs
+        )
+
         # Gather cached descriptions for consistency
         cached_descriptions = self._get_cached_descriptions_for_location(
             location.id, items, npcs
         )
 
         description = self.gemini.describe_location(
-            location.model_dump(),
-            [item.model_dump() for item in items],
-            [npc.model_dump() for npc in npcs],
+            location_dict,
+            items_dicts,
+            npcs_dicts,
             player_context=player_context,
             world_context=world_context,
             lighting_info=lighting,

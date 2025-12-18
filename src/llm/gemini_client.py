@@ -7,6 +7,7 @@ import json
 from typing import Optional, Dict, Any, List
 from datetime import datetime, timedelta
 from .action_schema import ActionInterpretation
+from .zil_translation_cache import get_cache
 
 logger = logging.getLogger(__name__)
 
@@ -21,8 +22,8 @@ class GeminiClient:
         # model_name: str = "gemini-2.0-flash-001",
         # model_name: str = "gemini-2.5-pro",
         # model_name: str = "gemini-2.0-flash-001",
-        model_name: str = "gemini-2.5-flash",
-        # model_name: str = "gemini-2.5-flash-lite",
+        # model_name: str = "gemini-2.5-flash",
+        model_name: str = "gemini-2.5-flash-lite",  # Default for DM (fast/cheap)
     ):
         """Initialize Gemini client with gcloud authentication.
 
@@ -115,6 +116,141 @@ class GeminiClient:
             return str(response.text)
         except Exception as e:
             return f"Error generating response: {e}"
+
+    def translate_zil_to_natural_language(
+        self,
+        zil_code: str,
+        routine_name: Optional[str] = None,
+        context: Optional[str] = None,
+    ) -> str:
+        """Translate ZIL code to natural language description.
+
+        Args:
+            zil_code: The ZIL code (string format) to translate
+            routine_name: Optional name of the routine (e.g., "UNDERWATER-F", "CRAG-F")
+            context: Optional context about what this routine is for (e.g., "location action", "item action")
+
+        Returns:
+            Natural language description of what the ZIL code does
+        """
+        prompt = f"""You are an expert at reading ZIL (Zork Implementation Language) code and translating it into clear, concise natural language descriptions that a Dungeon Master (AI) can use to manage the game and understand game behavior.
+
+The DM will use your translation to:
+- Understand what should happen when players interact with locations, items, or NPCs
+- Make informed decisions about state updates and game events
+- Generate appropriate narrative based on the underlying mechanics
+- Handle special cases and edge conditions correctly
+
+ZIL is a LISP-like language used for classic Infocom interactive fiction games like Zork and Planetfall.
+
+## ZIL SYNTAX REFERENCE
+
+### Common Predicates (tests/conditions):
+- `VERB?` - checks if player used specific verb (OPEN, CLOSE, TAKE, DROP, etc.)
+- `EQUAL?`, `==?` - equality comparison
+- `L?`, `G?`, `L=?`, `G=?`, `N=?` - less than, greater than, less/equal, greater/equal, not equal
+- `FSET?` - checks if object flag is set
+- `IN?` - checks if object is in container
+- `FIRST?` - checks if object is in player inventory
+- `ZERO?`, `1?` - checks if value is zero or one
+
+### Common Actions:
+- `TELL` - prints message to player (TELL "text" CR for newline)
+- `PRINTC`, `PRINTN`, `PRINT` - print character, number, or text
+- `MOVE` - moves object to location/container
+- `REMOVE` - removes object from current location
+- `FSET`, `FCLEAR` - set or clear object flag
+- `SETG`, `SET` - set global or local variable
+- `PUTP`, `GETP` - set or get object property
+- `JIGS-UP` - ends game with death message
+- `QUIT`, `RESTART`, `SAVE`, `RESTORE` - game state operations
+
+### Control Flow:
+- `COND` - conditional (like if/elif/else)
+- `AND`, `OR`, `NOT` - logical operators
+- `RETURN`, `RTRUE`, `RFALSE` - return from routine
+- `REPEAT` - loop construct
+
+### Common Patterns:
+- `(COND ((VERB? OPEN) ...))` - if player tries to OPEN
+- `(FSET? ,OBJECT ,OPENBIT)` - check if object has OPEN flag
+- `(EQUAL? .RARG ,M-END)` - check if room action argument equals M-END (end of turn)
+- `(FIRST? ,ITEM)` - check if item is in player inventory
+- `(TELL "message" CR)` - print message with newline
+
+### Room Action Arguments:
+- `.RARG` or `RARG` - argument passed to room action routine
+- `,M-END` - end of turn (room processes ambient events)
+- `,M-ENTER` - player just entered room
+- `,M-LOOK` - player looked at room
+
+## YOUR TASK
+
+Translate this ZIL code into a natural language description for the Dungeon Master to use when managing the game.
+
+{f"**Routine Name:** {routine_name}" if routine_name else ""}
+{f"**Context:** {context}" if context else ""}
+
+**ZIL Code:**
+```zil
+{zil_code}
+```
+
+Provide a concise but complete natural language description explaining:
+
+1. **Trigger conditions**: What player actions or game events trigger this behavior?
+2. **Game state checks**: What conditions or flags does it check?
+3. **Actions taken**: What happens (messages printed, state changes, object movements)?
+4. **Special cases**: Any death conditions, special behaviors, or edge cases?
+
+Be specific about mechanics and write clearly so the DM can understand the *intended behavior* and *player experience*. Scale your description to match the complexity of the code - simple code gets a brief description, complex code gets more detail.
+
+**Format your response as clear paragraphs, not bullet lists.**
+
+**Natural Language Description:**"""
+
+        return self.generate(prompt).strip()
+
+    def translate_zil_with_cache(
+        self,
+        zil_code: str,
+        routine_name: Optional[str] = None,
+        context: Optional[str] = None,
+    ) -> str:
+        """Translate ZIL code with caching to avoid redundant LLM calls.
+
+        Args:
+            zil_code: The ZIL code (string format) to translate
+            routine_name: Optional name of the routine (e.g., "UNDERWATER-F")
+            context: Optional context about what this routine is for
+
+        Returns:
+            Natural language description of what the ZIL code does
+        """
+        # Check cache first
+        cache = get_cache()
+        cached_translation = cache.get(zil_code)
+
+        if cached_translation:
+            return cached_translation
+
+        # Not in cache - translate and store
+        logger.info(f"Translating ZIL routine: {routine_name or 'unknown'}")
+        translation = self.translate_zil_to_natural_language(
+            zil_code=zil_code,
+            routine_name=routine_name,
+            context=context
+        )
+
+        # Cache the result
+        cache.put(
+            zil_code=zil_code,
+            translation=translation,
+            routine_name=routine_name,
+            context=context
+        )
+
+        return translation
 
     def describe_location(
         self,
@@ -2765,32 +2901,36 @@ This world was converted from original Infocom ZIL source code. Items and locati
   - zil_adjectives: ["RUSTY", "IRON"] → describe as "rusty iron gate"
   - zil_adjectives: ["ELONGATED", "BROWN"] → "elongated brown sack"
 
-🔧 zil_action and zil_action_code:
-- Indicates the item/location has special behavior (custom ZIL function)
-- If zil_action_code is present, it contains the actual ZIL logic
-- Interpret the ZIL code to understand behavior:
+🔧 zil_action_description (PREFERRED):
+- If present, this contains a natural language explanation of the entity's special behavior
+- This is a pre-translated description from the original ZIL code
+- USE THIS instead of trying to interpret raw ZIL code
+- Example: "This routine triggers at the end of each turn when the player is underwater.
+  It increments a DROWN counter. If the counter exceeds 2, the player dies."
 
-  ZIL CODE INTERPRETATION GUIDE:
+🔧 zil_action_code (FALLBACK):
+- If zil_action_description is NOT present, zil_action_code contains raw ZIL logic
+- Try to interpret the ZIL code patterns to understand behavior:
+
+  COMMON ZIL PATTERNS:
   - (VERB? OPEN) → checks if player is trying to OPEN
   - (VERB? BURN) → checks if player is trying to BURN
   - (VERB? MUNG) → checks if player is trying to DAMAGE/DESTROY
   - (TELL "text" CR) → prints message to player
   - (COND ...) → conditional statements (if/else)
+  - (JIGS-UP "message") → kills the player with message
 
   EXAMPLE - Front Door:
   zil_action_code: (COND ((VERB? OPEN) (TELL "The door cannot be opened." CR)) ...)
-  → This means: If player tries to OPEN, respond "The door cannot be opened."
-  → Therefore: Door is BLOCKED/BOARDED and cannot be opened
-  → Description should reflect this: "The front door is boarded shut"
+  → Door cannot be opened, is blocked/boarded
 
   EXAMPLE - Trap Door:
   zil_action_code: (COND ((VERB? OPEN) (COND (<FSET? ,TRAP-DOOR ,OPENBIT> ...) ...)))
-  → This means: Opening has complex conditions (might need carpet removed first)
-  → Description: Mention it's concealed or requires something to access
+  → Opening has complex conditions
 
-- If zil_action is present but no zil_action_code:
-  - Item has custom behavior, but details not provided
-  - Describe cautiously, imply special/unusual properties
+- If zil_action is present but no code or description:
+  - Item has custom behavior, details unknown
+  - Describe cautiously
 
 🏷️ zil_flags:
 - Technical flags from ZIL (we already converted important ones to is_visible, etc.)
@@ -2817,8 +2957,24 @@ REMEMBER: zil_adjectives are DESCRIPTIVE FACTS, not suggestions. Use them!
         setting = world_ctx.get("setting", "")
         instructions = world_ctx.get("dm_instructions", [])
         tone = world_ctx.get("tone", "")
+        global_routines = world_ctx.get("global_routines", {})
 
         instructions_text = "\n".join(f"- {inst}" for inst in instructions)
+
+        # Format global routines with their natural language descriptions
+        global_routines_text = ""
+        if global_routines:
+            global_routines_text = "\n\n🔧 GLOBAL GAME ROUTINES (Important Behaviors):\n"
+            global_routines_text += "These are autonomous game mechanics that should trigger based on conditions:\n\n"
+            for routine_name, routine_data in global_routines.items():
+                description = routine_data.get("description", "")
+                if description:
+                    global_routines_text += f"**{routine_name}**:\n{description}\n\n"
+                else:
+                    # Fallback to showing ZIL code if no translation
+                    zil_code = routine_data.get("zil_code", "")
+                    if zil_code:
+                        global_routines_text += f"**{routine_name}**: (ZIL code - needs interpretation)\n"
 
         author_line = f"\nAuthor/Source: {author}" if author else ""
         intro_section = f"\n\nStory Opening (what the player saw at game start):\n{intro}" if intro else ""
@@ -2830,7 +2986,7 @@ REMEMBER: zil_adjectives are DESCRIPTIVE FACTS, not suggestions. Use them!
 Setting: {setting}{tone_line}
 
 DM INSTRUCTIONS (follow these for this world):
-{instructions_text}
+{instructions_text}{global_routines_text}
 """
 
     def _format_container_contents(self, container_contents: Dict[str, Any]) -> str:
@@ -4062,6 +4218,27 @@ Output:
                 "3. Generate appropriate state updates given recent context\n\n"
             )
 
+        # Build detailed entity information including ZIL descriptions
+        location_details = f"Location: {location.get('name')} (ID: {location.get('id')})"
+        if location.get("attributes", {}).get("zil_action_description"):
+            location_details += f"\n  🔧 Special Behavior: {location.get('attributes', {}).get('zil_action_description')}"
+
+        items_details = []
+        for item in items:
+            item_detail = f"  - {item.get('name')} ({item.get('id')})"
+            if item.get("attributes", {}).get("zil_action_description"):
+                item_detail += f"\n    🔧 Special Behavior: {item.get('attributes', {}).get('zil_action_description')}"
+            items_details.append(item_detail)
+        items_text = "\n".join(items_details) if items_details else "  (none)"
+
+        npcs_details = []
+        for npc in npcs:
+            npc_detail = f"  - {npc.get('name')} ({npc.get('id')})"
+            if npc.get("attributes", {}).get("zil_action_description"):
+                npc_detail += f"\n    🔧 Special Behavior: {npc.get('attributes', {}).get('zil_action_description')}"
+            npcs_details.append(npc_detail)
+        npcs_text = "\n".join(npcs_details) if npcs_details else "  (none)"
+
         prompt = f"""You are a Dungeon Master generating state updates for a player action.
 
 PLAYER INTENT: {intent}
@@ -4070,14 +4247,26 @@ This action has been PRE-APPROVED (is_valid=true, is_allowed=true).
 Your job is to generate the state updates to make it happen.
 
 CURRENT GAME STATE:
-Location: {location.get("name")} (ID: {location.get("id")})
+{location_details}
 Exit Destinations: {exit_destinations}
 
-Items at location: {[f"{item.get('name')} ({item.get('id')})" for item in items]}
+Items at location:
+{items_text}
 {self._format_container_contents(context.get("container_contents", {}))}
-NPCs at location: {[f"{npc.get('name')} ({npc.get('id')})" for npc in npcs]}
+NPCs at location:
+{npcs_text}
+
 Player inventory IDs: {item_ids_in_inventory}
 Player inventory names: {[item.get("name") for item in player.get("inventory", [])]}
+
+🔧 IMPORTANT: Some entities have "Special Behavior" descriptions above.
+These describe special game mechanics from the original ZIL code.
+You MUST follow these behaviors when generating state updates.
+
+🔧 REVEALING ITEMS: If a Special Behavior mentions "revealing" an item or setting a "*-REVEALED" flag:
+- You MUST set the flag: {{"type": "set_flag", "params": {{"flag_name": "ITEM-REVEALED", "value": true}}}}
+- You MUST also make the item visible: {{"type": "modify_attribute", "params": {{"entity_id": "item_id", "attribute_path": "is_visible", "value": true}}}}
+- Example: Moving leaves reveals a grate → set GRATE-REVEALED=true AND set grate.is_visible=true
 
 VALID IDs YOU MUST USE:
 - Location IDs: {list(all_locations.keys())}

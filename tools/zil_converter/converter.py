@@ -9,7 +9,13 @@ from typing import Dict, Any, List, Optional
 class LocationConverter:
     """Convert ZIL rooms to JSON locations."""
 
-    def __init__(self):
+    def __init__(self, llm_client=None):
+        """Initialize converter with optional LLM client.
+
+        Args:
+            llm_client: Optional GeminiClient for translating ZIL code
+        """
+        self.llm_client = llm_client
         self.todos = []
 
     def convert_room(self, room_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -89,12 +95,41 @@ class LocationConverter:
             # Include actual ZIL code if available (both string and JSON)
             if room_data.get("action_routine_code"):
                 custom["zil_action_code"] = room_data["action_routine_code"]
+
+                # Translate ZIL code to natural language if LLM client available
+                if self.llm_client:
+                    try:
+                        description = self.llm_client.translate_zil_to_natural_language(
+                            zil_code=room_data["action_routine_code"],
+                            routine_name=str(room_data["action_routine"]),
+                            context=f"location action for '{room_data.get('name', room_data.get('id'))}'"
+                        )
+                        custom["zil_action_description"] = description
+                    except Exception as e:
+                        print(f"Warning: Failed to translate ZIL for {room_data.get('id')}: {e}")
+
             if room_data.get("action_routine_json"):
                 custom["zil_action_json"] = room_data["action_routine_json"]
 
         # Preserve pseudo object routines for scenery/pseudo items
         if room_data.get("pseudo_object_routines"):
             custom["zil_pseudo_routines"] = room_data["pseudo_object_routines"]
+
+            # Translate pseudo object routines if LLM client available
+            if self.llm_client:
+                custom["zil_pseudo_descriptions"] = {}
+                for pseudo_name, routine_data in room_data["pseudo_object_routines"].items():
+                    zil_code = routine_data.get("zil_string", "")
+                    if zil_code:
+                        try:
+                            description = self.llm_client.translate_zil_to_natural_language(
+                                zil_code=zil_code,
+                                routine_name=pseudo_name,
+                                context=f"pseudo object (scenery) in '{room_data.get('name', room_data.get('id'))}'"
+                            )
+                            custom["zil_pseudo_descriptions"][pseudo_name] = description
+                        except Exception as e:
+                            print(f"Warning: Failed to translate pseudo object {pseudo_name}: {e}")
 
         return custom
 
@@ -132,7 +167,13 @@ class LocationConverter:
 class ItemConverter:
     """Convert ZIL objects to JSON items."""
 
-    def __init__(self):
+    def __init__(self, llm_client=None):
+        """Initialize converter with optional LLM client.
+
+        Args:
+            llm_client: Optional GeminiClient for translating ZIL code
+        """
+        self.llm_client = llm_client
         self.todos = []
 
     def convert_object(self, obj_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -184,6 +225,19 @@ class ItemConverter:
             # Include actual ZIL code if available (both string and JSON)
             if obj_data.get("action_routine_code"):
                 attrs["zil_action_code"] = obj_data["action_routine_code"]
+
+                # Translate ZIL code to natural language if LLM client available
+                if self.llm_client:
+                    try:
+                        description = self.llm_client.translate_zil_to_natural_language(
+                            zil_code=obj_data["action_routine_code"],
+                            routine_name=str(obj_data["action_routine"]),
+                            context=f"item action for '{obj_data.get('name', obj_data.get('id'))}'"
+                        )
+                        attrs["zil_action_description"] = description
+                    except Exception as e:
+                        print(f"Warning: Failed to translate ZIL for item {obj_data.get('id')}: {e}")
+
             if obj_data.get("action_routine_json"):
                 attrs["zil_action_json"] = obj_data["action_routine_json"]
 
@@ -256,7 +310,13 @@ class ItemConverter:
 class NPCConverter:
     """Convert ZIL NPCs to JSON npcs."""
 
-    def __init__(self):
+    def __init__(self, llm_client=None):
+        """Initialize converter with optional LLM client.
+
+        Args:
+            llm_client: Optional GeminiClient for translating ZIL code
+        """
+        self.llm_client = llm_client
         self.todos = []
 
     def convert_npc(self, npc_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -299,6 +359,19 @@ class NPCConverter:
             # Include actual ZIL code if available (both string and JSON)
             if npc_data.get("action_routine_code"):
                 attrs["zil_action_code"] = npc_data["action_routine_code"]
+
+                # Translate ZIL code to natural language if LLM client available
+                if self.llm_client:
+                    try:
+                        description = self.llm_client.translate_zil_to_natural_language(
+                            zil_code=npc_data["action_routine_code"],
+                            routine_name=str(npc_data["action_routine"]),
+                            context=f"NPC action for '{npc_data.get('name', npc_data.get('id'))}'"
+                        )
+                        attrs["zil_action_description"] = description
+                    except Exception as e:
+                        print(f"Warning: Failed to translate ZIL for NPC {npc_data.get('id')}: {e}")
+
             if npc_data.get("action_routine_json"):
                 attrs["zil_action_json"] = npc_data["action_routine_json"]
             if not npc_data.get("action_routine_code"):
@@ -321,10 +394,16 @@ class NPCConverter:
 class WorldConverter:
     """Main converter that coordinates location, item, and NPC conversion."""
 
-    def __init__(self):
-        self.location_converter = LocationConverter()
-        self.item_converter = ItemConverter()
-        self.npc_converter = NPCConverter()
+    def __init__(self, llm_client=None):
+        """Initialize converter with optional LLM client for ZIL translation.
+
+        Args:
+            llm_client: Optional GeminiClient for translating ZIL code to natural language
+        """
+        self.llm_client = llm_client
+        self.location_converter = LocationConverter(llm_client=llm_client)
+        self.item_converter = ItemConverter(llm_client=llm_client)
+        self.npc_converter = NPCConverter(llm_client=llm_client)
 
     def convert(self, game_data: Dict[str, Any], smart: bool = True) -> Dict[str, Any]:
         """Convert extracted game data to JSON world format.
@@ -404,6 +483,29 @@ class WorldConverter:
             # Fallback to heuristics
             player_location = self._find_start_location(game_data["rooms"])
 
+        # Process global routines (translate if LLM client available)
+        global_routines = {}
+        if game_data.get("global_routines"):
+            for routine_name, routine_data in game_data["global_routines"].items():
+                routine_entry = {
+                    "zil_code": routine_data.get("zil_string", ""),
+                    "zil_json": routine_data.get("zil_json", {})
+                }
+
+                # Translate to natural language if LLM client available
+                if self.llm_client and routine_data.get("zil_string"):
+                    try:
+                        description = self.llm_client.translate_zil_to_natural_language(
+                            zil_code=routine_data["zil_string"],
+                            routine_name=routine_name,
+                            context="global game routine"
+                        )
+                        routine_entry["description"] = description
+                    except Exception as e:
+                        print(f"Warning: Failed to translate global routine {routine_name}: {e}")
+
+                global_routines[routine_name] = routine_entry
+
         # Build complete world
         world = {
             "locations": locations,
@@ -417,6 +519,10 @@ class WorldConverter:
             "puzzles": {},
             "world_context": self._generate_world_context(game_data, locations, items, npcs)
         }
+
+        # Add global routines if any were extracted
+        if global_routines:
+            world["global_routines"] = global_routines
 
         return world
 

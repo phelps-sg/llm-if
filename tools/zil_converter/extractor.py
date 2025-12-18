@@ -577,9 +577,30 @@ class GameExtractor:
             self.npc_extractor.get_todos()
         )
 
+        # Identify global routines (routines not attached to any entity)
+        used_routines = set()
+        for room in rooms:
+            if room.get("action_routine"):
+                used_routines.add(room["action_routine"])
+            if room.get("pseudo_object_routines"):
+                used_routines.update(room["pseudo_object_routines"].keys())
+        for obj in objects:
+            if obj.get("action_routine"):
+                used_routines.add(obj["action_routine"])
+        for npc in npcs:
+            if npc.get("action_routine"):
+                used_routines.add(npc["action_routine"])
+
+        # Global routines are those not used by any entity
+        global_routines = {
+            name: data for name, data in routines.items()
+            if name not in used_routines
+        }
+
         return {
             "rooms": rooms,
             "objects": objects,
             "npcs": npcs,
-            "todos": all_todos
+            "todos": all_todos,
+            "global_routines": global_routines  # Add global routines to output
         }

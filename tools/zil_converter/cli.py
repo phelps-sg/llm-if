@@ -4,13 +4,23 @@ import click
 import json
 import glob
 import os
+import sys
 from pathlib import Path
-from typing import Dict
+from typing import Dict, Optional
 
 from .parser import ZILParser
 from .extractor import GameExtractor
 from .converter import WorldConverter
 from .pattern_matcher import SmartConverter
+
+# Import GeminiClient for ZIL translation
+try:
+    sys.path.insert(0, str(Path(__file__).parent.parent.parent / "src"))
+    from llm.gemini_client import GeminiClient
+    GEMINI_AVAILABLE = True
+except ImportError:
+    GEMINI_AVAILABLE = False
+    GeminiClient = None
 
 
 @click.command()
@@ -19,7 +29,9 @@ from .pattern_matcher import SmartConverter
 @click.option('--verbose', '-v', is_flag=True, help='Verbose output')
 @click.option('--extract-only', is_flag=True, help='Extract only, no smart conversion')
 @click.option('--notes', '-n', default=None, help='Output file for adaptation notes (default: <output>_NOTES.md)')
-def convert(zil_dir, output, verbose, extract_only, notes):
+@click.option('--translate-zil', is_flag=True, help='Translate ZIL code to natural language using LLM')
+@click.option('--model', default='gemini-2.5-flash', help='LLM model for ZIL translation (default: gemini-2.5-flash)')
+def convert(zil_dir, output, verbose, extract_only, notes, translate_zil, model):
     """Convert ZIL game files to LLM-IF JSON format.
 
     ZIL_DIR: Directory containing .zil files (e.g., ../planetfall-invclues/)
@@ -29,6 +41,14 @@ def convert(zil_dir, output, verbose, extract_only, notes):
         \b
         # Basic conversion
         python -m tools.zil_converter ../planetfall-invclues/ -o worlds/planetfall.json
+
+        \b
+        # Convert with ZIL code translation to natural language
+        python -m tools.zil_converter ../planetfall-invclues/ -o worlds/planetfall.json --translate-zil
+
+        \b
+        # Use specific Gemini model for translation
+        python -m tools.zil_converter ../planetfall-invclues/ --translate-zil --model gemini-2.5-pro
 
         \b
         # Extract only, no smart pattern matching
@@ -102,9 +122,25 @@ def convert(zil_dir, output, verbose, extract_only, notes):
     if verbose and objects_count > 0:
         click.echo(f"   Sample objects: {', '.join([o['id'] for o in game_data['objects'][:5]])}")
 
-    # 4. Convert to JSON format
+    # 4. Set up ZIL translation if requested
+    llm_client = None
+    if translate_zil:
+        if not GEMINI_AVAILABLE:
+            click.echo("⚠️  Warning: GeminiClient not available. Skipping ZIL translation.", err=True)
+            click.echo("   Install with: poetry add google-cloud-aiplatform", err=True)
+        else:
+            click.echo(f"\n🤖 Initializing LLM client (model: {model}) for ZIL translation...")
+            try:
+                llm_client = GeminiClient(model_name=model)
+                click.echo("   ✓ LLM client ready")
+            except Exception as e:
+                click.echo(f"⚠️  Warning: Failed to initialize LLM client: {e}", err=True)
+                click.echo("   ZIL translation will be skipped.", err=True)
+                llm_client = None
+
+    # 5. Convert to JSON format
     click.echo("\n🔄 Converting to JSON world format...")
-    converter = WorldConverter()
+    converter = WorldConverter(llm_client=llm_client)
     json_world = converter.convert(game_data, smart=not extract_only)
 
     # 5. Apply smart conversions if enabled
@@ -149,6 +185,36 @@ def convert(zil_dir, output, verbose, extract_only, notes):
     click.echo(f"   NPCs: {len(json_world['npcs'])}")
     click.echo(f"   Puzzles: {len(json_world.get('puzzles', {}))}")
     click.echo(f"   Manual TODOs: {len(game_data['todos'])}")
+
+    # Show ZIL translation statistics if enabled
+    if translate_zil and llm_client:
+        total_translations = 0
+
+        # Count location translations
+        for loc in json_world['locations'].values():
+            if loc.get('attributes', {}).get('zil_action_description'):
+                total_translations += 1
+            if loc.get('attributes', {}).get('zil_pseudo_descriptions'):
+                total_translations += len(loc['attributes']['zil_pseudo_descriptions'])
+
+        # Count item translations
+        for item in json_world['items'].values():
+            if item.get('attributes', {}).get('zil_action_description'):
+                total_translations += 1
+
+        # Count NPC translations
+        for npc in json_world['npcs'].values():
+            if npc.get('attributes', {}).get('zil_action_description'):
+                total_translations += 1
+
+        # Count global routine translations
+        global_routines_translated = len(json_world.get('global_routines', {}))
+        total_translations += global_routines_translated
+
+        click.echo(f"\n🤖 ZIL Translation Summary:")
+        click.echo(f"   Total routines translated: {total_translations}")
+        if global_routines_translated > 0:
+            click.echo(f"   Global routines: {global_routines_translated}")
 
     click.echo(f"\n📂 Output files:")
     click.echo(f"   - World JSON: {output}")

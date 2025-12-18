@@ -460,12 +460,21 @@ class GameState(BaseModel):
         # Extract player_inventory if present (for ZIL worlds with adventurer item)
         player_inventory_items = data.pop("player_inventory", [])
 
+        # Extract global_routines if present (for ZIL worlds with global game logic)
+        global_routines = data.pop("global_routines", {})
+
         # Create GameState from remaining data
         game_state = cls.from_dict(data)
 
         # Set initial player inventory from world file
         if player_inventory_items:
             game_state.player.inventory = player_inventory_items
+
+        # Add global_routines to world_context for DM awareness
+        if global_routines:
+            if game_state.world_context is None:
+                game_state.world_context = {}
+            game_state.world_context["global_routines"] = global_routines
 
         # Load puzzles into dm_state
         if puzzles_data:
