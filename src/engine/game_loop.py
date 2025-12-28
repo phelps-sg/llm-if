@@ -1169,13 +1169,10 @@ You can also type natural language commands and the AI will interpret them.
                     {"id": item.id, "name": item.name, "attributes": item.attributes}
                 )
 
-        # Build map of ALL location IDs and their exits
+        # Build compact topology map: location_id -> {direction: destination_id}
+        # This preserves pathfinding/topology while minimizing tokens
         all_locations = {
-            loc_id: {
-                "id": loc.id,
-                "name": loc.name,
-                "exits": loc.connections,
-            }
+            loc_id: loc.connections
             for loc_id, loc in self.game_state.locations.items()
         }
 

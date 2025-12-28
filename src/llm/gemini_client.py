@@ -55,6 +55,7 @@ class GeminiClient:
             "total_input_tokens": 0,
             "total_output_tokens": 0,
             "total_tokens": 0,
+            "total_cached_tokens": 0,  # Tokens served from cache (implicit caching)
             "calls": []  # List of individual call metrics
         }
 
@@ -209,12 +210,14 @@ class GeminiClient:
                 input_tokens = getattr(metadata, 'prompt_token_count', 0)
                 output_tokens = getattr(metadata, 'candidates_token_count', 0)
                 total = getattr(metadata, 'total_token_count', input_tokens + output_tokens)
+                cached_tokens = getattr(metadata, 'cached_content_token_count', 0)
 
                 # Update totals
                 self.token_usage["total_calls"] += 1
                 self.token_usage["total_input_tokens"] += input_tokens
                 self.token_usage["total_output_tokens"] += output_tokens
                 self.token_usage["total_tokens"] += total
+                self.token_usage["total_cached_tokens"] += cached_tokens
 
                 # Record individual call
                 self.token_usage["calls"].append({
@@ -222,6 +225,7 @@ class GeminiClient:
                     "input_tokens": input_tokens,
                     "output_tokens": output_tokens,
                     "total_tokens": total,
+                    "cached_tokens": cached_tokens,
                     "model": self.model_name,
                     "estimated": False
                 })
@@ -4649,8 +4653,10 @@ You MUST follow these behaviors when generating state updates.
 - You MUST also make the item visible: {{"type": "modify_attribute", "params": {{"entity_id": "item_id", "attribute_path": "is_visible", "value": true}}}}
 - Example: Moving leaves reveals a grate → set GRATE-REVEALED=true AND set grate.is_visible=true
 
-VALID IDs YOU MUST USE:
-- Location IDs: {list(all_locations.keys())}
+🗺️  WORLD TOPOLOGY (for pathfinding/NPC movement/teleportation):
+{json.dumps(all_locations, indent=2)}
+
+VALID IDs FOR CURRENT LOCATION:
 - Item IDs here: {item_ids_at_location}
 - Item IDs in containers: {item_ids_in_containers}
 - Item IDs in inventory: {item_ids_in_inventory}
@@ -4999,16 +5005,24 @@ Return ONLY valid JSON:
         print(f"Total API Calls: {stats['total_calls']}")
         print(f"Total Input Tokens: {stats['total_input_tokens']:,}")
         print(f"Total Output Tokens: {stats['total_output_tokens']:,}")
+        print(f"Total Cached Tokens: {stats['total_cached_tokens']:,} 💰")
         print(f"Total Tokens: {stats['total_tokens']:,}")
 
         if stats['total_calls'] > 0:
             avg_input = stats['total_input_tokens'] / stats['total_calls']
             avg_output = stats['total_output_tokens'] / stats['total_calls']
+            avg_cached = stats['total_cached_tokens'] / stats['total_calls']
             avg_total = stats['total_tokens'] / stats['total_calls']
             print(f"\nAverage per call:")
             print(f"  Input: {avg_input:.1f} tokens")
             print(f"  Output: {avg_output:.1f} tokens")
+            print(f"  Cached: {avg_cached:.1f} tokens 💰")
             print(f"  Total: {avg_total:.1f} tokens")
+
+        # Show cache hit percentage
+        if stats['total_cached_tokens'] > 0 and stats['total_input_tokens'] > 0:
+            cache_hit_rate = (stats['total_cached_tokens'] / stats['total_input_tokens']) * 100
+            print(f"\nCache Hit Rate: {cache_hit_rate:.1f}% of input tokens served from cache")
 
         print("=" * 60 + "\n")
 
@@ -5019,6 +5033,7 @@ Return ONLY valid JSON:
             "total_input_tokens": 0,
             "total_output_tokens": 0,
             "total_tokens": 0,
+            "total_cached_tokens": 0,
             "calls": []
         }
 
