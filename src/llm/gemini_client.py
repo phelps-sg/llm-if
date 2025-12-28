@@ -2403,6 +2403,8 @@ Use cached descriptions for CONSISTENCY and BREVITY, but always prioritize CURRE
         # Add location's Special Behavior if it has ZIL action description
         location_zil_desc = location.get("attributes", {}).get("zil_action_description")
         has_location_zil = False
+        base_description_extracted = False
+
         if location_zil_desc:
             has_location_zil = True
             prompt += "🔧 LOCATION SPECIAL BEHAVIOR (from original ZIL code):\n"
@@ -2416,8 +2418,36 @@ Use cached descriptions for CONSISTENCY and BREVITY, but always prioritize CURRE
                 prompt += f"⚠️ CRITICAL - BASE DESCRIPTION TO USE:\n"
                 prompt += f'"{base_text}"\n\n'
                 prompt += f"👆 USE THIS EXACT STRUCTURE. Add only what items/NPCs are present. Do NOT add creative descriptions of things mentioned only in conditional sections!\n\n"
+                base_description_extracted = True
             else:
                 prompt += "⚠️ CRITICAL: Follow this behavior description exactly! If it mentions conditional text based on flags, check the flags below.\n\n"
+
+        # If no zil_action_description but there is zil_action_code, translate it on-demand with caching
+        if not base_description_extracted:
+            zil_action_code = location.get("attributes", {}).get("zil_action_code")
+            if zil_action_code:
+                # Translate ZIL code to natural language using cache to avoid redundant LLM calls
+                location_zil_desc = self.translate_zil_with_cache(
+                    zil_code=zil_action_code,
+                    routine_name=location.get("attributes", {}).get("zil_action", "location_action"),
+                    context=f"location action for '{location.get('name', location.get('id'))}'"
+                )
+
+                has_location_zil = True
+                prompt += "🔧 LOCATION SPECIAL BEHAVIOR (from original ZIL code, translated on-demand):\n"
+                prompt += f"{location_zil_desc}\n\n"
+
+                # Extract the base description if it contains quoted text
+                import re
+                base_desc_match = re.search(r'print.*?["""](.*?)["""]', location_zil_desc, re.IGNORECASE | re.DOTALL)
+                if base_desc_match:
+                    base_text = base_desc_match.group(1).strip()
+                    prompt += f"⚠️ CRITICAL - BASE DESCRIPTION TO USE:\n"
+                    prompt += f'"{base_text}"\n\n'
+                    prompt += f"👆 USE THIS EXACT STRUCTURE. Add only what items/NPCs are present. Do NOT add creative descriptions of things mentioned only in conditional sections!\n\n"
+                    base_description_extracted = True
+                else:
+                    prompt += "⚠️ CRITICAL: Follow this behavior description exactly! If it mentions conditional text based on flags, check the flags below.\n\n"
 
         # Add ZIL interpretation hints if ZIL attributes are present
         prompt += self._build_zil_interpretation_hints(items, location, global_flags)
