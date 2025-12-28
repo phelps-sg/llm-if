@@ -12,6 +12,8 @@ A hybrid extraction tool that converts classic Infocom ZIL (Zork Implementation 
 
 ✅ **Smart Conversion**
 - Converts room exits to JSON connections
+- **Handles blocked exits with ELSE clauses** (e.g., "Only Santa Claus climbs down chimneys")
+- **Detects transparent containers** via `transbit` flag for content visibility
 - Infers item types from ZIL flags (doors, containers, weapons, etc.)
 - Preserves ZIL attributes for LLM interpretation
 - Flags conditional exits for puzzle implementation
@@ -168,6 +170,27 @@ The converter generates TODOs for:
 }
 ```
 
+### Location with Blocked Exit
+```json
+"kitchen": {
+  "id": "kitchen",
+  "name": "Kitchen",
+  "attributes": {
+    "description_hints": "Kitchen of the white house...",
+    "lighting": "bright",
+    "blocked_exits": {
+      "down": "Only Santa Claus climbs down chimneys."
+    }
+  },
+  "connections": {
+    "west": "living_room",
+    "up": "attic"
+  }
+}
+```
+
+**Note**: Blocked exits with ELSE clauses from ZIL like `(DOWN TO STUDIO IF FALSE-FLAG ELSE "message")` are automatically converted to the `blocked_exits` attribute.
+
 ### Item (Door)
 ```json
 "conference_door": {
@@ -184,6 +207,25 @@ The converter generates TODOs for:
   }
 }
 ```
+
+### Item (Transparent Container)
+```json
+"bottle": {
+  "id": "bottle",
+  "name": "glass bottle",
+  "attributes": {
+    "description_hints": "A bottle is sitting on the table.",
+    "type": "container",
+    "container": true,
+    "open": false,
+    "capacity": 4,
+    "takeable": true,
+    "zil_flags": ["takebit", "transbit", "contbit"]
+  }
+}
+```
+
+**Note**: Items with the `transbit` flag are transparent containers. The game engine will show their contents even when closed, allowing players to see water inside a glass bottle, for example.
 
 ### NPC
 ```json

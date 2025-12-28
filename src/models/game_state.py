@@ -280,26 +280,32 @@ class GameState(BaseModel):
         for item_id in self.player.inventory:
             item = self.items.get(item_id)
             if item and item.attributes.get("provides_light", False):
-                light_level = item.attributes.get("light_level", "dim")
-                light_sources.append(f"{item.name} (carried)")
-                # Take the brightest light source
-                if light_level == "bright":
-                    artificial_light = "bright"
-                elif light_level == "dim" and artificial_light != "bright":
-                    artificial_light = "dim"
+                # CRITICAL: Only provide light if the item is actually lit/on
+                is_lit = item.attributes.get("is_lit", True)  # Default True for items without is_lit attribute
+                if is_lit:
+                    light_level = item.attributes.get("light_level", "dim")
+                    light_sources.append(f"{item.name} (carried)")
+                    # Take the brightest light source
+                    if light_level == "bright":
+                        artificial_light = "bright"
+                    elif light_level == "dim" and artificial_light != "bright":
+                        artificial_light = "dim"
 
         # Check items at current location
         for item_id, loc_id in self.item_locations.items():
             if loc_id == location_id:
                 item = self.items.get(item_id)
                 if item and item.attributes.get("provides_light", False):
-                    light_level = item.attributes.get("light_level", "dim")
-                    light_sources.append(f"{item.name} (here)")
-                    # Take the brightest light source
-                    if light_level == "bright":
-                        artificial_light = "bright"
-                    elif light_level == "dim" and artificial_light != "bright":
-                        artificial_light = "dim"
+                    # CRITICAL: Only provide light if the item is actually lit/on
+                    is_lit = item.attributes.get("is_lit", True)  # Default True for items without is_lit attribute
+                    if is_lit:
+                        light_level = item.attributes.get("light_level", "dim")
+                        light_sources.append(f"{item.name} (here)")
+                        # Take the brightest light source
+                        if light_level == "bright":
+                            artificial_light = "bright"
+                        elif light_level == "dim" and artificial_light != "bright":
+                            artificial_light = "dim"
 
         # Combine natural and artificial light
         light_levels = {"pitch_black": 0, "dark": 1, "dim": 2, "bright": 3}

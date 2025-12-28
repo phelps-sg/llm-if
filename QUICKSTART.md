@@ -102,6 +102,39 @@ Perfect for:
 - Scripted game sequences
 - State inspection between commands
 
+## Command-Line Options
+
+### Text Width
+
+Control the width of text output for better readability on different terminal sizes:
+
+```bash
+# Default width (80 characters)
+poetry run if-engine worlds/zork_original.json
+
+# Narrow terminal (60 characters)
+poetry run if-engine worlds/zork_original.json --text-width 60
+
+# Wide terminal (120 characters)
+poetry run if-engine worlds/zork_original.json --text-width 120
+
+# Works with single-step mode too
+python -m src.main --single-step --text-width 100 --command "look"
+```
+
+### Other Options
+
+```bash
+# Start at specific location (for testing)
+poetry run if-engine worlds/zork_original.json --start-location kitchen
+
+# Enable verbose debug logging
+poetry run if-engine worlds/zork_original.json --verbose
+
+# Rogue mode (procedural generation)
+poetry run if-engine --game-mode rogue --genre "dark fantasy" --plot "escape the depths"
+```
+
 ## Example Session
 
 ```

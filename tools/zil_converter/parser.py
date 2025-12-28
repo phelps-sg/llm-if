@@ -100,23 +100,13 @@ class ZILParser:
         elif first_paren >= 0:
             zil_content = zil_content[first_paren:]
 
-        # Remove comments carefully
-        # Lines starting with ; are comments, but we need to preserve closing brackets
+        # Remove comments (lines starting with ;)
+        # Comments in ZIL don't contain meaningful closing brackets - they're just documentation
         lines = []
         for line in zil_content.split('\n'):
             stripped = line.lstrip()
-            # If line starts with ;, check if it contains closing brackets we need
-            if stripped.startswith(';'):
-                # Extract any closing brackets from the comment line
-                closing_brackets = ''
-                for char in stripped:
-                    if char in ['>', ')']:
-                        closing_brackets += char
-                # If there are closing brackets, keep just those
-                if closing_brackets:
-                    lines.append(closing_brackets)
-                # Otherwise skip the comment entirely
-            else:
+            # If line starts with ;, it's a comment - skip it entirely
+            if not stripped.startswith(';'):
                 lines.append(line)
 
         content = '\n'.join(lines)

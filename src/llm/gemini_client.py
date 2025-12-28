@@ -22,8 +22,9 @@ class GeminiClient:
         # model_name: str = "gemini-2.0-flash-001",
         # model_name: str = "gemini-2.5-pro",
         # model_name: str = "gemini-2.0-flash-001",
-        # model_name: str = "gemini-2.5-flash",
-        model_name: str = "gemini-2.5-flash-lite",  # Default for DM (fast/cheap)
+        model_name: str = "gemini-2.5-flash",
+        # model_name: str = "gemini-2.5-flash-lite",  # Default for DM (fast/cheap)
+        dry_run: bool = False,
     ):
         """Initialize Gemini client with gcloud authentication.
 
@@ -32,10 +33,12 @@ class GeminiClient:
             location: GCP location (or set GCP_LOCATION env var, default: us-west1)
             model_name: Model to use (default: gemini-2.0-flash-001)
                        Options: gemini-2.0-flash-001, gemini-2.5-flash
+            dry_run: If True, estimate tokens without making API calls (for testing/cost analysis)
         """
         self.project = project or os.getenv("GCP_PROJECT")
         self.location = location or os.getenv("GCP_LOCATION", "us-west1")
         self.model_name = model_name
+        self.dry_run = dry_run
 
         if not self.project:
             raise ValueError(
@@ -46,18 +49,73 @@ class GeminiClient:
         self._token: Optional[str] = None
         self._token_expires_at: Optional[datetime] = None
 
-        # Initialize Vertex AI
-        try:
-            import vertexai
-            from vertexai.generative_models import GenerativeModel
+        # Token usage tracking
+        self.token_usage = {
+            "total_calls": 0,
+            "total_input_tokens": 0,
+            "total_output_tokens": 0,
+            "total_tokens": 0,
+            "calls": []  # List of individual call metrics
+        }
 
-            vertexai.init(project=self.project, location=self.location)
-            self.model = GenerativeModel(self.model_name)
-            self._vertexai = vertexai
-        except ImportError:
-            raise ImportError(
-                "vertexai package not installed. Install with: poetry add google-cloud-aiplatform"
-            )
+        # Initialize Vertex AI (skip if dry run)
+        if not self.dry_run:
+            try:
+                import vertexai
+                from vertexai.generative_models import GenerativeModel
+
+                vertexai.init(project=self.project, location=self.location)
+                self.model = GenerativeModel(self.model_name)
+                self._vertexai = vertexai
+            except ImportError:
+                raise ImportError(
+                    "vertexai package not installed. Install with: poetry add google-cloud-aiplatform"
+                )
+        else:
+            self.model = None
+            self._vertexai = None
+            logger.info("GeminiClient initialized in DRY RUN mode - no API calls will be made")
+
+    def _estimate_tokens(self, text: str) -> int:
+        """Estimate token count for text using simple heuristic.
+
+        Args:
+            text: Text to estimate tokens for
+
+        Returns:
+            Estimated token count (approximation: words * 1.3)
+        """
+        # Simple heuristic: tokens ≈ words * 1.3
+        # This is rough but good enough for dry run estimates
+        word_count = len(text.split())
+        return int(word_count * 1.3)
+
+    def _get_stub_response(self, prompt: str) -> str:
+        """Generate a minimal stub response for dry run mode.
+
+        Args:
+            prompt: The prompt (used to detect expected format)
+
+        Returns:
+            Stub response string
+        """
+        # Check if this looks like a JSON request
+        prompt_lower = prompt.lower()
+
+        # Intent interpretation (return valid JSON)
+        if "return only valid json" in prompt_lower and "intent" in prompt_lower:
+            return '{"intent": "examine", "is_valid": true, "is_allowed": true, "confidence": "high"}'
+
+        # State updates (return valid JSON)
+        if "state_updates" in prompt_lower and "return only valid json" in prompt_lower:
+            return '{"state_updates": [], "requires_dice_roll": false, "dice_check": null, "time_advancement": "1 minute", "new_time": null}'
+
+        # World events
+        if "events_triggered" in prompt_lower:
+            return '{"events_triggered": false, "state_updates": [], "narrative": ""}'
+
+        # Default narrative response
+        return "[DRY RUN MODE] You proceed with your action."
 
     def _get_access_token(self) -> str:
         """Get access token from gcloud, using cache if valid.
@@ -108,11 +166,66 @@ class GeminiClient:
             Generated text
         """
         try:
+            # DRY RUN MODE: Estimate tokens without API call
+            if self.dry_run:
+                # Estimate input tokens
+                input_tokens = self._estimate_tokens(prompt)
+
+                # Get stub response
+                response_text = self._get_stub_response(prompt)
+                output_tokens = self._estimate_tokens(response_text)
+
+                # Total includes some overhead for caching/processing (estimate +10%)
+                total = int((input_tokens + output_tokens) * 1.1)
+
+                # Track estimated usage
+                self.token_usage["total_calls"] += 1
+                self.token_usage["total_input_tokens"] += input_tokens
+                self.token_usage["total_output_tokens"] += output_tokens
+                self.token_usage["total_tokens"] += total
+
+                # Record individual call
+                self.token_usage["calls"].append({
+                    "timestamp": datetime.now().isoformat(),
+                    "input_tokens": input_tokens,
+                    "output_tokens": output_tokens,
+                    "total_tokens": total,
+                    "model": f"{self.model_name} (DRY RUN)",
+                    "estimated": True
+                })
+
+                return response_text
+
+            # NORMAL MODE: Make actual API call
             # Get fresh token (uses cache if valid)
             token = self._get_access_token()
 
             # Generate content
             response = self.model.generate_content(prompt, **kwargs)
+
+            # Track token usage if available
+            if hasattr(response, 'usage_metadata') and response.usage_metadata:
+                metadata = response.usage_metadata
+                input_tokens = getattr(metadata, 'prompt_token_count', 0)
+                output_tokens = getattr(metadata, 'candidates_token_count', 0)
+                total = getattr(metadata, 'total_token_count', input_tokens + output_tokens)
+
+                # Update totals
+                self.token_usage["total_calls"] += 1
+                self.token_usage["total_input_tokens"] += input_tokens
+                self.token_usage["total_output_tokens"] += output_tokens
+                self.token_usage["total_tokens"] += total
+
+                # Record individual call
+                self.token_usage["calls"].append({
+                    "timestamp": datetime.now().isoformat(),
+                    "input_tokens": input_tokens,
+                    "output_tokens": output_tokens,
+                    "total_tokens": total,
+                    "model": self.model_name,
+                    "estimated": False
+                })
+
             return str(response.text)
         except Exception as e:
             return f"Error generating response: {e}"
@@ -261,6 +374,7 @@ Be specific about mechanics and write clearly so the DM can understand the *inte
         world_context: Optional[Dict[str, Any]] = None,
         lighting_info: Optional[Dict[str, Any]] = None,
         cached_descriptions: Optional[Dict[str, Any]] = None,
+        global_flags: Optional[Dict[str, Any]] = None,
     ) -> str:
         """Generate a description of a location.
 
@@ -272,12 +386,13 @@ Be specific about mechanics and write clearly so the DM can understand the *inte
             lighting_info: Lighting and visibility information
             cached_descriptions: Optional dict with previously generated descriptions
                 Format: {"location": {...}, "items": {...}, "npcs": {...}}
+            global_flags: Optional global game flags for ZIL condition checking
 
         Returns:
             Narrative description
         """
         prompt = self._build_location_prompt(
-            location, items, npcs, player_context, world_context, lighting_info, cached_descriptions
+            location, items, npcs, player_context, world_context, lighting_info, cached_descriptions, global_flags
         )
         return self.generate(prompt)
 
@@ -2036,6 +2151,7 @@ Return JSON: {{"id": "...", "name": "...", "attributes": {{}}, "location": "..."
         world_context: Optional[Dict[str, Any]],
         lighting_info: Optional[Dict[str, Any]] = None,
         cached_descriptions: Optional[Dict[str, Any]] = None,
+        global_flags: Optional[Dict[str, Any]] = None,
     ) -> str:
         """Build prompt for location description."""
         game_time = (
@@ -2222,7 +2338,14 @@ Use cached descriptions for CONSISTENCY and BREVITY, but always prioritize CURRE
         if items and lighting_info and lighting_info.get("can_see_clearly", False):
             item_names = [item.get("name") for item in items]
             prompt += f"✅ ITEMS CURRENTLY AT THIS LOCATION: {item_names}\n"
-            prompt += f"Item details: {items}\n\n"
+            for item in items:
+                prompt += f"\n  • {item.get('name')} ({item.get('id')})\n"
+                prompt += f"    Attributes: {item.get('attributes', {})}\n"
+                # Highlight ZIL special behavior if present
+                zil_desc = item.get('attributes', {}).get('zil_action_description')
+                if zil_desc:
+                    prompt += f"    🔧 SPECIAL BEHAVIOR (from original ZIL code): {zil_desc}\n"
+            prompt += "\n"
         elif items and lighting_info:
             item_names = [item.get("name") for item in items]
             prompt += f"✅ ITEMS CURRENTLY AT THIS LOCATION (but may not be visible due to darkness): {item_names}\n\n"
@@ -2232,7 +2355,14 @@ Use cached descriptions for CONSISTENCY and BREVITY, but always prioritize CURRE
         if npcs and lighting_info and lighting_info.get("can_see_clearly", False):
             npc_names = [npc.get("name") for npc in npcs]
             prompt += f"✅ NPCs CURRENTLY AT THIS LOCATION: {npc_names}\n"
-            prompt += f"NPC details: {npcs}\n\n"
+            for npc in npcs:
+                prompt += f"\n  • {npc.get('name')} ({npc.get('id')})\n"
+                prompt += f"    Attributes: {npc.get('attributes', {})}\n"
+                # Highlight ZIL special behavior if present
+                zil_desc = npc.get('attributes', {}).get('zil_action_description')
+                if zil_desc:
+                    prompt += f"    🔧 SPECIAL BEHAVIOR (from original ZIL code): {zil_desc}\n"
+            prompt += "\n"
         elif npcs and lighting_info:
             npc_names = [npc.get("name") for npc in npcs]
             prompt += f"✅ NPCs CURRENTLY AT THIS LOCATION (but may not be visible due to darkness): {npc_names}\n\n"
@@ -2241,8 +2371,27 @@ Use cached descriptions for CONSISTENCY and BREVITY, but always prioritize CURRE
                 f"✅ NPCs CURRENTLY AT THIS LOCATION: [] (NONE - no NPCs here)\n\n"
             )
 
+        # Add location's Special Behavior if it has ZIL action description
+        location_zil_desc = location.get("attributes", {}).get("zil_action_description")
+        has_location_zil = False
+        if location_zil_desc:
+            has_location_zil = True
+            prompt += "🔧 LOCATION SPECIAL BEHAVIOR (from original ZIL code):\n"
+            prompt += f"{location_zil_desc}\n\n"
+
+            # Extract the base description if it contains quoted text
+            import re
+            base_desc_match = re.search(r'print.*?["""](.*?)["""]', location_zil_desc, re.IGNORECASE | re.DOTALL)
+            if base_desc_match:
+                base_text = base_desc_match.group(1).strip()
+                prompt += f"⚠️ CRITICAL - BASE DESCRIPTION TO USE:\n"
+                prompt += f'"{base_text}"\n\n'
+                prompt += f"👆 USE THIS EXACT STRUCTURE. Add only what items/NPCs are present. Do NOT add creative descriptions of things mentioned only in conditional sections!\n\n"
+            else:
+                prompt += "⚠️ CRITICAL: Follow this behavior description exactly! If it mentions conditional text based on flags, check the flags below.\n\n"
+
         # Add ZIL interpretation hints if ZIL attributes are present
-        prompt += self._build_zil_interpretation_hints(items, location)
+        prompt += self._build_zil_interpretation_hints(items, location, global_flags)
 
         # Add explicit warning about cached descriptions
         if cached_descriptions and cached_descriptions.get("location"):
@@ -2273,7 +2422,21 @@ IT HAS BEEN REMOVED. DO NOT DESCRIBE IT AS BEING PRESENT.
 Generate a vivid, immersive description of this location (2-4 sentences).
 
 CRITICAL RULES:
-1. Base your description on the lighting level above. If it's dark/pitch_black, don't describe visual details!
+
+🚨 RULE 1: DARKNESS - CHECK LIGHTING FIRST!
+- Lighting level: {lighting_level}
+- Can see clearly: {can_see}
+
+IF can_see_clearly = FALSE (dark/pitch_black):
+  ✅ CORRECT: Use ONLY the pre-written darkness message from lighting_info
+  ✅ CORRECT: "It's pitch black. You can't see anything at all."
+  ❌ WRONG: Describing ANY visual details (sunlight, items, colors, shapes, etc.)
+  ❌ WRONG: "Sunlight filters through..." - NO! You can't see in darkness!
+  ❌ WRONG: "You see a knife..." - NO! You can't see anything!
+
+IF can_see_clearly = TRUE:
+  ✅ Describe the location normally with visual details
+
 2. DO NOT describe the player as holding, gripping, wielding, or carrying items UNLESS they are in the PLAYER INVENTORY section above.
 3. Items listed as "Items here" are on the GROUND, not in the player's hands.
 4. Only mention items in the player's possession if they appear in the "🎒 PLAYER INVENTORY" section.
@@ -2293,6 +2456,17 @@ CRITICAL RULES:
 
 Write in second person (you see..., you notice..., you feel..., you hear...).
 Be concise but evocative.
+
+🚨🚨🚨 STOP! FINAL CHECK BEFORE WRITING: 🚨🚨🚨
+
+Does the "⚠️ CRITICAL - BASE DESCRIPTION TO USE" section appear above?
+- YES → Use ONLY that structure. Mention ONLY field/house/door/mailbox. NO forest/southwest/path/trees/secrets!
+- NO → Describe normally but check for conditional text in Special Behavior
+
+GLOBAL FLAGS are: """ + str(global_flags if global_flags else {}) + """
+If WON-FLAG is NOT in those flags → DO NOT mention southwest, forest, path, or trees!
+
+NOW write the description:
 """
 
         return prompt
@@ -2355,6 +2529,11 @@ Be concise but evocative.
             keyword in player_input_lower for keyword in dialogue_keywords
         )
 
+        # Extract lighting info from context
+        lighting_info = context.get("lighting", {})
+        can_see = lighting_info.get("can_see_clearly", True)
+        light_level = lighting_info.get("level", "bright")
+
         prompt = f"""You are a Dungeon Master narrating the outcome of a player's action.
 {self._build_world_context(context)}
 WHAT THE PLAYER DID: "{player_input}"
@@ -2365,29 +2544,95 @@ CURRENT GAME STATE (after action was processed):
 Location: {location.get("name", "Unknown")}
 Location details: {location.get("attributes", {})}
 
+🚨 CRITICAL - CHECK LIGHTING FIRST!
+Lighting level: {light_level}
+Can see clearly: {can_see}
+
+IF can_see_clearly = FALSE (dark/pitch_black):
+  ✅ CORRECT: Describe ONLY darkness - no visual details at all
+  ✅ CORRECT: "It's pitch black. You can't see anything."
+  ❌ WRONG: "morning light filters through..." - NO! Can't see light in darkness!
+  ❌ WRONG: "you see a knife" - NO! Can't see anything in pitch black!
+  ❌ WRONG: Any visual details (colors, objects, shapes)
+
+IF can_see_clearly = TRUE:
+  ✅ Describe location normally with visual details
+
 ⏰ CURRENT TIME (for lighting only): {context.get("game_time", "Unknown")}
-CRITICAL LIGHTING RULES:
-- Use time to DETERMINE LIGHTING, but DO NOT MENTION THE TIME in your narrative!
-- Morning/Afternoon = bright/daytime lighting; Evening = dusk; Night = darkness
-- DO NOT include clock times like "at 5:15 PM" in the narrative!
+LIGHTING RULES (when can_see = TRUE):
+- DO NOT MENTION THE TIME in your narrative!
 - 🚨 ONLY mention lighting when RELEVANT to the action:
-  ✅ Mention lighting for: looking around, entering new areas, examining distant objects, searching for things
+  ✅ Mention lighting for: looking around, entering new areas, examining distant objects
   ❌ DON'T mention lighting for: eating, drinking, using items, talking, simple inventory actions
-  - Example - eating garlic: Focus on TASTE and SMELL, not "bright morning light"
-  - Example - examining a carried item: Focus on THE ITEM, not ambient lighting
-  - Example - entering a new room: Lighting IS relevant - describe it
-- Keep lighting descriptions subtle and contextual, not overwhelming the main action
+- Keep lighting descriptions subtle and contextual
 
 Items at this location (on the ground): {[item.get("name") for item in items] if items else "none"}
-Item details: {items if items else "none"}
-{self._format_container_contents(context.get("container_contents", {}))}
-
-NPCs at this location: {[npc.get("name") for npc in npcs] if npcs else "none"}
-NPC details: {npcs if npcs else "none"}
-
-Player inventory (what they are carrying): {[item.get("name") for item in inventory_items] if inventory_items else "nothing"}
-Inventory details: {inventory_items if inventory_items else "empty"}
 """
+        # Add item details with ZIL highlighting
+        if items:
+            prompt += "Item details:\n"
+            for item in items:
+                prompt += f"  • {item.get('name')} ({item.get('id')})\n"
+                prompt += f"    Attributes: {item.get('attributes', {})}\n"
+                # Highlight ZIL special behavior if present
+                zil_desc = item.get('attributes', {}).get('zil_action_description')
+                if zil_desc:
+                    prompt += f"    🔧 SPECIAL BEHAVIOR (from original ZIL code): {zil_desc}\n"
+            prompt += "\n"
+        else:
+            prompt += "Item details: none\n\n"
+
+        prompt += self._format_container_contents(context.get("container_contents", {}))
+
+        # Add NPC details with ZIL highlighting
+        npc_names = [npc.get("name") for npc in npcs] if npcs else []
+        prompt += f"\nNPCs at this location: {npc_names if npc_names else 'none'}\n"
+        if npcs:
+            prompt += "NPC details:\n"
+            for npc in npcs:
+                prompt += f"  • {npc.get('name')} ({npc.get('id')})\n"
+                prompt += f"    Attributes: {npc.get('attributes', {})}\n"
+                # Highlight ZIL special behavior if present
+                zil_desc = npc.get('attributes', {}).get('zil_action_description')
+                if zil_desc:
+                    prompt += f"    🔧 SPECIAL BEHAVIOR (from original ZIL code): {zil_desc}\n"
+            prompt += "\n"
+        else:
+            prompt += "NPC details: none\n\n"
+
+        # Add inventory with ZIL highlighting
+        inv_names = [item.get("name") for item in inventory_items] if inventory_items else []
+        prompt += f"Player inventory (what they are carrying): {inv_names if inv_names else 'nothing'}\n"
+        if inventory_items:
+            prompt += "Inventory details:\n"
+            for item in inventory_items:
+                prompt += f"  • {item.get('name')} ({item.get('id')})\n"
+                prompt += f"    Attributes: {item.get('attributes', {})}\n"
+                # Highlight ZIL special behavior if present
+                zil_desc = item.get('attributes', {}).get('zil_action_description')
+                if zil_desc:
+                    prompt += f"    🔧 SPECIAL BEHAVIOR (from original ZIL code): {zil_desc}\n"
+            prompt += "\n"
+        else:
+            prompt += "Inventory details: empty\n\n"
+
+        prompt += """
+📖 READING ITEMS WITH TEXT:
+When the player reads an item that has a "text" attribute:
+- Quote the text content from the attribute (you may format/present it nicely)
+- You can add narrative flavor AROUND the text (taking it out, unfolding it, the paper's condition)
+- But the actual text content should match what's in the "text" attribute
+- Don't hallucinate different text content
+- Example: If leaflet.text = "Welcome to Zork!", don't invent "Collect treasures..."
+
+"""
+
+        # Add location's Special Behavior if it has ZIL action description
+        location_zil_desc = location.get("attributes", {}).get("zil_action_description")
+        if location_zil_desc:
+            prompt += "\n🔧 LOCATION SPECIAL BEHAVIOR (from original ZIL code):\n"
+            prompt += f"{location_zil_desc}\n\n"
+            prompt += "⚠️ CRITICAL: Follow this behavior description! If it mentions conditional text based on flags, check the global flags in the context.\n\n"
 
         # Add ZIL interpretation hints if ZIL attributes are present
         # Include items at location, inventory items, AND items in open containers
@@ -2399,7 +2644,7 @@ Inventory details: {inventory_items if inventory_items else "empty"}
             if contents:
                 all_relevant_items.extend(contents)
 
-        prompt += self._build_zil_interpretation_hints(all_relevant_items, location)
+        prompt += self._build_zil_interpretation_hints(all_relevant_items, location, context.get("global_flags"))
 
         # Add state updates section (CRITICAL for narrating what happened)
         if state_updates:
@@ -2863,12 +3108,13 @@ Generate ONLY the description (no preamble, no explanation). If cannot see, retu
 
         return prompt
 
-    def _build_zil_interpretation_hints(self, items: list, location: Optional[Dict] = None) -> str:
+    def _build_zil_interpretation_hints(self, items: list, location: Optional[Dict] = None, global_flags: Optional[Dict] = None) -> str:
         """Build ZIL interpretation hints if any entities have ZIL attributes.
 
         Args:
             items: List of item dicts to check for ZIL attributes
             location: Optional location dict to check for ZIL attributes
+            global_flags: Optional global game flags for condition evaluation
 
         Returns:
             ZIL interpretation guidance string, or empty if no ZIL attributes found
@@ -2888,7 +3134,7 @@ Generate ONLY the description (no preamble, no explanation). If cannot see, retu
         if not has_zil:
             return ""
 
-        return """
+        hint = """
 
 📜 ZIL INTERPRETATION GUIDE (Zork Implementation Language):
 This world was converted from original Infocom ZIL source code. Items and locations may have special ZIL attributes:
@@ -2932,18 +3178,105 @@ This world was converted from original Infocom ZIL source code. Items and locati
   - Item has custom behavior, details unknown
   - Describe cautiously
 
-🏷️ zil_flags:
-- Technical flags from ZIL (we already converted important ones to is_visible, etc.)
-- Usually you can ignore these, but they may provide additional context
+🏷️ zil_flags (entity-specific flags in attributes):
+- These are technical flags attached to individual entities (SACREDBIT, RLANDBIT, OPENBIT, etc.)
+- These are INTERNAL MECHANICS - ignore these for descriptions
+- Do NOT mention these in narrative
 
 ⚠️ COMMON ZIL PATTERNS:
 - If zil_adjectives contains "BOARDED" → describe as boarded up, imply it's blocked
 - If zil_adjectives contains "LOCKED" → describe as locked
 - If zil_action is present → there's custom behavior, describe cautiously
-- If is_visible: false → item is hidden (already handled)
 
 REMEMBER: zil_adjectives are DESCRIPTIVE FACTS, not suggestions. Use them!
 """
+
+        # Add global flags guidance if provided
+        if global_flags is not None:
+            hint += f"""
+🏳️ GLOBAL GAME FLAGS (current state):
+{json.dumps(global_flags, indent=2)}
+
+📋 EVALUATING CONDITIONS IN SPECIAL BEHAVIOR:
+The "🔧 Special Behavior" descriptions may mention conditions based on global flags.
+Follow the natural language instructions EXACTLY - if a condition isn't met, don't include that text.
+
+⚠️ CRITICAL - When Special Behavior provides EXACT QUOTED TEXT:
+If the Special Behavior says 'The game will print: "Exact text here"' or provides specific wording:
+- Use that structure as your guide for what to describe
+- Don't add creative descriptions of things mentioned only in conditional text
+- If something (like a forest, secret path, etc.) is ONLY mentioned in conditional text, don't describe it at all when condition is false
+
+EXAMPLES:
+
+Example 1 - Conditional text NOT included (flag unset):
+Special Behavior: "The game will first always print: 'You are standing in an open field west of a white house, with a boarded front door.' If WON-FLAG is set, append: 'A secret path leads southwest into the forest.'"
+Current flags: {{}} (empty)
+Available exits: west (to forest_1), north, south
+→ WON-FLAG NOT set → Don't append the conditional text
+→ Correct: "You stand in an open field west of a white house. Its front door is boarded shut. A small mailbox sits nearby."
+→ WRONG: "To the southwest, a forest beckons" - NO! Forest is ONLY in conditional text
+→ WRONG: "Dense trees to the west" - NO! Don't describe the forest at all
+→ WRONG: "The forest looms nearby" - NO! Forest not mentioned in base description
+→ The base description makes NO mention of forest/trees/southwest - you shouldn't either!
+
+Example 2 - Conditional text IS included (flag set):
+Special Behavior: "Describe the room. If GRATE-REVEALED is set, add 'A metal grating is visible in the floor.'"
+Current flags: {{"GRATE-REVEALED": true}}
+→ GRATE-REVEALED is true
+→ Correct: Include the grating in your description
+→ WRONG: Omitting the grating when flag IS set
+
+Example 3 - If/else branches:
+Special Behavior: "Print 'You are in a room.' If LAMP-ON, add 'Lamplight reveals stone walls.' Else add 'It is pitch dark.'"
+Current flags: {{"LAMP-ON": false}}
+→ LAMP-ON is false → use else branch
+→ Correct: "You are in a room. It is pitch dark."
+→ WRONG: "You are in a room. A lamp sits here." (mentioned lamp when LAMP-ON is false)
+
+HOW TO APPLY THIS:
+1. Read the Special Behavior description for the location/item
+2. If it mentions checking a flag (e.g., "if X is set", "when Y flag", "checks Z"), look up that flag name above
+3. Evaluate the condition: flag exists and is true/set → condition met; flag missing or false → condition not met
+4. Follow the instructions based on whether the condition is met
+5. If no flags are mentioned in Special Behavior, just describe normally
+
+This is general - works for ANY game flag with ANY name. Just follow the natural language logic.
+
+🔧 EVALUATING ITEM STATES IN SPECIAL BEHAVIOR:
+When the Special Behavior description mentions checking an ITEM's state (e.g., "if DOOR is OPEN", "if LAMP is ON", "if GATE is LOCKED"):
+
+HOW TO CHECK ITEM STATES:
+1. Find the item in the "Items at location" list above using its ID (convert to lowercase with underscores, e.g., GANGWAY-DOOR → gangway_door)
+2. Check that item's attributes for the relevant state
+
+COMMON ITEM STATE CHECKS:
+- "if ITEM is OPEN" → Check if item has is_open: true in attributes
+- "if ITEM is LOCKED" → Check if item has is_locked: true in attributes
+- "if ITEM is ON" → Check if item has is_on: true in attributes
+- "if ITEM is VISIBLE" → Check if item has is_visible: true in attributes
+
+EXAMPLE:
+Special Behavior: "Describe the corridor curving to starboard with a gangway leading up. If GANGWAY-DOOR is OPEN, end the sentence. If GANGWAY-DOOR is NOT OPEN, add 'but both are blocked by closed bulkheads.'"
+
+Items at location include:
+  - gangway_door: {{is_open: true, is_visible: false, ...}}
+
+Evaluation:
+  → Find gangway_door in items list ✓
+  → Check is_open: true ✓
+  → Condition "GANGWAY-DOOR is OPEN" is TRUE
+  → Use first branch: end the sentence, do NOT add "blocked by closed bulkheads"
+  → Description should indicate corridors are accessible, NOT blocked!
+
+CRITICAL DISTINCTION:
+- GLOBAL FLAGS (like WON-FLAG, GRATE-REVEALED) are in the 🏳️ Global Game Flags section
+- ITEM STATES (like is_open, is_locked) are in each item's attributes in the Items list
+- When Special Behavior references an item by name (DOOR, LAMP, GATE), check ITEM attributes
+- When Special Behavior references a flag name (FLAG, -REVEALED, -ON), check GLOBAL flags
+"""
+
+        return hint
 
     def _build_world_context(self, context: Dict[str, Any]) -> str:
         """Build world context and DM instructions if present."""
@@ -3930,12 +4263,24 @@ Description: {location.get("description", "No description")}
 Lighting: {lighting}
 Available Exits: {exits}
 Exit Destinations: {exit_destinations}
+Blocked Exits: {str(context.get("blocked_exits", {}))}
 
 Items here:
 {
             chr(10).join(
                 [
                     f"  - {item.get('name')} (ID: {item.get('id')})"
+                    + (
+                        # For doors/containers, show status PROMINENTLY
+                        f" - DOOR: {'OPEN' if item.get('attributes', {}).get('is_open') else 'CLOSED'}, {'LOCKED' if item.get('attributes', {}).get('is_locked') else 'UNLOCKED'}"
+                        if item.get('attributes', {}).get('is_door') or item.get('attributes', {}).get('type') == 'entrance'
+                        else ""
+                    )
+                    + (
+                        f" - CONTAINER: {'OPEN' if item.get('attributes', {}).get('is_open') else 'CLOSED'}"
+                        if (item.get('attributes', {}).get('container') or item.get('attributes', {}).get('is_container')) and not item.get('attributes', {}).get('is_door')
+                        else ""
+                    )
                     + (
                         f" - {item.get('description')}"
                         if item.get("description")
@@ -4024,10 +4369,34 @@ YOUR TASK - STEP 1: INTERPRET INTENT & CHECK PERMISSION
 
 CRITICAL VALIDATION RULES:
 
+🚨 DARKNESS/VISIBILITY VALIDATION - CRITICAL:
+- Lighting: {lighting}
+- Can see clearly: {lighting.get("can_see_clearly", True) if lighting else True}
+
+IF can_see_clearly = FALSE (pitch black/dark):
+  - Player CANNOT interact with items/objects at the location (can't see them!)
+  - Actions blocked: take, get, pick up, examine, use, open, close, attack, etc.
+  - Examples:
+    * "take knife" in darkness → is_allowed=false, "You can't see anything in this pitch darkness."
+    * "examine table" in darkness → is_allowed=false, "It's too dark to see."
+    * "open chest" in darkness → is_allowed=false, "You fumble in the darkness but can't find it."
+  - Actions STILL allowed:
+    * Movement (can feel your way through exits)
+    * Looking around (will describe darkness)
+    * Inventory management (you know what you're carrying)
+    * Turning on light sources you're carrying
+
 🚨 MOVEMENT VALIDATION:
-- ONLY allow movement in directions in the "Available Exits" list
-- If direction NOT in exits → is_allowed = false
+- ONLY allow movement in directions in the "Available Exits" list OR "Blocked Exits" list
+- If direction NOT in either list → is_allowed = false
 - Example: exits = ["south"], player says "go north" → is_allowed=false, not_allowed_reason="There is no exit to the north. You can only go south."
+
+🚨 BLOCKED EXITS:
+- Blocked exits are directions that exist but are permanently blocked
+- Check the "Blocked Exits" dictionary (direction → blocking message)
+- If player tries to go in a blocked direction → is_allowed = false
+- Use the blocking message as the not_allowed_reason
+- Example: blocked_exits = {{"down": "Only Santa Claus climbs down chimneys."}}, player says "go down" → is_allowed=false, not_allowed_reason="Only Santa Claus climbs down chimneys."
 
 🚨 EXTRAORDINARY ACTIONS (Teleportation, wishes, object creation, reality warping):
 - PRINCIPLE: Extraordinary actions require IN-GAME justification
@@ -4065,15 +4434,21 @@ CRITICAL VALIDATION RULES:
 - Can't take what's not at location
 - Can't use item that doesn't exist
 
-🚨 DOORS AND CONTAINERS:
-- Check item/location descriptions for door states
-- If door is "boarded", "locked", "shut", "sealed" → NOT allowed to open without key/tools
-- If door is "open" → allowed to go through
-- Opening a door ≠ moving through it (separate actions)
+🚨 DOORS, GATES, AND CONTAINERS - CRITICAL:
+- **ALWAYS check item attributes** for is_door, is_open, is_locked
+- For items with is_door=True or type="entrance":
+  - **Before allowing passage**: Check is_open attribute
+  - If is_open=False → **NOT ALLOWED** to go through/descend/enter
+  - not_allowed_reason: "The [door/grating/gate] is closed. You'll need to open it first."
+- Opening ≠ passing through (separate actions):
+  - "open grating" → sets is_open=True (if unlocked)
+  - "descend through grating" → requires is_open=True ALREADY set
 - Examples:
-  - "open the boarded door" → NOT allowed (need to remove boards first)
-  - "open the locked door" without key → NOT allowed
-  - "open the unlocked door" → allowed (if door exists)
+  - Player: "descend through grating", grating.is_open=False → NOT allowed, "The grating is closed. You'll need to open it first."
+  - Player: "go through door", door.is_open=False → NOT allowed, "The door is closed."
+  - Player: "open door", door.is_locked=True, no key → NOT allowed, "The door is locked."
+  - Player: "open grating", grating.is_locked=False → ALLOWED
+  - Player: "descend through grating", grating.is_open=True → ALLOWED
 
 🚨 PLAYER POINT OF VIEW - CRITICAL FOR not_allowed_reason:
 - The not_allowed_reason will be shown DIRECTLY to the player
@@ -4263,7 +4638,13 @@ Player inventory names: {[item.get("name") for item in player.get("inventory", [
 These describe special game mechanics from the original ZIL code.
 You MUST follow these behaviors when generating state updates.
 
-🔧 REVEALING ITEMS: If a Special Behavior mentions "revealing" an item or setting a "*-REVEALED" flag:
+🔧 SPECIAL BEHAVIORS may mention conditions (flags, counters, etc.):
+- Read the Special Behavior description carefully
+- If it mentions checking a condition, evaluate that condition using current game state
+- Current global flags: {context.get("global_flags", {})}
+- Follow the natural language logic in the description
+
+🔧 REVEALING ITEMS: If a Special Behavior mentions "revealing" an item or setting a flag:
 - You MUST set the flag: {{"type": "set_flag", "params": {{"flag_name": "ITEM-REVEALED", "value": true}}}}
 - You MUST also make the item visible: {{"type": "modify_attribute", "params": {{"entity_id": "item_id", "attribute_path": "is_visible", "value": true}}}}
 - Example: Moving leaves reveals a grate → set GRATE-REVEALED=true AND set grate.is_visible=true
@@ -4348,12 +4729,12 @@ Intent: "Player wants to animate the statue"
 
 Intent: "Player wants to open the mailbox"
 → [
-  {{"type": "modify_attribute", "params": {{"entity_id": "mailbox", "attribute_path": "open", "value": true}}}}
+  {{"type": "modify_attribute", "params": {{"entity_id": "mailbox", "attribute_path": "is_open", "value": true}}}}
 ]
 
 Intent: "Player wants to close the chest"
 → [
-  {{"type": "modify_attribute", "params": {{"entity_id": "chest", "attribute_path": "open", "value": false}}}}
+  {{"type": "modify_attribute", "params": {{"entity_id": "chest", "attribute_path": "is_open", "value": false}}}}
 ]
 
 CRITICAL RULES:
@@ -4372,20 +4753,30 @@ CRITICAL RULES:
 - You MUST explicitly include ALL attributes you want the transformed item to have
 - Old attributes are stored in prev_attributes but NOT automatically carried forward
 - If transforming a CONTAINER that should remain a container:
-  ✅ MUST include: {{"container": true, "open": true/false, "capacity": N}}
+  ✅ MUST include: {{"container": true, "is_open": true/false, "capacity": N}}
   - Example: Opening egg container:
     {{"type": "transform_item", "params": {{"item_id": "egg", "new_name": "open egg",
-     "new_attributes": {{"broken": true, "open": true, "container": true, "capacity": 6, "takeable": true, "description": "..."}}}}}}
+     "new_attributes": {{"broken": true, "is_open": true, "container": true, "capacity": 6, "takeable": true, "description": "..."}}}}}}
 - If transforming INTO something that's NOT a container:
   ✅ Omit container attributes (they won't be preserved)
   - Example: Smashing bottle:
     {{"type": "transform_item", "params": {{"item_id": "bottle", "new_name": "glass shards",
      "new_attributes": {{"sharp": true, "takeable": false, "description": "..."}}}}}}
 - Common attributes to consider preserving:
-  - container, capacity, open (if it stays a container)
+  - container, capacity, is_open (if it stays a container)
   - takeable (if it should still be pickupable)
   - type (generic, weapon, armor, etc.)
   - Any custom gameplay attributes (magical, cursed, etc.)
+
+🚨 DOOR/CONTAINER ATTRIBUTE NAMES - CRITICAL:
+- **ALWAYS use "is_open" NOT "open"** for doors, containers, grates, chests
+- **ALWAYS use "is_locked" NOT "locked"** for lockable items
+- **ALWAYS use "is_visible" NOT "visible"** for visibility
+- Examples:
+  ✅ CORRECT: {{"attribute_path": "is_open", "value": true}}
+  ❌ WRONG: {{"attribute_path": "open", "value": true}}
+  ✅ CORRECT: {{"attribute_path": "is_locked", "value": false}}
+  ❌ WRONG: {{"attribute_path": "locked", "value": false}}
 
 🚨 IMPLEMENT THE EXACT INTENT - NO SUBSTITUTIONS:
 - Generate updates that DIRECTLY implement what the intent says
@@ -4395,7 +4786,7 @@ CRITICAL RULES:
   - Intent: "examine sword" → WRONG: add_to_inventory (examining ≠ taking!)
   - Intent: "talk to guard" → WRONG: trigger_combat (talking ≠ attacking!)
 - Correct approach:
-  - Intent: "open the door" → modify_attribute on door (open: true)
+  - Intent: "open the door" → modify_attribute on door (is_open: true)
   - Intent: "examine sword" → no_change (just observation)
   - Intent: "go through door" → move_player (explicit movement)
 
@@ -4587,3 +4978,56 @@ Return ONLY valid JSON:
 }}
 """
         return prompt
+
+    def get_token_usage_stats(self) -> Dict[str, Any]:
+        """Get current token usage statistics.
+
+        Returns:
+            Dict with token usage metrics including total and per-call stats
+        """
+        return self.token_usage.copy()
+
+    def print_token_usage_stats(self) -> None:
+        """Print formatted token usage statistics."""
+        stats = self.token_usage
+        print("\n" + "=" * 60)
+        print("TOKEN USAGE STATISTICS")
+        if self.dry_run:
+            print("⚠️  DRY RUN MODE - Token counts are ESTIMATES")
+        print("=" * 60)
+        print(f"Model: {self.model_name}")
+        print(f"Total API Calls: {stats['total_calls']}")
+        print(f"Total Input Tokens: {stats['total_input_tokens']:,}")
+        print(f"Total Output Tokens: {stats['total_output_tokens']:,}")
+        print(f"Total Tokens: {stats['total_tokens']:,}")
+
+        if stats['total_calls'] > 0:
+            avg_input = stats['total_input_tokens'] / stats['total_calls']
+            avg_output = stats['total_output_tokens'] / stats['total_calls']
+            avg_total = stats['total_tokens'] / stats['total_calls']
+            print(f"\nAverage per call:")
+            print(f"  Input: {avg_input:.1f} tokens")
+            print(f"  Output: {avg_output:.1f} tokens")
+            print(f"  Total: {avg_total:.1f} tokens")
+
+        print("=" * 60 + "\n")
+
+    def reset_token_usage_stats(self) -> None:
+        """Reset token usage statistics to zero."""
+        self.token_usage = {
+            "total_calls": 0,
+            "total_input_tokens": 0,
+            "total_output_tokens": 0,
+            "total_tokens": 0,
+            "calls": []
+        }
+
+    def export_token_usage_to_file(self, filepath: str) -> None:
+        """Export detailed token usage data to a JSON file.
+
+        Args:
+            filepath: Path to output JSON file
+        """
+        import json
+        with open(filepath, 'w') as f:
+            json.dump(self.token_usage, f, indent=2)

@@ -14,6 +14,7 @@ from .rules.rule_engine import RuleEngine
 from .rules.dnd_rules import get_all_dnd_rules
 from .engine.game_loop import GameLoop
 from .utils.logging_config import setup_logging
+from .utils.text_formatter import set_text_width, print_narrative
 
 
 def load_game(world_file: str) -> GameState:
@@ -155,7 +156,7 @@ def initialize_rogue_mode(args, gcp_project: str) -> GameState:
     print("=" * 60)
 
     # Initialize LLM client
-    gemini = GeminiClient(project=gcp_project)
+    gemini = GeminiClient(project=gcp_project, dry_run=args.dry_run)
 
     # Generate first level
     level_data = gemini.generate_dungeon_level(
@@ -280,6 +281,12 @@ def create_parser() -> argparse.ArgumentParser:
         help="Enable verbose debug logging output",
     )
 
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Dry run mode: estimate token usage without making API calls (for testing/cost analysis)",
+    )
+
     # Rogue mode arguments
     parser.add_argument(
         "--game-mode",
@@ -333,6 +340,13 @@ def create_parser() -> argparse.ArgumentParser:
         "--start-location",
         type=str,
         help="Override starting location (location ID) - useful for testing specific areas",
+    )
+
+    parser.add_argument(
+        "--text-width",
+        type=int,
+        default=80,
+        help="Maximum width for text output in characters (default: 80)",
     )
 
     return parser
@@ -410,8 +424,8 @@ def run_single_step_mode(args, gcp_project: str) -> None:
 
     # 3. Initialize game components
     print("Initializing game engine...")
-    gemini = GeminiClient(project=gcp_project)  # Uses default: gemini-2.5-flash-lite (DM)
-    zil_translator = GeminiClient(project=gcp_project, model_name="gemini-2.5-flash")  # More capable for ZIL translation
+    gemini = GeminiClient(project=gcp_project, dry_run=args.dry_run)  # Uses default: gemini-2.5-flash-lite (DM)
+    zil_translator = GeminiClient(project=gcp_project, model_name="gemini-2.5-flash", dry_run=args.dry_run)  # More capable for ZIL translation
     rule_engine = initialize_rule_engine()
     game_loop = GameLoop(game_state, gemini, rule_engine, zil_translator_client=zil_translator)
 
@@ -439,7 +453,7 @@ def run_single_step_mode(args, gcp_project: str) -> None:
     print("\n" + "=" * 60)
     print(f"Command: {args.command}")
     print("=" * 60)
-    print(f"\n{result['narrative']}\n")
+    print_narrative(result['narrative'])
 
     location = result['location']
     print(f"Location: {location['name']} ({location['id']})")
@@ -475,6 +489,9 @@ def main() -> None:
 
     # Initialize logging based on verbose flag
     setup_logging(verbose=args.verbose)
+
+    # Configure text formatter with specified width
+    set_text_width(args.text_width)
 
     # Get GCP project (required for Vertex AI)
     gcp_project = os.getenv("GCP_PROJECT")
@@ -525,8 +542,10 @@ def main() -> None:
     # Initialize components
     try:
         print("Initializing Gemini client...")
-        gemini = GeminiClient(project=gcp_project)  # Uses default: gemini-2.5-flash-lite (DM)
-        zil_translator = GeminiClient(project=gcp_project, model_name="gemini-2.5-flash")  # More capable for ZIL translation
+        if args.dry_run:
+            print("⚠️  DRY RUN MODE - No API calls will be made, token usage will be estimated")
+        gemini = GeminiClient(project=gcp_project, dry_run=args.dry_run)  # Uses default: gemini-2.5-flash-lite (DM)
+        zil_translator = GeminiClient(project=gcp_project, model_name="gemini-2.5-flash", dry_run=args.dry_run)  # More capable for ZIL translation
 
         rule_engine = initialize_rule_engine()
 

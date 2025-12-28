@@ -20,11 +20,21 @@ class LocationConverter:
 
     def convert_room(self, room_data: Dict[str, Any]) -> Dict[str, Any]:
         """Convert extracted room to JSON location format."""
+        # Convert exits and blocked exits
+        connections, blocked_exits = self._convert_exits(room_data["exits"], room_data["id"])
+
+        # Build attributes
+        attributes = self._build_attributes(room_data)
+
+        # Add blocked_exits to attributes if any exist
+        if blocked_exits:
+            attributes["blocked_exits"] = blocked_exits
+
         location = {
             "id": room_data["id"],
             "name": room_data["name"],
-            "attributes": self._build_attributes(room_data),
-            "connections": self._convert_exits(room_data["exits"], room_data["id"])
+            "attributes": attributes,
+            "connections": connections
         }
 
         # Note: All ZIL data now in structured JSON format (no raw_zil string)
@@ -133,31 +143,52 @@ class LocationConverter:
 
         return custom
 
-    def _convert_exits(self, zil_exits: Dict[str, Any], room_id: str) -> Dict[str, str]:
-        """Convert ZIL exits to JSON connections.
+    def _convert_exits(self, zil_exits: Dict[str, Any], room_id: str) -> tuple[Dict[str, str], Dict[str, str]]:
+        """Convert ZIL exits to JSON connections and blocked exits.
 
-        For now, only handle direct exits. Conditional/blocked exits not included.
+        Returns:
+            Tuple of (connections, blocked_exits) where:
+            - connections: dict of direction -> destination_id for valid exits
+            - blocked_exits: dict of direction -> blocking_message for blocked exits
         """
         connections = {}
+        blocked_exits = {}
 
         for direction, exit_def in zil_exits.items():
             if exit_def["type"] == "direct":
                 # Simple exit: just add connection
                 connections[direction] = exit_def["destination"]
             elif exit_def["type"] == "blocked":
-                # Blocked exit with message - skip it (not implemented yet)
-                pass
-            else:
-                # Conditional exit: add TODO and skip
+                # Blocked exit with message - add to blocked_exits
+                message = exit_def.get("message", "You cannot go that way.")
+                blocked_exits[direction] = message
+            elif exit_def["type"] == "conditional":
+                # Conditional exit
                 condition = exit_def.get("condition", "unknown")
-                self.todos.append(
-                    f"Conditional exit in {room_id}: {direction} -> "
-                    f"condition={condition}\n"
-                    f"  Needs implementation"
-                )
-                # Don't add the connection
+                destination = exit_def.get("destination")
 
-        return connections
+                # Special handling for "IF OBJECT IS OPEN" format
+                # Format: "corridor_door IS OPEN"
+                if " IS OPEN" in condition and destination:
+                    # For doors that start open, include the connection
+                    # The game loop will handle closing/opening doors dynamically
+                    connections[direction] = destination
+                    self.todos.append(
+                        f"Conditional exit in {room_id}: {direction} -> {destination}\n"
+                        f"  Condition: {condition}\n"
+                        f"  Connection added (assuming door starts open)"
+                    )
+                else:
+                    # Other conditional exits: add TODO and skip
+                    self.todos.append(
+                        f"Conditional exit in {room_id}: {direction}\n"
+                        f"  Condition: {condition}\n"
+                        f"  Destination: {destination}\n"
+                        f"  Needs implementation"
+                    )
+                    # Don't add the connection
+
+        return connections, blocked_exits
 
     def get_todos(self) -> List[str]:
         """Get all TODO notes."""

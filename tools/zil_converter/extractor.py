@@ -164,9 +164,10 @@ class RoomExtractor(ZILExtractor):
         ZIL directions: NORTH, SOUTH, EAST, WEST, NE, NW, SE, SW, UP, DOWN, IN, OUT
 
         Exit types:
-            (NORTH TO OTHER-ROOM)       - Direct exit
-            (DOWN PER DOOR-LOCKED-F)    - Conditional exit (function check)
-            (EAST IF FLAG-NAME)         - Conditional exit (flag check)
+            (NORTH TO OTHER-ROOM)                           - Direct exit
+            (DOWN PER DOOR-LOCKED-F)                        - Conditional exit (function check)
+            (EAST IF FLAG-NAME)                             - Conditional exit (flag check)
+            (DOWN TO STUDIO IF FALSE-FLAG ELSE "message")   - Blocked exit with message (ELSE clause)
 
         CRITICAL: (IN ROOMS) is NOT an exit - it means the room is IN the ROOMS container.
                   Only (IN TO somewhere) is an exit.
@@ -210,17 +211,55 @@ class RoomExtractor(ZILExtractor):
                     condition_value = None
                     destination = None
 
+                    has_else_block = False
                     if exit_type == "TO" and len(exit_def) >= 4:
-                        # Look for IF or PER later in the list
+                        # Look for IF or PER later in the list, and check for ELSE clause
                         for i in range(2, len(exit_def)):
                             elem = str(exit_def[i]).upper() if isinstance(exit_def[i], Symbol) else str(exit_def[i])
                             if elem in ["IF", "PER"]:
                                 is_conditional = True
                                 condition_keyword = elem.lower()
                                 destination = self._normalize_id(exit_def[1])
-                                if i + 1 < len(exit_def):
+
+                                # Check if this is "IF OBJECT IS STATE" format
+                                # Format: (EAST TO REACTOR-LOBBY IF CORRIDOR-DOOR IS OPEN)
+                                is_object_state_format = False
+                                if (elem == "IF" and i + 3 < len(exit_def)):
+                                    is_keyword = str(exit_def[i + 2]).upper() if isinstance(exit_def[i + 2], Symbol) else str(exit_def[i + 2])
+                                    if is_keyword == "IS":
+                                        # This is "IF OBJECT IS STATE" format
+                                        is_object_state_format = True
+                                        object_name = self._normalize_id(exit_def[i + 1])
+                                        state = str(exit_def[i + 3]).upper() if isinstance(exit_def[i + 3], Symbol) else str(exit_def[i + 3])
+                                        condition_value = f"{object_name} IS {state}"
+                                    elif i + 1 < len(exit_def):
+                                        # Standard "IF FLAG" format
+                                        condition_value = str(exit_def[i + 1])
+                                elif i + 1 < len(exit_def):
                                     condition_value = str(exit_def[i + 1])
+
+                                # Check for ELSE clause after condition
+                                # Format: (DOWN TO STUDIO IF FALSE-FLAG ELSE "message")
+                                # For "IF OBJECT IS STATE" format, ELSE would be at i+4
+                                else_offset = 4 if is_object_state_format else 2
+                                if i + else_offset < len(exit_def):
+                                    else_keyword = str(exit_def[i + else_offset]).upper() if isinstance(exit_def[i + else_offset], Symbol) else None
+                                    if else_keyword == "ELSE" and i + else_offset + 1 < len(exit_def):
+                                        # ELSE with a message - treat as blocked exit
+                                        else_value = exit_def[i + else_offset + 1]
+                                        if isinstance(else_value, str):
+                                            # This is a permanently blocked exit with a message
+                                            exits[direction.lower()] = {
+                                                "type": "blocked",
+                                                "message": else_value
+                                            }
+                                            # Mark that we handled this with ELSE block
+                                            has_else_block = True
                                 break
+
+                    # Skip further processing if we already handled this exit via ELSE block
+                    if has_else_block:
+                        continue
 
                     if is_conditional:
                         # Conditional exit (e.g., SW TO STONE-BARROW IF WON-FLAG)
@@ -361,6 +400,76 @@ class ObjectExtractor(ZILExtractor):
             return [str(value)]
         else:
             return []
+
+    def extract_object_as_room(self, obj_sexp: List[Any], room_extractor) -> Dict[str, Any]:
+        """Extract an OBJECT form that represents a location (Trinity-style).
+
+        Trinity uses <OBJECT> with (LOC ROOMS) and (FLAGS ... LOCATION ...) for rooms.
+
+        Example:
+            <OBJECT PAL-GATE
+                (LOC ROOMS)
+                (DESC "Palace Gate")
+                (FLAGS LIGHTED LOCATION WINDY)
+                (NORTH TO BROAD-WALK)
+                (ACTION PAL-GATE-F)>
+        """
+        if not isinstance(obj_sexp, list) or len(obj_sexp) < 2:
+            return None
+
+        # Use OBJECT as name since it's the symbol name
+        name = obj_sexp[1]
+        properties = self._parse_properties(obj_sexp[2:])
+
+        # Use room extractor's methods to process exits and flags
+        room_data = {
+            "id": self._normalize_id(name),
+            "zil_name": str(name),
+            "name": properties.get("DESC", str(name)),
+            "long_desc": properties.get("LDESC", ""),
+            "exits": room_extractor._extract_exits(properties, obj_sexp[2:]),
+            "flags": room_extractor._extract_flags(properties),
+            "pseudo_objects": properties.get("PSEUDO", []),
+            "global_objects": properties.get("GLOBAL", []),
+            "action_routine": properties.get("ACTION"),
+            "raw_zil": extract_raw_zil(obj_sexp),
+            "_zil_properties": properties
+        }
+
+        # Add routine code if action routine is present and we have it
+        if room_data["action_routine"]:
+            routine_name = str(room_data["action_routine"]).upper()
+            if routine_name in self.routines:
+                room_data["action_routine_code"] = self.routines[routine_name]["zil_string"]
+                room_data["action_routine_json"] = self.routines[routine_name]["zil_json"]
+            else:
+                self._add_todo(
+                    f"Room {room_data['id']} has action routine: {room_data['action_routine']}\n"
+                    f"  WARNING: Routine code not found in ZIL files"
+                )
+
+        # Handle pseudo objects if present
+        if room_data["pseudo_objects"]:
+            pseudo_routines = {}
+            pseudo_list = room_data["pseudo_objects"]
+
+            # Process in pairs: (name, routine_ref)
+            for i in range(0, len(pseudo_list), 2):
+                if i + 1 < len(pseudo_list):
+                    pseudo_name = str(pseudo_list[i])
+                    routine_ref = pseudo_list[i + 1]
+                    routine_name = str(routine_ref).upper()
+
+                    if routine_name in self.routines:
+                        pseudo_routines[pseudo_name] = {
+                            "routine_name": routine_name,
+                            "zil_string": self.routines[routine_name]["zil_string"],
+                            "zil_json": self.routines[routine_name]["zil_json"]
+                        }
+
+            room_data["pseudo_object_routines"] = pseudo_routines
+
+        return room_data
 
     def _determine_type(self, flags: List[str], props: Dict[str, Any]) -> str:
         """Infer object type from ZIL flags and properties.
@@ -560,15 +669,42 @@ class GameExtractor:
                     rooms.append(room)
 
             elif form_type == "OBJECT":
-                # Try NPC extraction first
-                npc = self.npc_extractor.extract_npc(sexp)
-                if npc:
-                    npcs.append(npc)
+                # Check if this is actually a location (Trinity-style)
+                # Trinity uses <OBJECT> with (LOC ROOMS) and (FLAGS ... LOCATION ...)
+                is_location = False
+                if len(sexp) >= 3:
+                    props = self.room_extractor._parse_properties(sexp[2:])
+                    loc = props.get("LOC")
+                    flags = props.get("FLAGS", [])
+
+                    # Check if this is a room/location
+                    # Handle both Symbol and string for LOC value
+                    loc_str = str(loc).upper() if loc else ""
+                    has_loc_rooms = loc_str == "ROOMS"
+
+                    # Check FLAGS for LOCATION
+                    has_location_flag = any(
+                        str(f).upper() == "LOCATION"
+                        for f in (flags if isinstance(flags, list) else [flags] if flags else [])
+                    )
+
+                    is_location = has_loc_rooms or has_location_flag
+
+                if is_location:
+                    # Extract as room (Trinity-style location)
+                    room = self.object_extractor.extract_object_as_room(sexp, self.room_extractor)
+                    if room:
+                        rooms.append(room)
                 else:
-                    # Regular object
-                    obj = self.object_extractor.extract_object(sexp)
-                    if obj:
-                        objects.append(obj)
+                    # Try NPC extraction first
+                    npc = self.npc_extractor.extract_npc(sexp)
+                    if npc:
+                        npcs.append(npc)
+                    else:
+                        # Regular object
+                        obj = self.object_extractor.extract_object(sexp)
+                        if obj:
+                            objects.append(obj)
 
         # Collect all TODOs
         all_todos = (

@@ -43,6 +43,27 @@ Context-aware descriptions based on light levels:
 - Dim: Limited visibility with shadows
 - Bright: Full detailed descriptions
 
+### 🔍 Transparent Container Visibility
+Items inside transparent containers are visible even when closed:
+- Glass bottles show water contents without opening
+- Transparent bags reveal items inside
+- Automatically detected via ZIL `transbit` flag
+- Works for both explicit `transparent: true` attribute and ZIL flags
+
+### 🚫 Blocked Exit System
+Support for permanently blocked exits with custom messages:
+- Prevents movement in blocked directions (e.g., "Only Santa Claus climbs down chimneys")
+- Imported from ZIL conditional exits with ELSE clauses
+- Custom blocking messages provide contextual feedback
+- Maintains immersion with narrative-appropriate denials
+
+### 📏 Configurable Text Formatting
+Professional text wrapping and formatting for terminal output:
+- Adjustable text width via `--text-width` option (default: 80 characters)
+- Automatic word wrapping using Python's built-in textwrap module
+- Clean, readable output on any terminal size
+- Preserves narrative flow and paragraph breaks
+
 ## Architecture Overview
 
 ```
@@ -209,6 +230,27 @@ Main orchestration:
 }
 ```
 
+#### Blocked Exits
+Locations can have permanently blocked exits with custom messages:
+```python
+{
+  "id": "kitchen",
+  "name": "Kitchen",
+  "attributes": {
+    "lighting": "bright",
+    "blocked_exits": {
+      "down": "Only Santa Claus climbs down chimneys."
+    }
+  },
+  "connections": {
+    "west": "living_room",
+    "up": "attic"
+  }
+}
+```
+
+When players attempt blocked directions, they receive the custom blocking message.
+
 ### NPC
 ```python
 {
@@ -248,6 +290,26 @@ Main orchestration:
   }
 }
 ```
+
+#### Transparent Containers
+Items with transparent containers show their contents even when closed:
+```python
+{
+  "id": "bottle",
+  "name": "glass bottle",
+  "attributes": {
+    "type": "container",
+    "container": true,
+    "open": false,
+    "transparent": true,  // or "transbit" in zil_flags
+    "capacity": 4
+  }
+}
+```
+
+The game engine automatically detects transparency via:
+- `transparent: true` or `is_transparent: true` attribute
+- `"transbit"` in `zil_flags` array (from ZIL imports)
 
 ## Key Design Principles
 

@@ -1527,6 +1527,9 @@
               ]
             }
           ]
+        },
+        "blocked_exits": {
+          "down": "Only Santa Claus climbs down chimneys."
         }
       },
       "connections": {

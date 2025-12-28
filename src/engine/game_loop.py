@@ -7,6 +7,7 @@ from ..llm.gemini_client import GeminiClient
 from ..llm.zil_translator import ensure_zil_translations
 from ..rules.rule_engine import RuleEngine
 from .action_processor import ActionProcessor
+from ..utils.text_formatter import print_narrative as print_narrative_wrapped
 
 logger = logging.getLogger(__name__)
 
@@ -30,6 +31,44 @@ class GameLoop:
         self.last_referenced_npc: Optional[str] = None
         # Use separate client for ZIL translation (more capable model)
         self.zil_translator = zil_translator_client if zil_translator_client else gemini_client
+
+    def _has_zil_behaviors(self, context: Dict[str, Any]) -> bool:
+        """Check if context contains any ZIL action descriptions.
+
+        Args:
+            context: Game context dict with location, items, npcs, player inventory
+
+        Returns:
+            True if any entity has zil_action_description attribute
+        """
+        # Check location
+        location = context.get("location", {})
+        if location.get("attributes", {}).get("zil_action_description"):
+            return True
+
+        # Check items at location
+        for item in context.get("items", []):
+            if isinstance(item, dict) and item.get("attributes", {}).get("zil_action_description"):
+                return True
+
+        # Check NPCs at location
+        for npc in context.get("npcs", []):
+            if isinstance(npc, dict) and npc.get("attributes", {}).get("zil_action_description"):
+                return True
+
+        # Check player inventory
+        player = context.get("player", {})
+        for item in player.get("inventory", []):
+            if isinstance(item, dict) and item.get("attributes", {}).get("zil_action_description"):
+                return True
+
+        # Check container contents
+        for container_id, contents in context.get("container_contents", {}).items():
+            for item in contents:
+                if isinstance(item, dict) and item.get("attributes", {}).get("zil_action_description"):
+                    return True
+
+        return False
 
     def execute_single_step(self, command: str) -> dict:
         """Execute a single command and return full result.
@@ -102,6 +141,15 @@ class GameLoop:
                     location.id, items, npcs
                 )
 
+                # Conditionally use advanced model if ZIL behaviors are present
+                # Check for ZIL action descriptions in location, items, or NPCs
+                temp_context = {
+                    "location": location_dict,
+                    "items": items_dicts,
+                    "npcs": npcs_dicts,
+                    "player": {"inventory": [self.game_state.items[iid].model_dump() for iid in self.game_state.player.inventory if iid in self.game_state.items]}
+                }
+
                 # Generate description using translated dicts
                 narrative = self.gemini.describe_location(
                     location_dict,
@@ -111,6 +159,7 @@ class GameLoop:
                     world_context=world_context,
                     lighting_info=lighting,
                     cached_descriptions=cached_descriptions,
+                    global_flags=self.game_state.flags,
                 )
 
                 # Add container contents with LLM-generated prose (Zork-style)
@@ -197,7 +246,7 @@ class GameLoop:
         # Display intro text if present in world_context
         if self.game_state.world_context and "intro" in self.game_state.world_context:
             intro = self.game_state.world_context["intro"]
-            print(intro)
+            print_narrative_wrapped(intro)
             print()
 
         # Show initial location
@@ -299,7 +348,32 @@ class GameLoop:
         else:
             # For non-movement actions, generate narrative from current state
             updated_context = self._build_context()
-            narrative = self.gemini.generate_narrative(
+
+            # Ensure ZIL translations in the updated context for narrative generation
+            updated_location_dict, updated_items_dicts, updated_npcs_dicts = ensure_zil_translations(
+                self.zil_translator,
+                location=updated_context.get("location"),
+                items=updated_context.get("items", []),
+                npcs=updated_context.get("npcs", [])
+            )
+
+            # Update context with translated dictionaries
+            if updated_location_dict:
+                updated_context["location"] = updated_location_dict
+            if updated_items_dicts:
+                updated_context["items"] = updated_items_dicts
+            if updated_npcs_dicts:
+                updated_context["npcs"] = updated_npcs_dicts
+
+            # Add global flags to context for conditional logic
+            updated_context["global_flags"] = self.game_state.flags
+
+            # Conditionally use advanced model if ZIL behaviors are present
+            # ZIL behaviors may require complex conditional logic evaluation
+            has_zil = self._has_zil_behaviors(updated_context)
+            model_to_use = self.zil_translator if has_zil else self.gemini
+
+            narrative = model_to_use.generate_narrative(
                 player_input,
                 intent,
                 updated_context,
@@ -361,6 +435,14 @@ class GameLoop:
         # Handle "inventory" specially - just show what player has
         if player_input.lower() in ["inventory", "inv", "i"]:
             self._show_inventory()
+            return
+
+        # Handle "tokens" command - show token usage statistics
+        if player_input.lower() in ["tokens", "stats", "usage"]:
+            self.gemini.print_token_usage_stats()
+            if hasattr(self, 'zil_translator') and self.zil_translator != self.gemini:
+                print("ZIL Translator stats:")
+                self.zil_translator.print_token_usage_stats()
             return
 
         # Handle save command
@@ -512,7 +594,7 @@ class GameLoop:
 
         # Show narrative response (if any)
         if narrative:
-            print(f"\n{narrative}")
+            print_narrative_wrapped(narrative)
 
         # Show combat results if combat occurred
         if "last_combat_result" in self.game_state.flags:
@@ -568,7 +650,7 @@ class GameLoop:
             print("\n[DM narrates the chaos...]")
             context = self._build_context()
             npc_narrative = self.gemini.narrate_npc_actions(npc_actions, context)
-            print(f"\n{npc_narrative}")
+            print_narrative_wrapped(npc_narrative)
 
         # WORLD TICK: Allow DM to trigger autonomous events after player's action
         self._process_world_tick()
@@ -638,7 +720,7 @@ class GameLoop:
         # Show narrative for autonomous events
         narrative = world_tick_result.get("narrative", "")
         if narrative:
-            print(f"\n{narrative}")
+            print_narrative_wrapped(narrative)
 
     def _show_location(self) -> None:
         """Show current location description."""
@@ -651,6 +733,13 @@ class GameLoop:
 
         items = self.game_state.get_items_at_location(self.game_state.player_location)
         npcs = self.game_state.get_npcs_at_location(self.game_state.player_location)
+
+        # Add global objects from location's zil_global_objects to items list
+        if location and 'zil_global_objects' in location.attributes:
+            global_obj_ids = location.attributes['zil_global_objects']
+            for obj_id in global_obj_ids:
+                if obj_id in self.game_state.items and obj_id not in [item.id for item in items]:
+                    items.append(self.game_state.items[obj_id])
 
         # Get lighting information (for LLM context, not shown to player)
         lighting = self.game_state.get_effective_lighting(
@@ -692,6 +781,7 @@ class GameLoop:
             world_context=world_context,
             lighting_info=lighting,
             cached_descriptions=cached_descriptions,
+            global_flags=self.game_state.flags,
         )
 
         # Generate container contents descriptions (for caching in history)
@@ -725,8 +815,8 @@ class GameLoop:
         if container_descriptions:
             full_description += "\n\n" + "\n\n".join(container_descriptions)
 
-        # Display to player
-        print(f"\n{full_description}")
+        # Display to player with text wrapping
+        print_narrative_wrapped(full_description)
 
         # Update conversation history with complete description (including containers)
         # This ensures the LLM has full context in subsequent prompts
@@ -815,6 +905,7 @@ Available commands:
   - attack <target>: Attack an NPC
   - save [filename]: Save game (default: quicksave.json)
   - load [filename]: Load game (default: quicksave.json)
+  - tokens (stats, usage): Show token usage statistics
   - help (?): Show this help
   - quit (q): Exit the game
 
@@ -1088,12 +1179,15 @@ You can also type natural language commands and the AI will interpret them.
             for loc_id, loc in self.game_state.locations.items()
         }
 
-        # Get exit destinations from current location
+        # Get exit destinations and blocked exits from current location
         exit_destinations = {}
+        blocked_exits = {}
         if location:
             for direction, dest_id in location.connections.items():
                 if dest_id:
                     exit_destinations[direction] = dest_id
+            # Get blocked exits (exits that exist but are permanently blocked with messages)
+            blocked_exits = location.attributes.get("blocked_exits", {})
 
         # Build map of ALL NPCs with their locations (for plot management)
         all_npcs = {}
@@ -1115,13 +1209,13 @@ You can also type natural language commands and the AI will interpret them.
                 "narrative": interpretation.get("narrative_response", ""),
             })
 
-        # Build container contents map for open containers
-        # Check items at location and in inventory for open containers
+        # Build container contents map for open or transparent containers
+        # Check items at location and in inventory for containers whose contents are visible
         # IMPORTANT: Check recursively - containers can be inside other containers!
         container_contents = {}
 
         def check_container_recursive(item, checked_ids=None):
-            """Recursively check if item is an open container and collect its contents."""
+            """Recursively check if item is an open or transparent container and collect its contents."""
             if checked_ids is None:
                 checked_ids = set()
 
@@ -1139,10 +1233,18 @@ You can also type natural language commands and the AI will interpret them.
                 item.attributes.get("opened", False) or
                 (isinstance(item.attributes.get("state"), dict) and item.attributes["state"].get("opened", False))
             )
+            # Check if transparent (either explicit attribute or ZIL transbit flag)
+            is_transparent = (
+                item.attributes.get("transparent", False) or
+                item.attributes.get("is_transparent", False) or
+                "transbit" in item.attributes.get("zil_flags", [])
+            )
 
-            if is_container and is_open:
+            # Show contents if container is open OR transparent
+            if is_container and (is_open or is_transparent):
                 contents = self.game_state.get_items_in_container(item.id)
-                logger.debug(f"Container {item.id} is open, contains {len(contents)} items: {[c.name for c in contents]}")
+                visibility_reason = "open" if is_open else "transparent"
+                logger.debug(f"Container {item.id} is {visibility_reason}, contains {len(contents)} items: {[c.name for c in contents]}")
                 if contents:
                     container_contents[item.id] = [
                         {"id": c.id, "name": c.name, "attributes": c.attributes}
@@ -1156,7 +1258,7 @@ You can also type natural language commands and the AI will interpret them.
         for item in items_at_location:
             check_container_recursive(item)
 
-        # Also check inventory for open containers (and recursively their contents)
+        # Also check inventory for open or transparent containers (and recursively their contents)
         for item_id in self.game_state.player.inventory:
             if item_id in self.game_state.items:
                 item = self.game_state.items[item_id]
@@ -1165,14 +1267,15 @@ You can also type natural language commands and the AI will interpret them.
         # Build detailed context
         context = {
             "location": location.model_dump() if location else None,
-            "lighting": lighting, 
+            "lighting": lighting,
             "exits": location.get_available_exits() if location else [],
             "exit_destinations": exit_destinations,  # direction -> location_id map
+            "blocked_exits": blocked_exits,  # direction -> blocking message map
             "items": [
                 {"id": item.id, "name": item.name, "attributes": item.attributes}
                 for item in items_at_location
             ],
-            "container_contents": container_contents,  # Items inside open containers
+            "container_contents": container_contents,  # Items inside open or transparent containers
             "npcs": [
                 {"id": npc.id, "name": npc.name, "attributes": npc.attributes}
                 for npc in npcs_at_location
