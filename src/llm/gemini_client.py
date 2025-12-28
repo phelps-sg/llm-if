@@ -4216,6 +4216,10 @@ Now interpret the player's action: "{player_input}"
         4. If not, why not? (invalid_reason / not_allowed_reason)
 
         NO state updates, NO narrative generation yet.
+
+        RESTRUCTURED for implicit context caching:
+        - Static content (rules, examples, world context) comes FIRST
+        - Dynamic content (current state, player input) comes LAST
         """
         location = context.get("location", {})
         lighting = context.get("lighting", {})
@@ -4257,72 +4261,16 @@ Now interpret the player's action: "{player_input}"
             history_text += "4. Understand context (what player was just doing)\n"
             history_text += "5. Maintain consistency with previous descriptions (same details, numbers, colors)\n\n"
 
-        prompt = f"""You are a Dungeon Master interpreting a player's action.
+        # ============================================================
+        # STATIC SECTION - Identical across requests (cacheable)
+        # ============================================================
+        static_section = f"""You are a Dungeon Master interpreting a player's action.
 {self._build_world_context(context)}
-PLAYER ACTION: "{player_input}"
-
-CURRENT GAME STATE:
-Location: {location.get("name", "Unknown")} (ID: {location.get("id")})
-Description: {location.get("description", "No description")}
-Lighting: {lighting}
-Available Exits: {exits}
-Exit Destinations: {exit_destinations}
-Blocked Exits: {str(context.get("blocked_exits", {}))}
-
-Items here:
-{
-            chr(10).join(
-                [
-                    f"  - {item.get('name')} (ID: {item.get('id')})"
-                    + (
-                        # For doors/containers, show status PROMINENTLY
-                        f" - DOOR: {'OPEN' if item.get('attributes', {}).get('is_open') else 'CLOSED'}, {'LOCKED' if item.get('attributes', {}).get('is_locked') else 'UNLOCKED'}"
-                        if item.get('attributes', {}).get('is_door') or item.get('attributes', {}).get('type') == 'entrance'
-                        else ""
-                    )
-                    + (
-                        f" - CONTAINER: {'OPEN' if item.get('attributes', {}).get('is_open') else 'CLOSED'}"
-                        if (item.get('attributes', {}).get('container') or item.get('attributes', {}).get('is_container')) and not item.get('attributes', {}).get('is_door')
-                        else ""
-                    )
-                    + (
-                        f" - {item.get('description')}"
-                        if item.get("description")
-                        else ""
-                    )
-                    + (
-                        f" - Attributes: {item.get('attributes')}"
-                        if item.get("attributes")
-                        else ""
-                    )
-                    for item in items
-                ]
-            )
-            if items
-            else "  (none)"
-        }
-{self._format_container_contents(context.get("container_contents", {}))}
-NPCs here:
-{
-            chr(10).join(
-                [
-                    f"  - {npc.get('name')} (ID: {npc.get('id')})"
-                    + (f" - {npc.get('description')}" if npc.get("description") else "")
-                    for npc in npcs
-                ]
-            )
-            if npcs
-            else "  (none)"
-        }
-
-Player inventory: {[item.get("name") for item in player.get("inventory", [])]}
-Player attributes: {player.get("attributes", dict())}
-{pronoun_context}{history_text}
 YOUR TASK - STEP 1: INTERPRET INTENT & CHECK PERMISSION
 
 1. **Understand Intent**: What is the player trying to do?
    - Be specific: "move north", "pick up sword", "greet genie", "examine room", etc.
-   - **PRONOUNS**: If player uses "it", "them", "him", "her" - resolve using the pronoun context above
+   - **PRONOUNS**: If player uses "it", "them", "him", "her" - resolve using the pronoun context provided
      - Example: Player says "open it" + last_item="door" → Intent: "Player wants to open the door"
      - Example: Player says "talk to him" + last_npc="guard" → Intent: "Player wants to talk to the guard"
      - If pronoun used but no context provided → ask for clarification in not_allowed_reason
@@ -4374,9 +4322,6 @@ YOUR TASK - STEP 1: INTERPRET INTENT & CHECK PERMISSION
 CRITICAL VALIDATION RULES:
 
 🚨 DARKNESS/VISIBILITY VALIDATION - CRITICAL:
-- Lighting: {lighting}
-- Can see clearly: {lighting.get("can_see_clearly", True) if lighting else True}
-
 IF can_see_clearly = FALSE (pitch black/dark):
   - Player CANNOT interact with items/objects at the location (can't see them!)
   - Actions blocked: take, get, pick up, examine, use, open, close, attack, etc.
@@ -4552,7 +4497,72 @@ Output:
 }}
 """
 
-        return prompt
+        # ============================================================
+        # DYNAMIC SECTION - Changes each turn
+        # ============================================================
+        dynamic_section = f"""
+PLAYER ACTION: "{player_input}"
+
+CURRENT GAME STATE:
+Location: {location.get("name", "Unknown")} (ID: {location.get("id")})
+Description: {location.get("description", "No description")}
+Lighting: {lighting}
+- Can see clearly: {lighting.get("can_see_clearly", True) if lighting else True}
+Available Exits: {exits}
+Exit Destinations: {exit_destinations}
+Blocked Exits: {str(context.get("blocked_exits", {}))}
+
+Items here:
+{
+            chr(10).join(
+                [
+                    f"  - {item.get('name')} (ID: {item.get('id')})"
+                    + (
+                        # For doors/containers, show status PROMINENTLY
+                        f" - DOOR: {'OPEN' if item.get('attributes', {}).get('is_open') else 'CLOSED'}, {'LOCKED' if item.get('attributes', {}).get('is_locked') else 'UNLOCKED'}"
+                        if item.get('attributes', {}).get('is_door') or item.get('attributes', {}).get('type') == 'entrance'
+                        else ""
+                    )
+                    + (
+                        f" - CONTAINER: {'OPEN' if item.get('attributes', {}).get('is_open') else 'CLOSED'}"
+                        if (item.get('attributes', {}).get('container') or item.get('attributes', {}).get('is_container')) and not item.get('attributes', {}).get('is_door')
+                        else ""
+                    )
+                    + (
+                        f" - {item.get('description')}"
+                        if item.get("description")
+                        else ""
+                    )
+                    + (
+                        f" - Attributes: {item.get('attributes')}"
+                        if item.get("attributes")
+                        else ""
+                    )
+                    for item in items
+                ]
+            )
+            if items
+            else "  (none)"
+        }
+{self._format_container_contents(context.get("container_contents", {}))}
+NPCs here:
+{
+            chr(10).join(
+                [
+                    f"  - {npc.get('name')} (ID: {npc.get('id')})"
+                    + (f" - {npc.get('description')}" if npc.get("description") else "")
+                    for npc in npcs
+                ]
+            )
+            if npcs
+            else "  (none)"
+        }
+
+Player inventory: {[item.get("name") for item in player.get("inventory", [])]}
+Player attributes: {player.get("attributes", dict())}
+{pronoun_context}{history_text}"""
+
+        return static_section + dynamic_section
 
     def _build_mechanics_generation_prompt(
         self, intent: str, context: Dict[str, Any], interpretation: Dict[str, Any]
@@ -4561,6 +4571,10 @@ Output:
 
         This prompt generates state updates to implement the allowed intent.
         NO narrative generation.
+
+        RESTRUCTURED for implicit context caching:
+        - Static content (rules, examples, topology) comes FIRST
+        - Dynamic content (intent, current state) comes LAST
         """
         location = context.get("location", {})
         items = context.get("items", [])
@@ -4618,50 +4632,11 @@ Output:
             npcs_details.append(npc_detail)
         npcs_text = "\n".join(npcs_details) if npcs_details else "  (none)"
 
-        prompt = f"""You are a Dungeon Master generating state updates for a player action.
+        # ============================================================
+        # STATIC SECTION - Identical across requests (cacheable)
+        # ============================================================
+        static_section = f"""You are a Dungeon Master generating state updates for a player action.
 
-PLAYER INTENT: {intent}
-
-This action has been PRE-APPROVED (is_valid=true, is_allowed=true).
-Your job is to generate the state updates to make it happen.
-
-CURRENT GAME STATE:
-{location_details}
-Exit Destinations: {exit_destinations}
-
-Items at location:
-{items_text}
-{self._format_container_contents(context.get("container_contents", {}))}
-NPCs at location:
-{npcs_text}
-
-Player inventory IDs: {item_ids_in_inventory}
-Player inventory names: {[item.get("name") for item in player.get("inventory", [])]}
-
-🔧 IMPORTANT: Some entities have "Special Behavior" descriptions above.
-These describe special game mechanics from the original ZIL code.
-You MUST follow these behaviors when generating state updates.
-
-🔧 SPECIAL BEHAVIORS may mention conditions (flags, counters, etc.):
-- Read the Special Behavior description carefully
-- If it mentions checking a condition, evaluate that condition using current game state
-- Current global flags: {context.get("global_flags", {})}
-- Follow the natural language logic in the description
-
-🔧 REVEALING ITEMS: If a Special Behavior mentions "revealing" an item or setting a flag:
-- You MUST set the flag: {{"type": "set_flag", "params": {{"flag_name": "ITEM-REVEALED", "value": true}}}}
-- You MUST also make the item visible: {{"type": "modify_attribute", "params": {{"entity_id": "item_id", "attribute_path": "is_visible", "value": true}}}}
-- Example: Moving leaves reveals a grate → set GRATE-REVEALED=true AND set grate.is_visible=true
-
-🗺️  WORLD TOPOLOGY (for pathfinding/NPC movement/teleportation):
-{json.dumps(all_locations, indent=2)}
-
-VALID IDs FOR CURRENT LOCATION:
-- Item IDs here: {item_ids_at_location}
-- Item IDs in containers: {item_ids_in_containers}
-- Item IDs in inventory: {item_ids_in_inventory}
-- NPC IDs here: {npc_ids_at_location}
-{history_text}
 YOUR TASK - STEP 2: GENERATE STATE UPDATES
 
 Generate state_updates array to implement the intent.
@@ -4685,6 +4660,9 @@ STATE UPDATE TYPES:
 - "trigger_combat": {{"target_npc_id": "id", "attack_type": "melee"}}
 - "update_dm_state": {{"path": "dot.path", "value": value}}
 - "no_change": {{}} (for purely narrative actions like "look")
+
+🗺️  WORLD TOPOLOGY (for pathfinding/NPC movement/teleportation):
+{json.dumps(all_locations, indent=2)}
 
 EXAMPLES:
 
@@ -4810,7 +4788,7 @@ CRITICAL RULES:
 - Example: Intent "look around" → [] is correct (no state change)
 
 🚨 USE ONLY VALID IDs:
-- Use IDs from the "VALID IDs" lists above
+- Use IDs from the "VALID IDs" lists provided below
 - For movement, use destination from exit_destinations
 - Don't invent IDs that don't exist
 
@@ -4826,9 +4804,6 @@ CRITICAL RULES:
 - Just return state updates
 - Narrative will be generated in Step 3
 
-IMPORTANT: This action has already been validated as allowed.
-Generate state updates that implement the intent accurately and completely.
-
 Return ONLY valid JSON:
 {{
   "state_updates": [...],
@@ -4839,7 +4814,54 @@ Return ONLY valid JSON:
 }}
 """
 
-        return prompt
+        # ============================================================
+        # DYNAMIC SECTION - Changes each turn
+        # ============================================================
+        dynamic_section = f"""
+PLAYER INTENT: {intent}
+
+This action has been PRE-APPROVED (is_valid=true, is_allowed=true).
+Your job is to generate the state updates to make it happen.
+
+CURRENT GAME STATE:
+{location_details}
+Exit Destinations: {exit_destinations}
+
+Items at location:
+{items_text}
+{self._format_container_contents(context.get("container_contents", {}))}
+NPCs at location:
+{npcs_text}
+
+Player inventory IDs: {item_ids_in_inventory}
+Player inventory names: {[item.get("name") for item in player.get("inventory", [])]}
+
+🔧 IMPORTANT: Some entities have "Special Behavior" descriptions above.
+These describe special game mechanics from the original ZIL code.
+You MUST follow these behaviors when generating state updates.
+
+🔧 SPECIAL BEHAVIORS may mention conditions (flags, counters, etc.):
+- Read the Special Behavior description carefully
+- If it mentions checking a condition, evaluate that condition using current game state
+- Current global flags: {context.get("global_flags", {})}
+- Follow the natural language logic in the description
+
+🔧 REVEALING ITEMS: If a Special Behavior mentions "revealing" an item or setting a flag:
+- You MUST set the flag: {{"type": "set_flag", "params": {{"flag_name": "ITEM-REVEALED", "value": true}}}}
+- You MUST also make the item visible: {{"type": "modify_attribute", "params": {{"entity_id": "item_id", "attribute_path": "is_visible", "value": true}}}}
+- Example: Moving leaves reveals a grate → set GRATE-REVEALED=true AND set grate.is_visible=true
+
+VALID IDs FOR CURRENT LOCATION:
+- Item IDs here: {item_ids_at_location}
+- Item IDs in containers: {item_ids_in_containers}
+- Item IDs in inventory: {item_ids_in_inventory}
+- NPC IDs here: {npc_ids_at_location}
+{history_text}
+IMPORTANT: This action has already been validated as allowed.
+Generate state updates that implement the intent accurately and completely.
+"""
+
+        return static_section + dynamic_section
 
     def _build_world_events_prompt(self, context: Dict[str, Any]) -> str:
         """Build prompt for checking autonomous world events.
