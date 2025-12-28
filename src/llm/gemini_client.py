@@ -2340,15 +2340,40 @@ Use cached descriptions for CONSISTENCY and BREVITY, but always prioritize CURRE
         prompt += "=" * 80 + "\n\n"
 
         if items and lighting_info and lighting_info.get("can_see_clearly", False):
-            item_names = [item.get("name") for item in items]
-            prompt += f"✅ ITEMS CURRENTLY AT THIS LOCATION: {item_names}\n"
-            for item in items:
-                prompt += f"\n  • {item.get('name')} ({item.get('id')})\n"
-                prompt += f"    Attributes: {item.get('attributes', {})}\n"
-                # Highlight ZIL special behavior if present
-                zil_desc = item.get('attributes', {}).get('zil_action_description')
-                if zil_desc:
-                    prompt += f"    🔧 SPECIAL BEHAVIOR (from original ZIL code): {zil_desc}\n"
+            visible_items = [item for item in items if item.get('attributes', {}).get('is_visible', True)]
+            invisible_items = [item for item in items if not item.get('attributes', {}).get('is_visible', True)]
+
+            if visible_items:
+                visible_names = [item.get("name") for item in visible_items]
+                prompt += f"✅ ITEMS CURRENTLY VISIBLE AT THIS LOCATION: {visible_names}\n"
+                for item in visible_items:
+                    prompt += f"\n  • {item.get('name')} ({item.get('id')})\n"
+                    prompt += f"    Attributes: {item.get('attributes', {})}\n"
+                    # Highlight description hints for items with auto_describe
+                    desc_hints = item.get('attributes', {}).get('description_hints')
+                    auto_describe = item.get('attributes', {}).get('auto_describe', False)
+                    if desc_hints and auto_describe:
+                        prompt += f"    📝 REQUIRED DESCRIPTION (use this exact text): {desc_hints}\n"
+                    # Highlight ZIL special behavior if present
+                    zil_desc = item.get('attributes', {}).get('zil_action_description')
+                    if zil_desc:
+                        prompt += f"    🔧 SPECIAL BEHAVIOR (from original ZIL code): {zil_desc}\n"
+
+            if invisible_items:
+                invisible_names = [item.get("name") for item in invisible_items]
+                prompt += f"\n⚠️  ITEMS PRESENT BUT INVISIBLE (DO NOT DESCRIBE TO PLAYER): {invisible_names}\n"
+                for item in invisible_items:
+                    prompt += f"\n  • {item.get('name')} ({item.get('id')}) - HIDDEN FROM PLAYER\n"
+                    prompt += f"    Attributes: {item.get('attributes', {})}\n"
+                    prompt += f"    🚨 DO NOT mention this item in your description! It is hidden (e.g., under a rug, behind a panel)\n"
+                    # Still include special behavior for game logic
+                    zil_desc = item.get('attributes', {}).get('zil_action_description')
+                    if zil_desc:
+                        prompt += f"    🔧 SPECIAL BEHAVIOR (you need to know this, but don't describe it): {zil_desc}\n"
+
+            if not visible_items and not invisible_items:
+                prompt += f"✅ ITEMS CURRENTLY AT THIS LOCATION: [] (NONE)\n"
+
             prompt += "\n"
         elif items and lighting_info:
             item_names = [item.get("name") for item in items]
@@ -2441,18 +2466,27 @@ IF can_see_clearly = FALSE (dark/pitch_black):
 IF can_see_clearly = TRUE:
   ✅ Describe the location normally with visual details
 
-2. DO NOT describe the player as holding, gripping, wielding, or carrying items UNLESS they are in the PLAYER INVENTORY section above.
-3. Items listed as "Items here" are on the GROUND, not in the player's hands.
-4. Only mention items in the player's possession if they appear in the "🎒 PLAYER INVENTORY" section.
-5. LIGHT SOURCES: Only say "your torch" or "your lantern" if it appears under "Light sources CARRIED by player".
+🚨 RULE 2: INVISIBLE ITEMS - DO NOT DESCRIBE THEM!
+- Some items are marked as is_visible=false (e.g., trap door hidden under rug)
+- These items are listed under "ITEMS PRESENT BUT INVISIBLE" section
+- 🚨 CRITICAL: DO NOT mention invisible items in your description!
+- The player cannot see them - they are hidden, obscured, or concealed
+- Example: trap door with is_visible=false → DO NOT say "a trap door" or "covered trap door"
+- You need to KNOW about them for game logic, but DO NOT DESCRIBE them to the player
+- Only describe items listed under "ITEMS CURRENTLY VISIBLE AT THIS LOCATION"
+
+3. DO NOT describe the player as holding, gripping, wielding, or carrying items UNLESS they are in the PLAYER INVENTORY section above.
+4. Items listed as "Items here" are on the GROUND, not in the player's hands.
+5. Only mention items in the player's possession if they appear in the "🎒 PLAYER INVENTORY" section.
+6. LIGHT SOURCES: Only say "your torch" or "your lantern" if it appears under "Light sources CARRIED by player".
    If it appears under "Light sources AT THIS LOCATION (on ground)", describe it as being at the location, not possessed.
    Example: "A torch on the ground casts flickering light" NOT "By the light of your torch"
-6. **NPC DESCRIPTIONS - CHECK ATTRIBUTES**: When describing NPCs, check their "attributes" field in "NPC details" above.
+7. **NPC DESCRIPTIONS - CHECK ATTRIBUTES**: When describing NPCs, check their "attributes" field in "NPC details" above.
    - If an NPC has "has_antlers: false", do NOT describe them as having antlers
    - If an NPC has "wounded: true", describe them as wounded
    - Always use the CURRENT attribute values, not default/expected ones
    - Example: A deer with "has_antlers: false" should be "an antlerless white deer", not "a deer with delicate antlers"
-7. **EXITS**: Integrate available exits naturally into your description. Be creative - don't just list them.
+8. **EXITS**: Integrate available exits naturally into your description. Be creative - don't just list them.
    - Good: "Passages lead north and south, while a narrow corridor branches east."
    - Good: "The hallway continues to the north, and a door stands to the west."
    - Bad: "Exits: north, south, east"

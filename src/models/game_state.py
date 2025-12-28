@@ -89,6 +89,10 @@ class GameState(BaseModel):
     def get_items_at_location(self, location_id: str) -> List[Item]:
         """Get all items at a specific location.
 
+        Returns ALL items at the location, including invisible ones.
+        The DM needs to know about invisible items for game logic (e.g., trap door hidden by rug),
+        but should be instructed not to describe them to the player.
+
         Defensive: Skips items that exist in item_locations but not in items dict
         (can happen with complex state update sequences or bugs).
         """
