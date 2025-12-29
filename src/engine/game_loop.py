@@ -1247,6 +1247,13 @@ Respond as a helpful debugging assistant, not as the in-game DM.
                     except Exception as e:
                         logger.warning(f"Failed to translate ZIL for item '{item.id}': {e}")
 
+                # Remove raw ZIL code/json from DM context if translation exists
+                # This saves tokens and prevents DM from analyzing raw ZIL instead of using translation
+                if item_dict["attributes"].get("zil_action_description"):
+                    item_dict["attributes"].pop("zil_action_code", None)
+                    item_dict["attributes"].pop("zil_action_json", None)
+                    logger.debug(f"Removed raw ZIL from inventory context for '{item.id}' (translation available)")
+
                 inventory_items.append(item_dict)
 
         # Build compact topology map: location_id -> {direction: destination_id}
@@ -1350,7 +1357,11 @@ Respond as a helpful debugging assistant, not as the in-game DM.
         # Build detailed context
         # Helper function to translate ZIL code for items on-demand
         def translate_item_zil(item_dict):
-            """Translate ZIL action code for an item dict if present and not already translated."""
+            """Translate ZIL action code for an item dict if present and not already translated.
+
+            IMPORTANT: After translation, removes raw ZIL code to save tokens and prevent DM confusion.
+            DM should only see translated natural language + override fields (triggers, for_sale, etc).
+            """
             if "zil_action_code" in item_dict["attributes"] and not item_dict["attributes"].get("zil_action_description"):
                 zil_code = item_dict["attributes"]["zil_action_code"]
                 routine_name = item_dict["attributes"].get("zil_action", "unknown")
@@ -1365,6 +1376,14 @@ Respond as a helpful debugging assistant, not as the in-game DM.
                     logger.debug(f"Translated ZIL for item '{item_dict['id']}': {routine_name}")
                 except Exception as e:
                     logger.warning(f"Failed to translate ZIL for item '{item_dict['id']}': {e}")
+
+            # Remove raw ZIL code/json from DM context if translation exists
+            # This saves tokens and prevents DM from analyzing raw ZIL instead of using translation
+            if item_dict["attributes"].get("zil_action_description"):
+                item_dict["attributes"].pop("zil_action_code", None)
+                item_dict["attributes"].pop("zil_action_json", None)
+                logger.debug(f"Removed raw ZIL from context for '{item_dict['id']}' (translation available)")
+
             return item_dict
 
         # Translate ZIL code for items at location on-demand
