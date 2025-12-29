@@ -1228,13 +1228,30 @@ Respond as a helpful debugging assistant, not as the in-game DM.
                     items_at_location.append(pseudo_item)
 
         # Get detailed item info for items in inventory
+        # Translate ZIL code on-demand before including in context
         inventory_items = []
         for item_id in self.game_state.player.inventory:
             if item_id in self.game_state.items:
                 item = self.game_state.items[item_id]
-                inventory_items.append(
-                    {"id": item.id, "name": item.name, "attributes": item.attributes}
-                )
+                item_dict = {"id": item.id, "name": item.name, "attributes": dict(item.attributes)}
+
+                # Translate ZIL action code on-demand if present
+                if "zil_action_code" in item_dict["attributes"] and not item_dict["attributes"].get("zil_action_description"):
+                    zil_code = item_dict["attributes"]["zil_action_code"]
+                    routine_name = item_dict["attributes"].get("zil_action", "unknown")
+                    try:
+                        translation = self.gemini.translate_zil_with_cache(
+                            zil_code=zil_code,
+                            routine_name=routine_name,
+                            context=f"Action routine for item: {item.name}"
+                        )
+                        # Add translation to attributes for DM
+                        item_dict["attributes"]["zil_action_description"] = translation
+                        logger.debug(f"Translated ZIL for inventory item '{item.id}': {routine_name}")
+                    except Exception as e:
+                        logger.warning(f"Failed to translate ZIL for item '{item.id}': {e}")
+
+                inventory_items.append(item_dict)
 
         # Build compact topology map: location_id -> {direction: destination_id}
         # This preserves pathfinding/topology while minimizing tokens
@@ -1335,17 +1352,47 @@ Respond as a helpful debugging assistant, not as the in-game DM.
                 check_container_recursive(item)
 
         # Build detailed context
+        # Helper function to translate ZIL code for items on-demand
+        def translate_item_zil(item_dict):
+            """Translate ZIL action code for an item dict if present and not already translated."""
+            if "zil_action_code" in item_dict["attributes"] and not item_dict["attributes"].get("zil_action_description"):
+                zil_code = item_dict["attributes"]["zil_action_code"]
+                routine_name = item_dict["attributes"].get("zil_action", "unknown")
+                try:
+                    translation = self.gemini.translate_zil_with_cache(
+                        zil_code=zil_code,
+                        routine_name=routine_name,
+                        context=f"Action routine for item: {item_dict['name']}"
+                    )
+                    # Add translation to attributes for DM
+                    item_dict["attributes"]["zil_action_description"] = translation
+                    logger.debug(f"Translated ZIL for item '{item_dict['id']}': {routine_name}")
+                except Exception as e:
+                    logger.warning(f"Failed to translate ZIL for item '{item_dict['id']}': {e}")
+            return item_dict
+
+        # Translate ZIL code for items at location on-demand
+        items_with_translated_zil = []
+        for item in items_at_location:
+            item_dict = {"id": item.id, "name": item.name, "attributes": dict(item.attributes)}
+            items_with_translated_zil.append(translate_item_zil(item_dict))
+
+        # Translate ZIL code for items in containers
+        translated_container_contents = {}
+        for container_id, contents_list in container_contents.items():
+            translated_container_contents[container_id] = [
+                translate_item_zil({"id": c["id"], "name": c["name"], "attributes": dict(c["attributes"])})
+                for c in contents_list
+            ]
+
         context = {
             "location": location.model_dump() if location else None,
             "lighting": lighting,
             "exits": location.get_available_exits() if location else [],
             "exit_destinations": exit_destinations,  # direction -> location_id map
             "blocked_exits": blocked_exits,  # direction -> blocking message map
-            "items": [
-                {"id": item.id, "name": item.name, "attributes": item.attributes}
-                for item in items_at_location
-            ],
-            "container_contents": container_contents,  # Items inside open or transparent containers
+            "items": items_with_translated_zil,
+            "container_contents": translated_container_contents,  # Items inside open or transparent containers (with translated ZIL)
             "npcs": [
                 {"id": npc.id, "name": npc.name, "attributes": npc.attributes}
                 for npc in npcs_at_location
