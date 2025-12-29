@@ -4808,8 +4808,28 @@ Player attributes: {player.get("attributes", dict())}
         items_details = []
         for item in items:
             item_detail = f"  - {item.get('name')} ({item.get('id')})"
-            if item.get("attributes", {}).get("zil_action_description"):
-                item_detail += f"\n    🔧 Special Behavior: {item.get('attributes', {}).get('zil_action_description')}"
+            attrs = item.get("attributes", {})
+
+            # Show ZIL special behavior
+            if attrs.get("zil_action_description"):
+                item_detail += f"\n    🔧 Special Behavior: {attrs.get('zil_action_description')}"
+
+            # Show purchasable/for_sale
+            if attrs.get("for_sale"):
+                for_sale = attrs["for_sale"]
+                item_detail += f"\n    🛒 For Sale: {for_sale.get('price')} {for_sale.get('currency')}, gives: {for_sale.get('gives_items')}"
+
+            # Show triggers
+            if attrs.get("triggers"):
+                triggers = attrs["triggers"]
+                for i, trigger in enumerate(triggers):
+                    if not trigger.get("used", False):  # Only show unused triggers
+                        item_detail += f"\n    ⚡ Trigger: {trigger.get('action')} + {trigger.get('target')} → {trigger.get('effect')} ({trigger.get('creates', 'N/A')})"
+
+            # Show value/currency (for payment items)
+            if attrs.get("value") is not None:
+                item_detail += f"\n    💰 Value: {attrs.get('value')} {attrs.get('currency', 'unknown')}"
+
             items_details.append(item_detail)
         items_text = "\n".join(items_details) if items_details else "  (none)"
 
@@ -4820,6 +4840,26 @@ Player attributes: {player.get("attributes", dict())}
                 npc_detail += f"\n    🔧 Special Behavior: {npc.get('attributes', {}).get('zil_action_description')}"
             npcs_details.append(npc_detail)
         npcs_text = "\n".join(npcs_details) if npcs_details else "  (none)"
+
+        # Format inventory items with detailed attributes
+        inventory_details = []
+        for item in player.get("inventory", []):
+            item_detail = f"  - {item.get('name')} ({item.get('id')})"
+            attrs = item.get("attributes", {})
+
+            # Show triggers
+            if attrs.get("triggers"):
+                triggers = attrs["triggers"]
+                for i, trigger in enumerate(triggers):
+                    if not trigger.get("used", False):
+                        item_detail += f"\n    ⚡ Trigger: {trigger.get('action')} + {trigger.get('target')} → {trigger.get('effect')} ({trigger.get('creates', 'N/A')})"
+
+            # Show value/currency (for payment items)
+            if attrs.get("value") is not None:
+                item_detail += f"\n    💰 Value: {attrs.get('value')} {attrs.get('currency', 'unknown')}"
+
+            inventory_details.append(item_detail)
+        inventory_text = "\n".join(inventory_details) if inventory_details else "  (empty)"
 
         # ============================================================
         # STATIC SECTION - Identical across requests (cacheable)
@@ -4909,6 +4949,67 @@ Intent: "Player wants to close the chest"
 → [
   {{"type": "modify_attribute", "params": {{"entity_id": "chest", "attribute_path": "is_open", "value": false}}}}
 ]
+
+⚠️  CUSTOM OVERRIDE FIELDS - CHECK ITEM/NPC ATTRIBUTES:
+
+Items and NPCs may have special override fields in their attributes that define custom behaviors.
+YOU MUST CHECK FOR THESE AND GENERATE APPROPRIATE STATE UPDATES.
+
+🛒 PURCHASABLE ITEMS - Check for "for_sale" attributes:
+- When intent involves "buy", "purchase", or "give money"
+- Check if item has "for_sale" dict: {{price, currency, gives_items}}
+- Check payment item's "value" and "currency" attributes to verify sufficient funds
+- Accept overpayment - if value >= price, "gives_items" includes change coins
+- MUST generate these state_updates:
+  1. remove_from_inventory (payment)
+  2. add_to_inventory for each item in gives_items (purchased items + change)
+
+Example:
+Item gbag has attributes: {{"for_sale": {{"price": 30, "currency": "pence", "gives_items": ["bag", "scoin"]}}}}
+Player has coin with attributes: {{"value": 50, "currency": "pence"}}
+Intent: "Player wants to buy the bag of crumbs"
+→ Check: coin.value (50) >= gbag.for_sale.price (30) ✓
+→ MUST generate:
+  1. {{"type": "remove_from_inventory", "params": {{"item_id": "coin"}}}}
+  2. {{"type": "add_to_inventory", "params": {{"item_id": "bag"}}}}
+  3. {{"type": "add_to_inventory", "params": {{"item_id": "scoin"}}}}
+
+⚡ TRIGGERS - Check for "triggers" array in item attributes:
+- When intent involves using items (feed, throw, use, activate, etc.)
+- Check if the item has "triggers" list with objects: {{action, target, effect, creates, success_text}}
+- **CRITICAL**: If trigger conditions ALL match, you MUST generate the corresponding state_updates
+- Trigger matching rules:
+  - action: matches the player's action verb (feed, throw, use, etc.)
+  - target: matches the target entity (pigeons, statue, etc.) - check if present at location
+  - Player must have the triggered item in inventory
+- Common trigger effects → required state_updates:
+  - effect: "create_item" → MUST add {{"type": "create_item", "params": {{"item_id": "<creates>", "name": "...", "location": "current"}}}}
+  - effect: "set_flag" → MUST add {{"type": "set_flag", "params": {{"flag_name": "...", "value": true}}}}
+  - effect: "transform_item" → MUST add {{"type": "transform_item", ...}}
+- If one_time: true, mark trigger as used: {{"type": "modify_attribute", "params": {{"entity_id": "item_id", "attribute_path": "triggers[0].used", "value": true}}}}
+
+Example:
+Item bag has attributes: {{
+  "triggers": [{{
+    "action": "feed",
+    "target": "pigeons",
+    "effect": "create_item",
+    "creates": "ruby",
+    "location": "current",
+    "one_time": true,
+    "success_text": "A brilliant ruby falls from the bag!"
+  }}]
+}}
+Intent: "Player wants to feed the pigeons with the bag of crumbs"
+→ Check conditions: player has bag ✓, pigeons at location ✓, action="feed" ✓, target="pigeons" ✓
+→ MUST generate:
+  1. {{"type": "create_item", "params": {{"item_id": "ruby", "name": "Ruby", "location": "current"}}}}
+  2. {{"type": "modify_attribute", "params": {{"entity_id": "bag", "attribute_path": "triggers[0].used", "value": true}}}}
+  3. {{"type": "consume_item", "params": {{"item_id": "bag"}}}} [if bag is consumed by feeding]
+
+**CRITICAL**: Items in "gives_items" or "creates" fields already exist in the game.
+- For purchase gives_items: Use add_to_inventory (items just need location change)
+- For trigger creates: Use create_item (item needs to be created)
 
 CRITICAL RULES:
 
@@ -5022,8 +5123,8 @@ Items at location:
 NPCs at location:
 {npcs_text}
 
-Player inventory IDs: {item_ids_in_inventory}
-Player inventory names: {[item.get("name") for item in player.get("inventory", [])]}
+Player inventory:
+{inventory_text}
 
 🔧 IMPORTANT: Some entities have "Special Behavior" descriptions above.
 These describe special game mechanics from the original ZIL code.
