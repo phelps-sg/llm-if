@@ -1,7 +1,7 @@
 {
-  "version": "1.0",
+  "version": "2.0",
   "source_world": "trinity.json",
-  "description": "Manual fixes and enhancements for Trinity gameplay",
+  "description": "Comprehensive override specification for all critical Trinity mechanics that cannot be inferred from translated ZIL alone",
 
   "game_time": "Afternoon, 3:30 PM",
   "note_game_time": "Game starts at 3:30 PM in present-day London (1986). Time travel to 1945 happens later in the story.",
@@ -11,16 +11,116 @@
     "note": "Corrects the year - game starts in 1986 (present), not 1945. Time travel happens during gameplay."
   },
 
+  "global_flags": {
+    "note": "Critical global state variables that control major game mechanics",
+    "IN-PRAM?": {
+      "type": "boolean",
+      "initial": false,
+      "description": "Player is inside pram (perambulator)",
+      "affects": ["movement_system", "parasol_sailing", "location_display"],
+      "note": "When true, blocks all normal movement except umbrella sailing or exiting pram"
+    },
+    "SUITED?": {
+      "type": "counter",
+      "initial": 0,
+      "max": 4,
+      "description": "Bubble suit integrity level (0=dead from exposure, 4=full protection)",
+      "death_at_zero": true,
+      "affects": ["survival", "parasol_opening", "orbital_mechanics"],
+      "note": "Decrements when suit is damaged. Player dies if it reaches 0."
+    },
+    "RAID?": {
+      "type": "counter",
+      "initial": 0,
+      "description": "Air raid status (0=none, 1=sirens, 2=full raid with bombs)",
+      "affects": ["npc_behavior", "location_descriptions", "purchase_availability"],
+      "note": "Bird woman won't sell during raid. NPCs scatter. Triggered at specific game time."
+    },
+    "TR?": {
+      "type": "boolean",
+      "initial": false,
+      "description": "Time travel mechanics unlocked",
+      "affects": ["boot_flight", "narrative_tone", "desert_access"],
+      "note": "Must be true for magic boots to enable flight between desert locations"
+    },
+    "FLIP?": {
+      "type": "boolean",
+      "initial": false,
+      "description": "East/west spatial reversal active (reality flip)",
+      "affects": ["movement_directions", "parasol_slogan", "coin_text"],
+      "note": "When true, east becomes west, parasol slogan reverses, coin text reverses"
+    },
+    "RUBYROOM": {
+      "type": "object_reference",
+      "initial": null,
+      "description": "Location ID where ruby was stolen by roadrunner",
+      "affects": ["meep_behavior", "npc_responses"],
+      "note": "Set when MEEP-GETS-RUBY fires. Used for chase sequence tracking."
+    },
+    "APPETITE": {
+      "type": "counter",
+      "initial": 0,
+      "max": 4,
+      "description": "Roadrunner eating crumbs countdown (turns remaining)",
+      "affects": ["meep_commands", "meep_responses"],
+      "note": "When >0, roadrunner is busy eating and won't follow commands. Decrements per turn."
+    }
+  },
+
   "items": {
+    "ruby": {
+      "note": "PRIORITY 1: Ruby theft by roadrunner is critical game mechanic from events.zil:354-391, things.zil:2572-2605",
+      "theft_mechanic": {
+        "trigger": "ruby_becomes_visible",
+        "delay_moves": 1,
+        "thief_npc": "meep",
+        "irreversible": true,
+        "description": "When ruby appears (from feeding pigeons), roadrunner steals it after 1 move delay. Player can NEVER recover the ruby once stolen.",
+        "mechanism": "Ruby has CHILLY flag set when created (1-move delay timer). When delay expires, MEEP-GETS-RUBY routine fires automatically.",
+        "chase_sequence": [
+          {"from": "broad_walk", "to": "round_pond", "direction": "east", "text": "zigzags through tourists disappears east"},
+          {"from": "round_pond", "to": "lan_walk", "direction": "east"},
+          {"from": "lion_gate", "to": "round_pond", "direction": "southeast"},
+          {"from": "lan_gate", "to": "lan_walk", "direction": "south"},
+          {"from": "pal_gate", "to": "flower_walk", "direction": "east"}
+        ],
+        "special_locations": {
+          "wabe": "meep scoots between your legs (no tree obstacle)",
+          "broad_walk": "bird woman reacts: 'It's time!' and shriek"
+        },
+        "state_updates_required": [
+          {"type": "set_flag", "params": {"flag_name": "RUBYROOM", "value": "current_location_id"}},
+          {"type": "move_item", "params": {"item_id": "ruby", "to_npc": "meep"}},
+          {"type": "move_npc", "params": {"npc_id": "meep", "to_location": "next_in_chase_path"}}
+        ],
+        "narrative_template": "As you reach down to touch the ruby, a very large bird races out from behind a tree. It snatches away the ruby with its beak, zigzags through a group of tourists and disappears to the east."
+      },
+      "creation_trigger": {
+        "action": "feed_pigeons_with_bag",
+        "one_time": true,
+        "flag_check": "ruby_not_yet_seen",
+        "creates_ruby_at": "current_location",
+        "success_text": "As the birds wander away, something glints among the breadcrumbs at your feet. A brilliant ruby!",
+        "subsequent_effect": "theft_sequence_activates_after_1_move",
+        "note": "This is the ONLY way to obtain the ruby. It's created dynamically, not in initial game state."
+      }
+    },
+
     "coin": {
       "examine_text": "It's standard British currency, worth fifty pence.",
       "value": 50,
       "currency": "pence",
-      "note": "Extracted from COIN-F routine (things.zil:298). Value added for purchase mechanics - this is a 50 pence coin that can be used to buy the 30p bag of crumbs (with 20p change)."
+      "note": "50 pence coin used to buy 30p bag of crumbs with 20p change (scoin). Value critical for purchase mechanics."
+    },
+
+    "scoin": {
+      "value": 20,
+      "currency": "pence",
+      "note": "20 pence change coin given when buying bag. Created during purchase transaction, not initially present."
     },
 
     "bag": {
-      "note": "This is the 'bag of crumbs' item. Purchase handled by BWOMAN-F ZIL routine. Ruby trigger from GET-RUBY routine (things.zil:2245).",
+      "note": "Bag of crumbs. Purchased from bird woman for 30p (costs 50p coin, get 20p change). Feeding pigeons creates ruby.",
       "triggers": [
         {
           "action": "feed",
@@ -29,26 +129,267 @@
           "creates": "ruby",
           "location": "current",
           "one_time": true,
+          "flag_check": "ruby_not_seen",
           "success_text": "As you scatter the crumbs, the pigeons surge forward in a cooing mass. Something glints among the breadcrumbs - a brilliant ruby slips out of the bag and falls to the ground!",
-          "note": "Ruby appears when player feeds pigeons with bag of crumbs"
+          "state_updates": [
+            {"type": "create_item", "params": {"item_id": "ruby", "name": "Ruby", "location": "current"}},
+            {"type": "set_flag", "params": {"flag_name": "ruby_seen", "value": true}},
+            {"type": "modify_attribute", "params": {"entity_id": "ruby", "attribute_path": "CHILLY", "value": true}}
+          ],
+          "note": "Creates ruby with CHILLY flag (1-move delay before theft). This trigger only fires once ever."
         }
-      ]
+      ],
+      "crumb_mechanics": {
+        "global_counter": "CCNT",
+        "initial_crumbs": 5,
+        "decrements_per_feed": 1,
+        "note": "Tracks how many crumbs remain in bag. Not critical for core gameplay."
+      }
     },
 
     "gbag": {
-      "note": "Generic bag displayed with bird woman. When purchased, 'bag' item is given to player instead.",
+      "note": "Generic display bag shown with bird woman. When purchased, actual 'bag' item is given instead.",
       "owned_by_npc": "bwoman",
       "for_sale": {
         "price": 30,
         "currency": "pence",
         "gives_items": ["bag", "scoin"],
-        "dialog_hints": "Thirty p! Thirty p a bag!"
+        "payment_item": "coin",
+        "payment_value_required": 50,
+        "blocked_when_flag": "RAID?",
+        "blocked_message": "She's too frightened to respond during the air raid",
+        "dialog_hints": "Thirty p! Thirty p a bag!",
+        "transaction_text": "Bless yer. Twenty p's the change.",
+        "state_updates": [
+          {"type": "remove_from_inventory", "params": {"item_id": "coin"}},
+          {"type": "add_to_inventory", "params": {"item_id": "bag"}},
+          {"type": "add_to_inventory", "params": {"item_id": "scoin"}},
+          {"type": "modify_attribute", "params": {"entity_id": "gbag", "attribute_path": "location", "value": "removed"}}
+        ]
+      }
+    },
+
+    "pram": {
+      "note": "PRIORITY 1: Perambulator (baby carriage). Player can enter it. While inside, movement is completely blocked unless using umbrella sailing.",
+      "enter_mechanics": {
+        "action": "enter_pram",
+        "requires": "pram_is_open",
+        "sets_flag": "IN-PRAM? = true",
+        "blocks_all_movement": true,
+        "special_actions": {
+          "stand_up_in_pram": "causes_crash_dumps_player_on_ground",
+          "push_pram_to_direction": "pram_moves_player_follows",
+          "open_umbrella_in_wind": "uncontrolled_sailing"
+        },
+        "exit_action": "climb_out_of_pram",
+        "exit_sets_flag": "IN-PRAM? = false"
+      },
+      "movement_blocking": {
+        "when_flag": "IN-PRAM? = true",
+        "blocks": "all_normal_movement_commands",
+        "rejection_message": "The pram won't budge.",
+        "hint": "(You'll need an umbrella to sail it in the wind.)",
+        "exceptions": [
+          "PUSH PRAM TO <direction> - pram and player move together",
+          "OPEN UMBRELLA in windy location - wind sailing activates",
+          "EXIT/CLIMB OUT - leaves pram"
+        ]
+      },
+      "push_mechanics": {
+        "syntax": "PUSH PRAM TO direction",
+        "effect": "pram_transported_to_destination",
+        "player_follows": true,
+        "clears_pram_descfcn": true,
+        "note": "Alternative to wind sailing. Allows manual pram movement while inside."
+      }
+    },
+
+    "parasol": {
+      "note": "PRIORITY 1: Umbrella with parrot head handle. Critical for pram sailing and parachute mechanics. Slogan: 'All prams lead to Kensington Gardens'",
+      "aliases": ["umbrella"],
+      "retrieval": {
+        "initial_location": "tree",
+        "initial_state": "out_of_reach_high_in_branches",
+        "how_it_got_there": "japanese_woman_wind_event_I-BLOW",
+        "retrieval_method": "throw_ball_at_parasol",
+        "mechanism": "TREE-SWITCH routine swaps ball and parasol positions",
+        "result": "parasol_falls_to_lan_gate_ball_lodges_in_tree"
+      },
+      "opening_mechanics": {
+        "in_sky_falling": {
+          "context": "falling_from_great_height_will_die_on_impact",
+          "effect": "acts_as_parachute_saves_life",
+          "narrative": "The umbrella snaps open and nearly flies to pieces in the fury of your descent. But a sympathetic breeze fills the cloth panels with air, and your death-plunge slows to a leisurely drift.",
+          "state_change": "prevents_death_from_falling",
+          "note": "CRITICAL life-saving mechanic in orbital/sky locations"
+        },
+        "in_windy_location": {
+          "effect": "uncontrolled_wind_sailing",
+          "direction": "determined_by_wind_flags_not_player_intent",
+          "wind_flags": {
+            "EWIND_seen": "blown_eastward",
+            "WWIND_seen": "blown_westward"
+          },
+          "pram_interaction": "if_IN-PRAM?_true_then_pram_travels_with_player",
+          "destination_table": {
+            "lan_gate + EWIND": {"to": "lion_gate", "narrative": "blown past terrace to Lion Gate"},
+            "lion_gate + WWIND": {"to": "lan_gate", "narrative": "blown past terrace to Lancaster Gate"},
+            "at_terrace + WWIND": {"to": "lan_gate", "obstacle": "tourists"},
+            "at_terrace + EWIND": {"to": "lion_gate", "obstacle": "tourists"},
+            "broad_walk + WWIND": {"to": "lan_walk", "journey": "past Round Pond"},
+            "round_pond + WWIND": {"to": "lan_walk"},
+            "lan_walk + EWIND": {"to": "broad_walk", "journey": "past Round Pond"},
+            "pal_gate + WWIND": {"to": "flower_walk"},
+            "flower_walk + EWIND": {"to": "pal_gate"},
+            "wabe + any_wind": {"to": "grass", "obstacle": "thicket_collision"}
+          },
+          "crash_results": {
+            "tourists": "collide_fall_out_of_pram_if_inside",
+            "thicket": "plow_into_thicket_fall_out",
+            "flower_beds": "careen_into_beds",
+            "victoria_statue": "careen_into_statue"
+          },
+          "note": "Player CANNOT control direction when sailing. Wind determines destination."
+        },
+        "in_bubble_suit": {
+          "context": "wearing_bubble_suit_SUITED?_greater_than_0",
+          "effect": "film_stretches_but_no_sailing",
+          "narrative": "The bubble film stretches as you open the umbrella.",
+          "orbital_restriction": "film_won't_stretch_enough_in_orbit",
+          "note": "Bubble suit prevents wind sailing mechanics"
+        }
+      },
+      "slogan": {
+        "normal": "All prams lead to the Kensington Gardens",
+        "when_FLIP?_true": "snedraG notgnisneK eht ot dael smarp llA",
+        "note": "Text reverses when reality is flipped (FLIP? flag). Critical puzzle hint."
+      },
+      "tree_switch_mechanic": {
+        "action": "throw_ball_at_parasol_or_umbrella",
+        "effect": "ball_and_parasol_swap_positions",
+        "parasol_destination": "lan_gate_on_ground",
+        "ball_destination": "tree_lodged_in_branches",
+        "state_updates": [
+          {"type": "move_item", "params": {"item_id": "parasol", "to_location": "lan_gate"}},
+          {"type": "move_item", "params": {"item_id": "ball", "to_location": "tree"}},
+          {"type": "modify_attribute", "params": {"entity_id": "parasol", "attribute_path": "NODESC", "value": false}},
+          {"type": "modify_attribute", "params": {"entity_id": "ball", "attribute_path": "NODESC", "value": true}}
+        ]
+      }
+    },
+
+    "ball": {
+      "note": "Sphere/ball found at location. Used to knock parasol out of tree.",
+      "tree_interaction": "throw_ball_at_parasol_to_swap_positions",
+      "see_parasol_mechanics": true
+    },
+
+    "rboot": {
+      "note": "PRIORITY 1: Red boot. One of pair of magic boots for time travel flight. Must be activated with ruby.",
+      "activation": {
+        "requires": "put_ruby_in_boot",
+        "mechanism": "place_ruby_in_toe_recess",
+        "effect": "ruby_consumed_wings_sprout_from_heel",
+        "irreversible": true,
+        "state_changes": [
+          {"type": "consume_item", "params": {"item_id": "ruby"}},
+          {"type": "modify_attribute", "params": {"entity_id": "rboot", "attribute_path": "CHILLY", "value": true}},
+          {"type": "modify_attribute", "params": {"entity_id": "rboot", "attribute_path": "description", "value": "red boot with tiny wings sprouting from heel"}}
+        ],
+        "narrative": "The leather closes around the ruby like a living membrane. A shudder of ecstasy ripples through the boot, and it begins to glow with an inner radiance. A tiny pair of wings sprouts from the heel and flutters expectantly.",
+        "note": "Ruby is permanently consumed. Cannot get it back. Boot now has magical flight capability."
+      },
+      "flight_requirements": {
+        "must_wear_both_boots": "rboot_and_gboot",
+        "both_must_be_activated": "both_have_CHILLY_flag_true",
+        "TR?_must_be_true": "time_travel_unlocked",
+        "only_works_in_desert": "source_and_destination_must_have_DESERT_flag"
+      }
+    },
+
+    "gboot": {
+      "note": "PRIORITY 1: Green boot. Pair with rboot. Activated with emerald.",
+      "activation": {
+        "requires": "put_emerald_in_boot",
+        "mechanism": "place_emerald_in_toe_recess",
+        "effect": "emerald_consumed_wings_sprout_from_heel",
+        "irreversible": true,
+        "state_changes": [
+          {"type": "consume_item", "params": {"item_id": "emerald"}},
+          {"type": "modify_attribute", "params": {"entity_id": "gboot", "attribute_path": "CHILLY", "value": true}},
+          {"type": "modify_attribute", "params": {"entity_id": "gboot", "attribute_path": "description", "value": "green boot with tiny wings sprouting from heel"}}
+        ],
+        "narrative": "The leather closes around the emerald like a living membrane. A shudder of ecstasy ripples through the boot, and it begins to glow with an inner radiance. A tiny pair of wings sprouts from the heel and flutters expectantly."
+      }
+    },
+
+    "boots_combined_flight": {
+      "note": "PRIORITY 1: Flight mechanic when wearing both activated boots. Overrides normal movement in desert locations.",
+      "requirements": [
+        "rboot worn and activated (CHILLY=true)",
+        "gboot worn and activated (CHILLY=true)",
+        "TR? flag = true (time travel unlocked)",
+        "current location has DESERT flag",
+        "destination has DESERT flag"
+      ],
+      "time_delay": {
+        "global_flag": "MDELAY",
+        "random_range_minutes": [2, 19],
+        "mechanism": "DO-MOVES called to advance game time",
+        "note": "Flight takes random 2-19 minutes of game time"
+      },
+      "usage": "walk_to_desert_location_or_walk_direction_in_desert",
+      "effect": "instant_teleportation_with_time_passage",
+      "narrative_templates": [
+        "You close your eyes and concentrate. The world fades away...",
+        "You soar across the desert for X minutes",
+        "Various flight experience descriptions"
+      ],
+      "restrictions": {
+        "no_flight_if_MDELAY_active": "wait_for_delay_to_expire",
+        "only_between_desert_locations": "normal_walk_if_not_desert"
+      }
+    },
+
+    "crane": {
+      "note": "Origami paper crane. Can be repaired by girl into perfect crane, which then magically transforms into living magpie.",
+      "states": ["bad_crane", "ocrane", "crane_perfect", "crane_magic", "magpie"],
+      "repair_mechanic": {
+        "give_to_npc": "girl",
+        "accepts": ["bad_crane", "ocrane"],
+        "npc_action": "refolds_to_perfect_condition",
+        "returns": "crane (perfect)",
+        "narrative": "Her delicate fingers explore the creases of the paper bird. With a few deft maneuvers, she refolds it to its original shape."
+      },
+      "magic_transformation": {
+        "trigger": "girl_has_parasol_when_repairing_crane",
+        "stages": 4,
+        "stage_1": {
+          "flag": "CRANE.LIGHTED = true",
+          "text": "The edges of the crane begin to flicker faintly.",
+          "queues_event": "I-NEWCRANE with persistent flag"
+        },
+        "stage_2": {
+          "text": "The paper folds rustle slightly. The crane glows brighter."
+        },
+        "stage_3": {
+          "text": "A vivid glow suffuses the origami bird. It trembles with inner life."
+        },
+        "stage_4": {
+          "effect": "crane_becomes_magpie",
+          "removes_item": "crane",
+          "creates_item": "magpie (living bird NPC)",
+          "narrative": "The paper dissolves in a shimmer of light. A slender bird with iridescent plumage emerges from the glow.",
+          "score": 5
+        },
+        "note": "This is multi-turn transformation. Takes 4 turns total. Only happens if girl has parasol."
       }
     }
   },
 
   "npcs": {
     "bwoman": {
+      "full_name": "bird woman",
       "ambient_phrases": [
         "Thirty p! Thirty p a bag!",
         "Feed the hungry birds!",
@@ -57,7 +398,148 @@
       ],
       "ambient_frequency": "occasional",
       "description_override": "An aged woman is selling crumbs nearby.",
-      "note": "Ambient phrases from BWOMAN-CRIES event table (events.zil). Description from FDESC property."
+      "note": "Sells bag of crumbs for 30p. Has conversation system. Reacts during air raid and ruby theft.",
+      "purchase_system": {
+        "item_for_sale": "gbag",
+        "actual_item_given": "bag",
+        "price": 30,
+        "currency": "pence",
+        "accepts_payment": "coin (50p)",
+        "gives_change": "scoin (20p)",
+        "blocked_during_raid": true,
+        "blocked_message": "She's too frightened to respond.",
+        "transaction_dialog": "Bless yer. Twenty p's the change."
+      },
+      "conversation_topics": {
+        "city": "Lived 'ere all me life, I 'ave.",
+        "london": "Lived 'ere all me life, I 'ave.",
+        "pigeons": "'Ave ye ever seen such beauties? So loyal. And so, so 'ungry.",
+        "bag": "Lovely bread crumbs, only thirty p a bag!",
+        "gbag": "Lovely bread crumbs, only thirty p a bag!",
+        "ruby": "Wouldn't let it out o' my sight if I was you. Fast little devils, them birds.",
+        "meep_if_stolen": "Fast, ain't he?",
+        "pram": "All prams lead to Kensington Gardens, they say."
+      },
+      "special_reactions": {
+        "ruby_theft_at_broad_walk": {
+          "text": "'It's time!' shrieks the bird woman.",
+          "note": "Only if ruby stolen while at BROAD-WALK location"
+        }
+      }
+    },
+
+    "meep": {
+      "full_name": "roadrunner",
+      "type": "companion_npc",
+      "description": "large gray bird resembling a pheasant, lean and streamlined, with bright eyes and long tail splashed with color",
+      "note": "PRIORITY 1: Roadrunner companion. Can be commanded to fetch items. AUTOMATICALLY steals ruby when it appears. Critical NPC.",
+      "companion_mechanics": {
+        "commands_accepted": {
+          "take_item": {
+            "syntax": ["MEEP, TAKE item", "MEEP, GET item"],
+            "restrictions": [
+              "item size must be <= 3",
+              "item must be takeable",
+              "item cannot be in closed container",
+              "item cannot be in player inventory",
+              "item cannot be held by another NPC"
+            ],
+            "effect": "meep_fetches_item_to_current_location",
+            "special_case_tkey": {
+              "condition": "at_location_S100_and_command_involves_tkey",
+              "effect": "meep_scoots_under_jeeps_retrieves_from_bunker",
+              "narrative": "The fearless little creature... plucking the key from its padlock... prances back with the key in its beak.",
+              "score": 3
+            }
+          },
+          "drop_item": {
+            "syntax": "MEEP, DROP item",
+            "effect": "meep_drops_item_at_current_location"
+          },
+          "blocked_when_eating": {
+            "condition": "APPETITE > 0",
+            "message": "The roadrunner is busy pecking crumbs right now."
+          }
+        }
+      },
+      "automatic_behaviors": {
+        "ruby_theft": {
+          "trigger": "ruby_visible_and_1_move_has_passed",
+          "action": "steals_ruby_and_runs_away",
+          "irreversible": true,
+          "chase_sequence": "see_ruby_item_theft_mechanic",
+          "global_flag_set": "RUBYROOM = location_of_theft",
+          "narrative": "A very large bird races out from behind a tree. It snatches away the ruby with its beak, zigzags through a group of tourists and disappears to the east.",
+          "note": "AUTOMATIC. Player cannot prevent this. Happens 1 move after ruby appears."
+        },
+        "eating_crumbs": {
+          "trigger": "give_bag_to_meep_or_meep_feed_bag",
+          "duration_moves": 4,
+          "global_flag": "APPETITE",
+          "initial_appetite": 4,
+          "decrements_per_turn": 1,
+          "blocks_commands": true,
+          "completion_message": "Beep beep!",
+          "note": "Roadrunner takes 4 turns to eat crumbs. Cannot be commanded during eating."
+        }
+      }
+    },
+
+    "jwoman": {
+      "full_name": "Japanese woman",
+      "description": "aged Japanese woman with scarred face, deep red lesions twisting her oriental features",
+      "initial_possession": "parasol",
+      "note": "NPC that triggers parasol wind event. One-time scripted sequence.",
+      "scripted_event": {
+        "trigger": "examine_jwoman",
+        "one_time": true,
+        "event_name": "I-BLOW",
+        "sequence": [
+          "Strong gust of wind snatches parasol from woman's hands",
+          "Parasol swept into tree branches",
+          "Woman circles tree gazing upward helplessly",
+          "Wistful tear running down cheek",
+          "After moments woman dries eyes kicks tree",
+          "Woman shuffles away down Lancaster Walk"
+        ],
+        "state_changes": [
+          {"type": "move_item", "params": {"item_id": "parasol", "to_location": "tree"}},
+          {"type": "modify_attribute", "params": {"entity_id": "parasol", "attribute_path": "OPENED", "value": false}},
+          {"type": "modify_attribute", "params": {"entity_id": "parasol", "attribute_path": "NODESC", "value": true}},
+          {"type": "move_npc", "params": {"npc_id": "jwoman", "to_location": "removed"}},
+          {"type": "modify_attribute", "params": {"entity_id": "jwoman", "attribute_path": "CHILLY", "value": true}},
+          {"type": "modify_attribute", "params": {"entity_id": "jwoman", "attribute_path": "NODESC", "value": true}}
+        ],
+        "extended_if_TR": "additional narrative about time and sirens",
+        "note": "This is the main way to get the parasol. After event, woman is gone forever."
+      }
+    },
+
+    "girl": {
+      "full_name": "young Japanese girl",
+      "location": "in_shelter or playground",
+      "description": "young girl with delicate features",
+      "note": "Repairs crumpled crane into perfect crane. Interested in parasol. Triggers magic transformation.",
+      "item_interests": {
+        "parasol_highest_priority": {
+          "action": "give_parasol_to_girl",
+          "effect": "girl_very_happy_keeps_parasol_moves_to_corner",
+          "state_change": "GIRL.CHILLY = true",
+          "enables": "magic_crane_transformation",
+          "note": "Girl must have parasol for crane to become magic"
+        },
+        "crane_repair": {
+          "accepts": ["bad_crane", "ocrane", "crumpled_crane"],
+          "action": "refolds_to_perfect_condition",
+          "returns": "crane (perfect)",
+          "narrative": "Her delicate fingers explore the creases... few deft maneuvers... refolds it to original shape.",
+          "subsequent_effect_if_has_parasol": "magic_transformation_begins"
+        },
+        "other_items": {
+          "shows_polite_interest": true,
+          "may_exchange_items": true
+        }
+      }
     }
   },
 
@@ -66,28 +548,159 @@
       "examine_details": {
         "pigeons": "A flock of pigeons struts about, cooing softly and pecking at the ground. They eye you with hopeful expectation.",
         "perambulators": "A tide of baby carriages surges along the path, pushed by nannies and parents.",
-        "glades": "Shaded glades stretch away to the northeast, cool and inviting."
+        "glades": "Shaded glades stretch away to the northeast, cool and inviting.",
+        "victoria": "Brooding statue of Queen Victoria faces east toward the pond."
       },
-      "note": "Additional examinable details for key scenery elements."
+      "note": "Main location for pigeon feeding and ruby appearance. Bird woman sells crumbs here."
     }
   },
 
-  "movement_rules": {
-    "note": "Special movement restrictions for Trinity gameplay",
-    "in_pram_movement": {
-      "description": "When player is inside the pram (IN-PRAM? flag is true), normal movement commands (north, south, east, west, etc.) should be BLOCKED with message: 'The pram won't budge. (You'll need an umbrella to sail it in the wind.)'",
-      "condition": {
-        "flag": "IN-PRAM?",
-        "value": true
+  "movement_overrides": {
+    "note": "Special movement systems that override or block normal walking",
+    "in_pram_blocking": {
+      "priority": 1,
+      "condition": "IN-PRAM? = true",
+      "blocks": "ALL normal movement verbs (north south east west up down etc)",
+      "rejection_message": "The pram won't budge.",
+      "hint_to_player": "(You'll need an umbrella to sail it in the wind.)",
+      "exceptions": [
+        {
+          "command": "PUSH PRAM TO direction",
+          "effect": "pram and player move together to destination"
+        },
+        {
+          "command": "OPEN UMBRELLA (in windy location)",
+          "effect": "wind_sailing_activates"
+        },
+        {
+          "command": "EXIT or CLIMB OUT OF PRAM",
+          "effect": "leaves_pram_sets_IN-PRAM?_false"
+        }
+      ],
+      "dm_instruction": "When IN-PRAM? flag is true, you MUST reject all normal movement attempts with the rejection message. Only allow the exceptions listed."
+    },
+
+    "umbrella_wind_sailing": {
+      "priority": 1,
+      "trigger": "open_umbrella_in_windy_location",
+      "overrides": "player's intended direction",
+      "direction_determined_by": "wind_flags (EWIND.SEEN or WWIND.SEEN)",
+      "can_transport_pram": "if IN-PRAM? = true",
+      "destination_calculation": {
+        "note": "See parasol item for complete destination table",
+        "reference": "items.parasol.opening_mechanics.in_windy_location.destination_table"
       },
-      "blocks_movement": true,
-      "exception": "Movement IS allowed if player has umbrella AND umbrella is open AND location is windy. In that case, player is blown in the direction the wind is blowing (not the direction they tried to go).",
-      "wind_directions": {
-        "note": "Wind direction changes throughout game. East wind (EWIND) and West wind (WWIND) flags control this.",
-        "ewind_active": "Blown eastward when umbrella opens",
-        "wwind_active": "Blown westward when umbrella opens"
-      },
-      "rejection_message": "The pram won't budge. (You'll need an umbrella to sail it in the wind.)"
+      "dm_instruction": "Player does NOT control direction when sailing. Wind determines where they go. Ignore player's intended direction and use wind direction + destination table."
+    },
+
+    "boot_flight": {
+      "priority": 1,
+      "requirements": [
+        "both_boots_worn",
+        "both_boots_activated",
+        "TR? = true",
+        "current_location_has_DESERT_flag",
+        "destination_has_DESERT_flag"
+      ],
+      "overrides": "normal walk in desert",
+      "time_delay": "random 2-19 minutes via MDELAY",
+      "effect": "instant_teleportation_with_time_passage",
+      "dm_instruction": "In desert locations, if all requirements met, interpret movement as boot flight instead of normal walk. Call DO-MOVES for time passage."
     }
+  },
+
+  "timed_events": {
+    "note": "Events that fire automatically based on conditions or game time. Use QUEUE/DEQUEUE system.",
+    "I-AIR-RAID": {
+      "trigger_time": {"minutes": 57, "seconds": 45},
+      "description": "Air raid sirens and bombing sequence",
+      "stages": [
+        {"RAID": 1, "text": "Faint wavering siren swelling louder"},
+        {"RAID": 2, "text": "Planes roar overhead bombs falling", "npc_effects": "bwoman_frightened_npcs_scatter"}
+      ],
+      "affects": ["bwoman won't sell", "location descriptions change", "NPC behaviors"]
+    },
+
+    "I-RUBY": {
+      "trigger": "ruby becomes visible (create_item or revealed)",
+      "delay": 1,
+      "effect": "calls MEEP-GETS-RUBY routine",
+      "note": "1-move delay implemented via CHILLY flag on ruby"
+    },
+
+    "I-MEEP": {
+      "trigger": "after ruby theft",
+      "effect": "roadrunner briefly visible then moves to next location",
+      "text": "The large bird you saw before... glimpse of ruby in beak... zigzags away"
+    },
+
+    "I-BLOW": {
+      "trigger": "examine japanese woman",
+      "one_time": true,
+      "effect": "wind event parasol blown into tree",
+      "see": "npcs.jwoman.scripted_event"
+    },
+
+    "I-NEWCRANE": {
+      "trigger": "girl repairs crane while having parasol",
+      "stages": 4,
+      "persistent": true,
+      "effect": "crane gradually transforms into living magpie",
+      "see": "items.crane.magic_transformation"
+    }
+  },
+
+  "special_mechanics": {
+    "tree_switch": {
+      "action": "THROW BALL AT PARASOL",
+      "effect": "ball and parasol swap positions",
+      "parasol_destination": "lan_gate (on ground)",
+      "ball_destination": "tree (lodged in branches)",
+      "note": "Only way to retrieve parasol from tree"
+    },
+
+    "coin_value_system": {
+      "coin": {"value": 50, "currency": "pence"},
+      "scoin": {"value": 20, "currency": "pence"},
+      "bcoin": {"value": 1, "text": "NOT TRANSFERABLE", "use": "payment to Charon for Styx crossing"}
+    },
+
+    "FLIP_mechanics": {
+      "flag": "FLIP?",
+      "when_true": [
+        "parasol slogan text reversed",
+        "bcoin text reversed",
+        "east and west directions swapped in descriptions",
+        "all items in FLIPPERS table affected"
+      ]
+    }
+  },
+
+  "dm_critical_instructions": {
+    "priority_1_mechanics": [
+      "Ruby theft by roadrunner is AUTOMATIC and IRREVERSIBLE after 1 move",
+      "Pram blocks ALL movement when IN-PRAM? = true (except umbrella sailing or exit)",
+      "Boot flight only works with BOTH boots activated and in desert locations",
+      "Bag feeding pigeons creates ruby ONCE - check flag before creating"
+    ],
+    "state_tracking": [
+      "IN-PRAM? flag - critical for movement blocking",
+      "RUBYROOM - tracks where theft occurred",
+      "APPETITE - blocks meep commands while eating",
+      "TR? - gates time travel mechanics",
+      "RAID? - affects NPC behaviors and purchases"
+    ],
+    "irreversible_actions": [
+      "Ruby theft - cannot recover ruby once stolen",
+      "Boot activation - gems consumed permanently",
+      "Ruby creation - one-time only via bag trigger",
+      "Japanese woman event - one-time only parasol tree event"
+    ],
+    "event_system": [
+      "I-RUBY queued with 1-move delay when ruby appears",
+      "I-MEEP shows roadrunner briefly after theft",
+      "I-BLOW triggered by examining japanese woman",
+      "I-NEWCRANE stages crane transformation over 4 turns"
+    ]
   }
 }
