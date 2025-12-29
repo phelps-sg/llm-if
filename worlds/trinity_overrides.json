@@ -3,8 +3,13 @@
   "source_world": "trinity.json",
   "description": "Manual fixes and enhancements for Trinity gameplay",
 
-  "game_time": "July 16, 1945, 3:30 PM",
-  "note_game_time": "Trinity takes place on the day of the Trinity nuclear test. The wristwatch should show 3:30 PM at game start.",
+  "game_time": "Afternoon, 3:30 PM",
+  "note_game_time": "Game starts at 3:30 PM in present-day London (1986). Time travel to 1945 happens later in the story.",
+
+  "world_context": {
+    "setting": "You are a tourist in London on the last day of a vacation package in 1986. The game explores themes of nuclear warfare, time travel, and the moral complexities of the atomic age. You begin in present-day Kensington Gardens, but will journey through time to visit historical bombing sites including the Trinity nuclear test (July 16, 1945), Nagasaki (1945), and London Blitz (1940).",
+    "note": "Corrects the year - game starts in 1986 (present), not 1945. Time travel happens during gameplay."
+  },
 
   "items": {
     "coin": {

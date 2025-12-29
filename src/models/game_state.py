@@ -577,6 +577,16 @@ class GameState(BaseModel):
                 merged[field] = overrides[field]
                 logger.info(f"Override top-level field '{field}': {overrides[field]}")
 
+        # Merge world_context (dict merge, not replace)
+        if "world_context" in overrides:
+            if "world_context" not in merged:
+                merged["world_context"] = {}
+            for key, value in overrides["world_context"].items():
+                if key == "note":
+                    continue  # Skip metadata
+                merged["world_context"][key] = value
+                logger.info(f"Override world_context.{key}")
+
         return merged
 
     @classmethod
