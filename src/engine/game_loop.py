@@ -1400,18 +1400,68 @@ Respond as a helpful debugging assistant, not as the in-game DM.
                 for c in contents_list
             ]
 
+        # Process current location - translate ZIL and remove raw code
+        location_dict = None
+        if location:
+            location_dict = location.model_dump()
+            # Translate location ZIL if present
+            if "zil_action_code" in location_dict.get("attributes", {}) and not location_dict["attributes"].get("zil_action_description"):
+                zil_code = location_dict["attributes"]["zil_action_code"]
+                routine_name = location_dict["attributes"].get("zil_action", "unknown")
+                try:
+                    translation = self.gemini.translate_zil_with_cache(
+                        zil_code=zil_code,
+                        routine_name=routine_name,
+                        context=f"Location routine for: {location.name}"
+                    )
+                    location_dict["attributes"]["zil_action_description"] = translation
+                    logger.debug(f"Translated ZIL for location '{location.id}': {routine_name}")
+                except Exception as e:
+                    logger.warning(f"Failed to translate ZIL for location '{location.id}': {e}")
+
+            # Remove raw ZIL if translation exists
+            if location_dict.get("attributes", {}).get("zil_action_description"):
+                location_dict["attributes"].pop("zil_action_code", None)
+                location_dict["attributes"].pop("zil_action_json", None)
+                logger.debug(f"Removed raw ZIL from location '{location.id}' (translation available)")
+
+        # Process NPCs - translate ZIL and remove raw code
+        npcs_processed = []
+        for npc in npcs_at_location:
+            npc_dict = {"id": npc.id, "name": npc.name, "attributes": dict(npc.attributes)}
+
+            # Translate NPC ZIL if present
+            if "zil_action_code" in npc_dict["attributes"] and not npc_dict["attributes"].get("zil_action_description"):
+                zil_code = npc_dict["attributes"]["zil_action_code"]
+                routine_name = npc_dict["attributes"].get("zil_action", "unknown")
+                try:
+                    translation = self.gemini.translate_zil_with_cache(
+                        zil_code=zil_code,
+                        routine_name=routine_name,
+                        context=f"NPC routine for: {npc.name}"
+                    )
+                    npc_dict["attributes"]["zil_action_description"] = translation
+                    logger.debug(f"Translated ZIL for NPC '{npc.id}': {routine_name}")
+                except Exception as e:
+                    logger.warning(f"Failed to translate ZIL for NPC '{npc.id}': {e}")
+
+            # Remove raw ZIL if translation exists
+            if npc_dict["attributes"].get("zil_action_description"):
+                npc_dict["attributes"].pop("zil_action_code", None)
+                npc_dict["attributes"].pop("zil_action_json", None)
+                logger.debug(f"Removed raw ZIL from NPC '{npc.id}' (translation available)")
+
+            npcs_processed.append(npc_dict)
+
         context = {
-            "location": location.model_dump() if location else None,
+            "location": location_dict,
             "lighting": lighting,
             "exits": location.get_available_exits() if location else [],
             "exit_destinations": exit_destinations,  # direction -> location_id map
             "blocked_exits": blocked_exits,  # direction -> blocking message map
             "items": items_with_translated_zil,
             "container_contents": translated_container_contents,  # Items inside open or transparent containers (with translated ZIL)
-            "npcs": [
-                {"id": npc.id, "name": npc.name, "attributes": npc.attributes}
-                for npc in npcs_at_location
-            ],
+            "npcs": npcs_processed,
             "player": {
                 "name": self.game_state.player.name,
                 "inventory": inventory_items,
@@ -1432,9 +1482,27 @@ Respond as a helpful debugging assistant, not as the in-game DM.
                 "dm_state": self.game_state.dm_state,
             }
 
-        # Add world context if present
+        # Add world context if present - process to remove raw ZIL from global_routines
         if self.game_state.world_context:
-            context["world_context"] = self.game_state.world_context
+            world_context_clean = dict(self.game_state.world_context)
+
+            # Process global_routines to remove raw ZIL code
+            if "global_routines" in world_context_clean:
+                routines_clean = {}
+                for routine_name, routine_data in world_context_clean["global_routines"].items():
+                    routine_clean = dict(routine_data)
+
+                    # If routine has description, remove raw ZIL code to save tokens
+                    if routine_clean.get("description"):
+                        routine_clean.pop("zil_code", None)
+                        routine_clean.pop("zil_json", None)
+                        logger.debug(f"Removed raw ZIL from global routine '{routine_name}' (description available)")
+
+                    routines_clean[routine_name] = routine_clean
+
+                world_context_clean["global_routines"] = routines_clean
+
+            context["world_context"] = world_context_clean
 
         if only_include is not None:
             for omit_key in only_include:
