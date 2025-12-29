@@ -416,6 +416,24 @@ class GameLoop:
         if not player_input:
             return
 
+        # Handle special commands (check these BEFORE god mode to avoid conflicts)
+        if player_input.lower() in ["quit", "exit", "q"]:
+            self.running = False
+            print("Thanks for playing!")
+            return
+
+        if player_input.lower() in ["help", "?"]:
+            self._show_help()
+            return
+
+        # Handle "tokens" command - show token usage statistics
+        if player_input.lower() in ["/tokens", "/stats", "/usage"]:
+            self.gemini.print_token_usage_stats()
+            if hasattr(self, 'zil_translator') and self.zil_translator != self.gemini:
+                print("ZIL Translator stats:")
+                self.zil_translator.print_token_usage_stats()
+            return
+
         # Handle god mode commands (if god mode is active)
         if self.game_state.flags.get("god_mode"):
             if player_input.startswith("/"):
@@ -429,16 +447,6 @@ class GameLoop:
                 print(response)
                 return
 
-        # Handle special commands
-        if player_input.lower() in ["quit", "exit", "q"]:
-            self.running = False
-            print("Thanks for playing!")
-            return
-
-        if player_input.lower() in ["help", "?"]:
-            self._show_help()
-            return
-
         # Handle "look" specially - use dedicated location description
         if player_input.lower() in ["look", "l"]:
             print()
@@ -448,14 +456,6 @@ class GameLoop:
         # Handle "inventory" specially - just show what player has
         if player_input.lower() in ["inventory", "inv", "i"]:
             self._show_inventory()
-            return
-
-        # Handle "tokens" command - show token usage statistics
-        if player_input.lower() in ["/tokens", "/stats", "/usage"]:
-            self.gemini.print_token_usage_stats()
-            if hasattr(self, 'zil_translator') and self.zil_translator != self.gemini:
-                print("ZIL Translator stats:")
-                self.zil_translator.print_token_usage_stats()
             return
 
         # Handle save command
