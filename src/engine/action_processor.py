@@ -151,26 +151,44 @@ class ActionProcessor:
 
             elif update_type == "create_item":
                 # Dynamically create a new item in the game world
+                # Two modes:
+                # 1. Item exists in game_state.items but has no location (template item) → place it in world
+                # 2. Item doesn't exist → create new minimal item from params
                 item_id = params.get("item_id")
                 name = params.get("name")
                 attributes = params.get("attributes", {})
                 location = params.get("location")  # None means add to player inventory
 
                 if item_id and name:
-                    # Validate item doesn't already exist
+                    # Check if item already exists
                     if item_id in game_state.items:
-                        logger.warning(f"Item '{item_id}' already exists, skipping create_item")
-                        continue
+                        existing_item = game_state.items[item_id]
 
-                    # Create new Item object
-                    new_item = Item(
-                        id=item_id,
-                        name=name,
-                        attributes=attributes
-                    )
+                        # Check if item already has a location (is already in the world)
+                        has_location = (
+                            item_id in game_state.item_locations or
+                            item_id in game_state.player.inventory
+                        )
 
-                    # Add to game state
-                    game_state.items[item_id] = new_item
+                        if has_location:
+                            # Item already exists AND is placed in world - skip
+                            logger.warning(f"Item '{item_id}' already exists and is placed, skipping create_item")
+                            continue
+                        else:
+                            # Item exists as template but not placed yet - place it now
+                            # Use existing item definition (keeps all ZIL code and attributes)
+                            logger.info(f"Placing template item '{item_id}' into world from trigger")
+                            # Item already in game_state.items, just need to set location
+                            # (existing_item keeps all its ZIL code, attributes, etc.)
+                    else:
+                        # Item doesn't exist at all - create new minimal item from params
+                        logger.info(f"Creating new item '{item_id}' from params")
+                        new_item = Item(
+                            id=item_id,
+                            name=name,
+                            attributes=attributes
+                        )
+                        game_state.items[item_id] = new_item
 
                     # Set location or add to inventory
                     if location is None:
