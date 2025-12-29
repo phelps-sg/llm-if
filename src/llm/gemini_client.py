@@ -3765,13 +3765,15 @@ Full NPC details: {npcs}
 Items and NPCs may have special override fields in their attributes that define custom behaviors:
 
 🛒 PURCHASABLE ITEMS - Check for "for_sale" or "purchasable" attributes:
-- When player tries to "buy", "purchase", or "take" items near NPCs
+- When player tries to "buy", "purchase", "give money", or "take" items near NPCs
 - Check if item has "for_sale" dict: {{price, currency, gives_items, dialog_hints}}
 - Check if NPC has items with "purchasable" dict: {{price, currency, seller_npc, dialog}}
-- Generate appropriate state updates: remove_from_inventory (payment), add_to_inventory (purchased items)
+- CRITICAL: Check payment item's "value" and "currency" attributes to verify sufficient funds
+- Accept overpayment - if value > price, the "gives_items" list includes change coins
+- Generate appropriate state updates: remove_from_inventory (payment), add_to_inventory (purchased items + change)
 - Use dialog hints in narrative
 
-Example item with for_sale:
+Example purchase transaction:
 {{
   "id": "gbag",
   "attributes": {{
@@ -3784,7 +3786,13 @@ Example item with for_sale:
   }}
 }}
 
-Player: "buy bag" → Check coin (50p) >= price (30p) → Remove coin, add bag + scoin (20p change)
+Player inventory has coin with {{value: 50, currency: "pence"}}
+
+Player: "give 50p to bird woman" or "buy bag"
+→ Check coin.value (50) >= gbag.for_sale.price (30) ✓
+→ Accept payment: remove_from_inventory({{"item_id": "coin"}})
+→ Give items: add_to_inventory({{"item_id": "bag"}}), add_to_inventory({{"item_id": "scoin"}})
+→ Narrative: "The bird woman takes your money. 'Twenty p's the change.' She gives you the bag and a small coin."
 
 ⚡ TRIGGERS - Check for "triggers" array in item attributes:
 - When player performs actions with items (feed, use, throw, etc.)

@@ -14,7 +14,9 @@
   "items": {
     "coin": {
       "examine_text": "It's standard British currency, worth fifty pence.",
-      "note": "Extracted from COIN-F routine (things.zil:298). HANDLE-COIN? displays this text on EXAMINE."
+      "value": 50,
+      "currency": "pence",
+      "note": "Extracted from COIN-F routine (things.zil:298). Value added for purchase mechanics - this is a 50 pence coin that can be used to buy the 30p bag of crumbs (with 20p change)."
     },
 
     "bag": {
