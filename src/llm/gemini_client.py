@@ -25,6 +25,7 @@ class GeminiClient:
         model_name: str = "gemini-2.5-flash",
         # model_name: str = "gemini-2.5-flash-lite",  # Default for DM (fast/cheap)
         dry_run: bool = False,
+        include_raw_zil: bool = False,
     ):
         """Initialize Gemini client with gcloud authentication.
 
@@ -34,11 +35,13 @@ class GeminiClient:
             model_name: Model to use (default: gemini-2.0-flash-001)
                        Options: gemini-2.0-flash-001, gemini-2.5-flash
             dry_run: If True, estimate tokens without making API calls (for testing/cost analysis)
+            include_raw_zil: If True, include raw ZIL code in prompts (default: False for token efficiency)
         """
         self.project = project or os.getenv("GCP_PROJECT")
         self.location = location or os.getenv("GCP_LOCATION", "us-west1")
         self.model_name = model_name
         self.dry_run = dry_run
+        self.include_raw_zil = include_raw_zil
 
         if not self.project:
             raise ValueError(
@@ -155,6 +158,44 @@ class GeminiClient:
             raise RuntimeError(
                 "gcloud CLI not found. Please install the Google Cloud SDK."
             )
+
+    def _filter_item_attributes(self, attributes: Dict[str, Any]) -> Dict[str, Any]:
+        """Filter item attributes to remove ZIL-internal fields.
+
+        Removes ZIL-specific metadata that's not needed by the LLM, reducing token usage.
+        The ZIL code is translated separately via translate_zil_with_cache() when needed.
+
+        Args:
+            attributes: Raw item/location attributes dictionary
+
+        Returns:
+            Filtered attributes with only gameplay-relevant fields
+        """
+        if self.include_raw_zil:
+            # Return all attributes if raw ZIL is explicitly enabled
+            return attributes
+
+        # ZIL-internal fields to exclude (not needed by LLM for gameplay)
+        ZIL_INTERNAL_FIELDS = {
+            'zil_action_code',      # Raw ZIL code (translated separately via cache)
+            'zil_action_json',      # Parsed ZIL structure (internal representation)
+            'zil_action',           # ZIL routine name (internal identifier)
+            'zil_flags',            # Internal ZIL flags (not gameplay-relevant)
+            'zil_synonyms',         # ZIL vocabulary (redundant, we have 'name')
+            'zil_adjectives',       # ZIL vocabulary (redundant)
+            'zil_pseudo_objects',   # ZIL scenery objects (internal)
+            'zil_global_objects',   # ZIL global object list (internal)
+            'zil_pseudo_routines',  # ZIL pseudo object routines (internal)
+            'zil_pseudo_descriptions',  # ZIL pseudo descriptions (translated separately)
+        }
+
+        # Keep only gameplay-relevant attributes
+        filtered = {
+            k: v for k, v in attributes.items()
+            if k not in ZIL_INTERNAL_FIELDS
+        }
+
+        return filtered
 
     def generate(self, prompt: str, **kwargs: Any) -> str:
         """Generate text from a prompt.
@@ -2174,10 +2215,11 @@ Return JSON: {{"id": "...", "name": "...", "attributes": {{}}, "location": "..."
                     return f"{label}: {json.dumps(value)}"
             return ""
 
+        filtered_location_attrs = self._filter_item_attributes(location.get("attributes", {}))
         prompt = f"""You are a Dungeon Master describing a location.
 
 Location: {location.get("name", "Unknown")}
-Attributes: {location.get("attributes", {})}
+Attributes: {filtered_location_attrs}
 
 ⏰ CURRENT TIME (for lighting only): {player_context.get("game_time") if player_context else "Unknown"}
 🚨 CRITICAL LIGHTING RULES - DO NOT OVERDO LIGHTING:
@@ -2348,7 +2390,8 @@ Use cached descriptions for CONSISTENCY and BREVITY, but always prioritize CURRE
                 prompt += f"✅ ITEMS CURRENTLY VISIBLE AT THIS LOCATION: {visible_names}\n"
                 for item in visible_items:
                     prompt += f"\n  • {item.get('name')} ({item.get('id')})\n"
-                    prompt += f"    Attributes: {item.get('attributes', {})}\n"
+                    filtered_attrs = self._filter_item_attributes(item.get('attributes', {}))
+                    prompt += f"    Attributes: {filtered_attrs}\n"
                     # Highlight description hints for items with auto_describe
                     desc_hints = item.get('attributes', {}).get('description_hints')
                     auto_describe = item.get('attributes', {}).get('auto_describe', False)
@@ -2364,7 +2407,8 @@ Use cached descriptions for CONSISTENCY and BREVITY, but always prioritize CURRE
                 prompt += f"\n⚠️  ITEMS PRESENT BUT INVISIBLE (DO NOT DESCRIBE TO PLAYER): {invisible_names}\n"
                 for item in invisible_items:
                     prompt += f"\n  • {item.get('name')} ({item.get('id')}) - HIDDEN FROM PLAYER\n"
-                    prompt += f"    Attributes: {item.get('attributes', {})}\n"
+                    filtered_attrs = self._filter_item_attributes(item.get('attributes', {}))
+                    prompt += f"    Attributes: {filtered_attrs}\n"
                     prompt += f"    🚨 DO NOT mention this item in your description! It is hidden (e.g., under a rug, behind a panel)\n"
                     # Still include special behavior for game logic
                     zil_desc = item.get('attributes', {}).get('zil_action_description')
@@ -2386,7 +2430,8 @@ Use cached descriptions for CONSISTENCY and BREVITY, but always prioritize CURRE
             prompt += f"✅ NPCs CURRENTLY AT THIS LOCATION: {npc_names}\n"
             for npc in npcs:
                 prompt += f"\n  • {npc.get('name')} ({npc.get('id')})\n"
-                prompt += f"    Attributes: {npc.get('attributes', {})}\n"
+                filtered_attrs = self._filter_item_attributes(npc.get('attributes', {}))
+                prompt += f"    Attributes: {filtered_attrs}\n"
                 # Highlight ZIL special behavior if present
                 zil_desc = npc.get('attributes', {}).get('zil_action_description')
                 if zil_desc:
@@ -2641,7 +2686,8 @@ Items at this location (on the ground): {[item.get("name") for item in items] if
             prompt += "Item details:\n"
             for item in items:
                 prompt += f"  • {item.get('name')} ({item.get('id')})\n"
-                prompt += f"    Attributes: {item.get('attributes', {})}\n"
+                filtered_attrs = self._filter_item_attributes(item.get('attributes', {}))
+                prompt += f"    Attributes: {filtered_attrs}\n"
                 # Highlight ZIL special behavior if present
                 zil_desc = item.get('attributes', {}).get('zil_action_description')
                 if zil_desc:
@@ -2659,7 +2705,8 @@ Items at this location (on the ground): {[item.get("name") for item in items] if
             prompt += "NPC details:\n"
             for npc in npcs:
                 prompt += f"  • {npc.get('name')} ({npc.get('id')})\n"
-                prompt += f"    Attributes: {npc.get('attributes', {})}\n"
+                filtered_attrs = self._filter_item_attributes(npc.get('attributes', {}))
+                prompt += f"    Attributes: {filtered_attrs}\n"
                 # Highlight ZIL special behavior if present
                 zil_desc = npc.get('attributes', {}).get('zil_action_description')
                 if zil_desc:
@@ -2675,7 +2722,8 @@ Items at this location (on the ground): {[item.get("name") for item in items] if
             prompt += "Inventory details:\n"
             for item in inventory_items:
                 prompt += f"  • {item.get('name')} ({item.get('id')})\n"
-                prompt += f"    Attributes: {item.get('attributes', {})}\n"
+                filtered_attrs = self._filter_item_attributes(item.get('attributes', {}))
+                prompt += f"    Attributes: {filtered_attrs}\n"
                 # Highlight ZIL special behavior if present
                 zil_desc = item.get('attributes', {}).get('zil_action_description')
                 if zil_desc:
