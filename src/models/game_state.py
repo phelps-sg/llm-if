@@ -570,6 +570,13 @@ class GameState(BaseModel):
                     location[key] = value
                     logger.debug(f"Override {loc_id}.{key}")
 
+        # Merge top-level game state fields (e.g., game_time, turn_count, etc.)
+        top_level_fields = ["game_time", "turn_count", "player_location"]
+        for field in top_level_fields:
+            if field in overrides:
+                merged[field] = overrides[field]
+                logger.info(f"Override top-level field '{field}': {overrides[field]}")
+
         return merged
 
     @classmethod

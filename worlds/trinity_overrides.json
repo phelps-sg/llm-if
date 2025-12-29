@@ -3,6 +3,9 @@
   "source_world": "trinity.json",
   "description": "Manual fixes and enhancements for Trinity gameplay",
 
+  "game_time": "July 16, 1945, 3:30 PM",
+  "note_game_time": "Trinity takes place on the day of the Trinity nuclear test. The wristwatch should show 3:30 PM at game start.",
+
   "items": {
     "coin": {
       "examine_text": "It's standard British currency, worth fifty pence.",
