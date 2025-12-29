@@ -3790,9 +3790,15 @@ Player inventory has coin with {{value: 50, currency: "pence"}}
 
 Player: "give 50p to bird woman" or "buy bag"
 → Check coin.value (50) >= gbag.for_sale.price (30) ✓
-→ Accept payment: remove_from_inventory({{"item_id": "coin"}})
-→ Give items: add_to_inventory({{"item_id": "bag"}}), add_to_inventory({{"item_id": "scoin"}})
+→ MUST generate these state_updates:
+  1. {{"type": "remove_from_inventory", "params": {{"item_id": "coin"}}}}  [payment taken]
+  2. {{"type": "add_to_inventory", "params": {{"item_id": "bag"}}}}  [item purchased]
+  3. {{"type": "add_to_inventory", "params": {{"item_id": "scoin"}}}}  [change given]
 → Narrative: "The bird woman takes your money. 'Twenty p's the change.' She gives you the bag and a small coin."
+
+**CRITICAL - Use add_to_inventory, NOT create_item:**
+Items listed in "gives_items" already exist in the game world. Use add_to_inventory to give them to player.
+Only use create_item if the item doesn't exist in the game at all.
 
 ⚡ TRIGGERS - Check for "triggers" array in item attributes:
 - When player performs actions with items (feed, use, throw, etc.)
