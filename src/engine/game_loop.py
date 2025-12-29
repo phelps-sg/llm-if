@@ -949,36 +949,32 @@ You can also type natural language commands and the AI will interpret them.
         """
         import json
 
-        # Build comprehensive debug context
+        # Use the same context as normal gameplay (includes translated ZIL)
+        context = self._build_context()
+
+        # Build comprehensive debug prompt with full context
         debug_prompt = f"""You are the Dungeon Master for an interactive fiction game, currently in DEBUG/GOD MODE.
 
 The developer is asking you a technical question about the game state or mechanics.
 Analyze the situation and provide helpful debugging advice.
 
-**Current Game State:**
-- Turn: {self.game_state.turn_count}
-- Location: {self.game_state.player_location}
-- Player inventory: {self.game_state.player.inventory}
+**Current Game Context (same as used for action interpretation):**
+{json.dumps(context, indent=2, default=str)}
 
-**Items in game:**
-{json.dumps({k: v.model_dump() for k, v in list(self.game_state.items.items())[:5]}, indent=2)}
-... and {len(self.game_state.items) - 5} more items
-
-**Recent History:**
+**Recent History (last 2 turns):**
 {json.dumps(self.game_state.get_recent_history(2), indent=2)}
-
-**World Context:**
-{json.dumps({k: v for k, v in self.game_state.world_context.items() if k not in ['dm_instructions', 'global_routines']}, indent=2) if self.game_state.world_context else 'None'}
 
 **Developer Question:**
 {question}
 
 **Instructions:**
 1. Analyze the game state and identify the likely cause of any issues
-2. Suggest specific files/functions/fields to check
-3. Provide concrete debugging advice
-4. Be technical and precise - this is for debugging, not gameplay
-5. If relevant, explain how the game engine should handle this scenario
+2. When entities have zil_action_description, use that to understand behavior (it's the translated natural language version)
+3. When entities have custom override fields (triggers, for_sale, value, currency), explain how those should work
+4. Suggest specific attributes/fields to check
+5. Provide concrete debugging advice
+6. Be technical and precise - this is for debugging, not gameplay
+7. If relevant, explain how the game engine should handle this scenario
 
 Respond as a helpful debugging assistant, not as the in-game DM.
 """
