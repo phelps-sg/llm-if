@@ -114138,7 +114138,7 @@
     "hello_object": "global_objects"
   },
   "npc_locations": {},
-  "player_location": "global_objects",
+  "player_location": "broad_walk",
   "player_inventory": [],
   "flags": {},
   "puzzles": {},

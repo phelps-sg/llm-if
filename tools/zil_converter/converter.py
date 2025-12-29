@@ -508,7 +508,8 @@ class WorldConverter:
                 npc_locations[npc["id"]] = npc_data["initial_location"]
 
         # Determine player start location
-        if player_start_location:
+        # Skip "global_objects" - it's a pseudo-location for global items, not a real starting room
+        if player_start_location and player_start_location != "global_objects":
             player_location = player_start_location
         else:
             # Fallback to heuristics
