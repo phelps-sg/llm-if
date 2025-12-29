@@ -3797,11 +3797,15 @@ Player: "give 50p to bird woman" or "buy bag"
 ⚡ TRIGGERS - Check for "triggers" array in item attributes:
 - When player performs actions with items (feed, use, throw, etc.)
 - Check if item has "triggers" list with objects like: {{action, target, effect, creates, success_text}}
-- If action matches and target is present → execute the trigger effect
-- Common effects: "create_item" (spawn new item), "transform_item", "set_flag"
-- Use success_text in narrative, mark one_time triggers as used
+- **CRITICAL**: If trigger conditions match, you MUST generate corresponding state_updates
+- Common trigger effects and their state_updates:
+  - effect: "create_item" → MUST add state_update: {{"type": "create_item", "params": {{"item_id": "...", "name": "...", "location": "current"}}}}
+  - effect: "transform_item" → MUST add state_update: {{"type": "transform_item", ...}}
+  - effect: "set_flag" → MUST add state_update: {{"type": "set_flag", ...}}
+- Use success_text in narrative
+- If one_time: true, mark as used (set trigger.used = true via modify_attribute)
 
-Example item with triggers:
+Example trigger execution:
 {{
   "id": "bag",
   "attributes": {{
@@ -3819,7 +3823,14 @@ Example item with triggers:
   }}
 }}
 
-Player: "feed pigeons" → Check has bag + pigeons present → create_item(ruby) + use success_text
+Player: "feed pigeons with bag"
+→ Check conditions: player has bag ✓, pigeons at location ✓, action matches "feed" ✓, target matches "pigeons" ✓
+→ MUST generate state_updates:
+  1. {{"type": "create_item", "params": {{"item_id": "ruby", "name": "Ruby", "location": "current"}}}}
+  2. {{"type": "modify_attribute", "target": "bag", "params": {{"attribute_path": "triggers[0].used", "value": true}}}}
+→ Use success_text in narrative: "A brilliant ruby falls from the bag!"
+
+**DO NOT just describe the ruby appearing without creating it in state_updates!**
 
 ⚠️  NPC BEHAVIOR RULES - CHECK HOSTILITY ATTRIBUTE:
 When player interacts aggressively with NPCs, check their "hostility" attribute:

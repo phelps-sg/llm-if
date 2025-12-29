@@ -29,6 +29,8 @@ def handle_god_command(command: str, game_state: GameState) -> str:
         "state": lambda: _show_state(game_state),
         "context": lambda: _show_context(game_state),
         "overrides": lambda: _show_overrides(game_state),
+        "history": lambda: _show_history(args, game_state),
+        "last": lambda: _show_history(["1"], game_state),
         "help": lambda: _show_help(),
     }
 
@@ -55,10 +57,16 @@ def _show_help() -> str:
 
 /overrides          Show active overrides from *_overrides.json
 
+/history [n]        Show last N turns with state_updates (default: 3)
+                    Example: /history 5
+
+/last               Show last turn's interpretation and state_updates
+                    (shorthand for /history 1)
+
 /help               Show this help message
 
 DM: <question>      Ask the DM for debugging help
-                    Example: DM: Why doesn't the coin description work?
+                    Example: DM: Why doesn't the ruby appear?
 
 =========================
 """
@@ -314,6 +322,61 @@ def _show_context(game_state: GameState) -> str:
         result += f"  Title: {game_state.world_context.get('title', 'unknown')}\n"
         result += f"  Has intro: {'intro' in game_state.world_context}\n"
         result += f"  Has DM instructions: {'dm_instructions' in game_state.world_context}\n"
+
+    return result
+
+
+def _show_history(args: List[str], game_state: GameState) -> str:
+    """Show recent turns with state_updates.
+
+    Args:
+        args: [count] - number of turns to show (default: 3)
+        game_state: Current game state
+
+    Returns:
+        Formatted history with state_updates
+    """
+    count = 3  # default
+    if args:
+        try:
+            count = int(args[0])
+        except ValueError:
+            return "Usage: /history [count]\nExample: /history 5"
+
+    history = game_state.get_recent_history(count)
+
+    if not history:
+        return "\n=== HISTORY ===\n\n(No history yet)\n"
+
+    result = f"\n=== HISTORY (last {len(history)} turns) ===\n"
+
+    for entry in history:
+        turn = entry.get("turn", "?")
+        user_input = entry.get("input", "")
+        interpretation = entry.get("interpretation", {})
+
+        result += f"\n{'=' * 60}\n"
+        result += f"Turn {turn}: {user_input}\n"
+        result += f"{'=' * 60}\n\n"
+
+        # Show interpretation details
+        result += f"Intent: {interpretation.get('intent', 'N/A')}\n"
+        result += f"Valid: {interpretation.get('is_valid', 'N/A')}\n\n"
+
+        # Show state_updates (the important part for debugging!)
+        state_updates = interpretation.get("state_updates", [])
+        if state_updates:
+            result += f"State Updates ({len(state_updates)}):\n"
+            result += json.dumps(state_updates, indent=2)
+            result += "\n\n"
+        else:
+            result += "State Updates: (none)\n\n"
+
+        # Show narrative snippet
+        narrative = interpretation.get("narrative_response", "")
+        if narrative:
+            narrative_preview = narrative[:150] + "..." if len(narrative) > 150 else narrative
+            result += f"Narrative: {narrative_preview}\n"
 
     return result
 

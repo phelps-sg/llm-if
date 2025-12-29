@@ -961,22 +961,29 @@ Analyze the situation and provide helpful debugging advice.
 **Current Game Context (same as used for action interpretation):**
 {json.dumps(context, indent=2, default=str)}
 
-**Recent History (last 2 turns):**
+**Recent History (last 2 turns with YOUR state_updates):**
+Each history entry shows:
+- input: what the player typed
+- interpretation: YOUR response including state_updates you generated
 {json.dumps(self.game_state.get_recent_history(2), indent=2)}
+
+**CRITICAL - Check YOUR state_updates in recent history:**
+If the developer is asking why something didn't happen, check the interpretation.state_updates
+you generated. Did you include the necessary create_item, modify_attribute, etc?
 
 **Developer Question:**
 {question}
 
 **Instructions:**
-1. Analyze the game state and identify the likely cause of any issues
-2. When entities have zil_action_description, use that to understand behavior (it's the translated natural language version)
-3. When entities have custom override fields (triggers, for_sale, value, currency), explain how those should work
-4. Suggest specific attributes/fields to check
-5. Provide concrete debugging advice
-6. Be technical and precise - this is for debugging, not gameplay
-7. If relevant, explain how the game engine should handle this scenario
+1. **First, check recent history** - look at what state_updates YOU generated
+2. Analyze if those state_updates match what should have happened
+3. When entities have zil_action_description, use that to understand behavior
+4. When entities have custom override fields (triggers, for_sale, value, currency), explain how those should work
+5. Check if you EXECUTED those overrides (generated matching state_updates)
+6. Provide concrete debugging advice
+7. Be technical and precise - this is for debugging, not gameplay
 
-Respond as a helpful debugging assistant, not as the in-game DM.
+Respond as a helpful debugging assistant, analyzing your own previous actions.
 """
 
         try:
