@@ -416,6 +416,19 @@ class GameLoop:
         if not player_input:
             return
 
+        # Handle god mode commands (if god mode is active)
+        if self.game_state.flags.get("god_mode"):
+            if player_input.startswith("/"):
+                from .god_mode import handle_god_command
+                response = handle_god_command(player_input, self.game_state)
+                print(response)
+                return
+            elif player_input.startswith("DM:"):
+                question = player_input[3:].strip()
+                response = self._handle_dm_debug_question(question)
+                print(response)
+                return
+
         # Handle special commands
         if player_input.lower() in ["quit", "exit", "q"]:
             self.running = False
@@ -438,7 +451,7 @@ class GameLoop:
             return
 
         # Handle "tokens" command - show token usage statistics
-        if player_input.lower() in ["tokens", "stats", "usage"]:
+        if player_input.lower() in ["/tokens", "/stats", "/usage"]:
             self.gemini.print_token_usage_stats()
             if hasattr(self, 'zil_translator') and self.zil_translator != self.gemini:
                 print("ZIL Translator stats:")
@@ -925,6 +938,60 @@ You can also type natural language commands and the AI will interpret them.
                 item = self.game_state.items[item_id]
                 print(f"  - {item.name}")
 
+    def _handle_dm_debug_question(self, question: str) -> str:
+        """Handle DM debug question in god mode.
+
+        Args:
+            question: Developer's question about game state/mechanics
+
+        Returns:
+            Debug response from DM
+        """
+        import json
+
+        # Build comprehensive debug context
+        debug_prompt = f"""You are the Dungeon Master for an interactive fiction game, currently in DEBUG/GOD MODE.
+
+The developer is asking you a technical question about the game state or mechanics.
+Analyze the situation and provide helpful debugging advice.
+
+**Current Game State:**
+- Turn: {self.game_state.turn_count}
+- Location: {self.game_state.player_location}
+- Player inventory: {self.game_state.player.inventory}
+
+**Items in game:**
+{json.dumps({k: v.model_dump() for k, v in list(self.game_state.items.items())[:5]}, indent=2)}
+... and {len(self.game_state.items) - 5} more items
+
+**Recent History:**
+{json.dumps(self.game_state.get_recent_history(2), indent=2)}
+
+**World Context:**
+{json.dumps({k: v for k, v in self.game_state.world_context.items() if k not in ['dm_instructions', 'global_routines']}, indent=2) if self.game_state.world_context else 'None'}
+
+**Developer Question:**
+{question}
+
+**Instructions:**
+1. Analyze the game state and identify the likely cause of any issues
+2. Suggest specific files/functions/fields to check
+3. Provide concrete debugging advice
+4. Be technical and precise - this is for debugging, not gameplay
+5. If relevant, explain how the game engine should handle this scenario
+
+Respond as a helpful debugging assistant, not as the in-game DM.
+"""
+
+        try:
+            print("\n[Consulting DM for debug help...]")
+            response = self.gemini.generate(debug_prompt)
+
+            return "\n[God Mode Debug Response]\n\n" + response
+
+        except Exception as e:
+            return f"\n[Error generating debug response]\n{str(e)}"
+
     def _show_combat_result(self, result: Dict[str, Any]) -> None:
         """Display combat results with dice rolls."""
         if not result.get("success"):
@@ -1221,14 +1288,20 @@ You can also type natural language commands and the AI will interpret them.
                 return
             checked_ids.add(item.id)
 
-            # Check both 'is_container' and 'container' attributes
-            is_container = item.attributes.get("is_container", False) or item.attributes.get("container", False)
+            # Check both 'is_container' and 'container' attributes, or ZIL container flag
+            is_container = (
+                item.attributes.get("is_container", False) or
+                item.attributes.get("container", False) or
+                "container" in item.attributes.get("zil_flags", [])
+            )
             # Check multiple variations of 'open' attribute (LLM may use different names)
+            # ALSO check ZIL flags for "opened" (Trinity pocket uses this)
             is_open = (
                 item.attributes.get("is_open", False) or
                 item.attributes.get("open", False) or
                 item.attributes.get("opened", False) or
-                (isinstance(item.attributes.get("state"), dict) and item.attributes["state"].get("opened", False))
+                (isinstance(item.attributes.get("state"), dict) and item.attributes["state"].get("opened", False)) or
+                "opened" in item.attributes.get("zil_flags", [])
             )
             # Check if transparent (either explicit attribute or ZIL transbit flag)
             is_transparent = (

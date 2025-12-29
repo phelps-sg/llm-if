@@ -113933,8 +113933,6 @@
     "horizon": "global_objects",
     "sun": "global_objects",
     "gardens": "local_globals",
-    "coin": "pocket",
-    "credit_card": "pocket",
     "pigeons": "local_globals",
     "flwalk": "global_objects",
     "pgate": "global_objects",
@@ -114298,9 +114296,11 @@
     "children": "local_globals",
     "tourists": "local_globals"
   },
-  "player_location": "pal_gate",
+  "player_location": "global_objects",
   "player_inventory": [
     "pocket",
+    "coin",
+    "credit_card",
     "wristwatch"
   ],
   "flags": {},

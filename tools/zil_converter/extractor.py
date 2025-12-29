@@ -498,7 +498,7 @@ class ObjectExtractor(ZILExtractor):
             return "entrance"
 
         # Containers
-        if "CONTBIT" in flags:
+        if "CONTBIT" in flags or "CONTAINER" in flags:
             return "container"
 
         # Readable items
@@ -547,8 +547,8 @@ class NPCExtractor(ZILExtractor):
         properties = self._parse_properties(obj_sexp[2:])
         flags = self._extract_flags(properties)
 
-        # Check if this is an NPC (has ACTORBIT)
-        if "ACTORBIT" not in flags:
+        # Check if this is an NPC (multiple flag patterns supported)
+        if not self._is_npc(flags):
             return None
 
         npc_data = {
@@ -599,6 +599,24 @@ class NPCExtractor(ZILExtractor):
             return "neutral"
         else:
             return "unknown"
+
+    def _is_npc(self, flags: List[str]) -> bool:
+        """Detect NPCs using multiple flag patterns.
+
+        Different Infocom games use different conventions:
+        - Planetfall: ACTORBIT (modern)
+        - Zork/Trinity: PERSON + LIVING (classic)
+        """
+        # Pattern 1: Modern (Planetfall)
+        if "ACTORBIT" in flags:
+            return True
+
+        # Pattern 2: Classic (Zork, Trinity)
+        # Requires BOTH flags to avoid false positives
+        if "PERSON" in flags and "LIVING" in flags:
+            return True
+
+        return False
 
 
 class GameExtractor:

@@ -3761,6 +3761,58 @@ Player attributes (conditions, tracked state): {player.get("attributes", {})}
 NPCs at this location: {[npc.get("name") for npc in npcs] if npcs else []}
 Full NPC details: {npcs}
 
+⚠️  CUSTOM OVERRIDE FIELDS - CHECK ITEM/NPC ATTRIBUTES:
+Items and NPCs may have special override fields in their attributes that define custom behaviors:
+
+🛒 PURCHASABLE ITEMS - Check for "for_sale" or "purchasable" attributes:
+- When player tries to "buy", "purchase", or "take" items near NPCs
+- Check if item has "for_sale" dict: {{price, currency, gives_items, dialog_hints}}
+- Check if NPC has items with "purchasable" dict: {{price, currency, seller_npc, dialog}}
+- Generate appropriate state updates: remove_from_inventory (payment), add_to_inventory (purchased items)
+- Use dialog hints in narrative
+
+Example item with for_sale:
+{{
+  "id": "gbag",
+  "attributes": {{
+    "for_sale": {{
+      "price": 30,
+      "currency": "pence",
+      "gives_items": ["bag", "scoin"],
+      "dialog_hints": "Thirty p! Thirty p a bag!"
+    }}
+  }}
+}}
+
+Player: "buy bag" → Check coin (50p) >= price (30p) → Remove coin, add bag + scoin (20p change)
+
+⚡ TRIGGERS - Check for "triggers" array in item attributes:
+- When player performs actions with items (feed, use, throw, etc.)
+- Check if item has "triggers" list with objects like: {{action, target, effect, creates, success_text}}
+- If action matches and target is present → execute the trigger effect
+- Common effects: "create_item" (spawn new item), "transform_item", "set_flag"
+- Use success_text in narrative, mark one_time triggers as used
+
+Example item with triggers:
+{{
+  "id": "bag",
+  "attributes": {{
+    "triggers": [
+      {{
+        "action": "feed",
+        "target": "pigeons",
+        "effect": "create_item",
+        "creates": "ruby",
+        "location": "current",
+        "one_time": true,
+        "success_text": "A brilliant ruby falls from the bag!"
+      }}
+    ]
+  }}
+}}
+
+Player: "feed pigeons" → Check has bag + pigeons present → create_item(ruby) + use success_text
+
 ⚠️  NPC BEHAVIOR RULES - CHECK HOSTILITY ATTRIBUTE:
 When player interacts aggressively with NPCs, check their "hostility" attribute:
 - "aggressive": Attacks on sight, always trigger combat

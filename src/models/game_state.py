@@ -456,13 +456,147 @@ class GameState(BaseModel):
         """Create from dictionary."""
         return cls.model_validate(data)
 
+    @staticmethod
+    def _merge_overrides(base_data: dict, overrides: dict) -> dict:
+        """Merge override data into base world data.
+
+        Override precedence: overrides take priority over base data.
+
+        Args:
+            base_data: Base world data (from auto-generated JSON)
+            overrides: Override data (from manual _overrides.json file)
+
+        Returns:
+            Merged world data
+        """
+        import copy
+
+        merged = copy.deepcopy(base_data)
+
+        # Merge items
+        for item_id, override_fields in overrides.get("items", {}).items():
+            # Create item if it doesn't exist (allows overrides to add new items)
+            if item_id not in merged.get("items", {}):
+                logger.info(f"Creating new item '{item_id}' from overrides")
+                merged.setdefault("items", {})[item_id] = {
+                    "id": item_id,
+                    "name": override_fields.get("name", item_id),
+                    "attributes": {}
+                }
+                # Also add to item_locations if location specified
+                if "initial_location" in override_fields:
+                    merged.setdefault("item_locations", {})[item_id] = override_fields["initial_location"]
+                    logger.info(f"Item '{item_id}' placed at '{override_fields['initial_location']}'")
+
+            item = merged["items"][item_id]
+
+            # Ensure attributes dict exists
+            if "attributes" not in item:
+                item["attributes"] = {}
+
+            for key, value in override_fields.items():
+                if key in ["note", "initial_location"]:
+                    # Skip metadata fields
+                    continue
+                elif key.endswith("_append") and isinstance(value, list):
+                    # Special: append to array instead of replace
+                    array_key = key[:-7]
+                    # Put in attributes
+                    if array_key not in item["attributes"]:
+                        item["attributes"][array_key] = []
+                    item["attributes"][array_key].extend(value)
+                    logger.debug(f"Appended to {item_id}.attributes.{array_key}: {value}")
+                elif key in ["id", "name"]:
+                    # Top-level Item fields go at top level
+                    item[key] = value
+                    logger.debug(f"Override {item_id}.{key}")
+                else:
+                    # Everything else goes in attributes
+                    item["attributes"][key] = value
+                    logger.debug(f"Override {item_id}.attributes.{key}")
+
+        # Merge NPCs
+        for npc_id, override_fields in overrides.get("npcs", {}).items():
+            if npc_id not in merged.get("npcs", {}):
+                logger.warning(f"Override for non-existent NPC '{npc_id}' - skipping")
+                continue
+
+            npc = merged["npcs"][npc_id]
+
+            # Ensure attributes dict exists
+            if "attributes" not in npc:
+                npc["attributes"] = {}
+
+            for key, value in override_fields.items():
+                if key == "note":
+                    continue
+                elif key.endswith("_append") and isinstance(value, list):
+                    array_key = key[:-7]
+                    # Put in attributes
+                    if array_key not in npc["attributes"]:
+                        npc["attributes"][array_key] = []
+                    npc["attributes"][array_key].extend(value)
+                    logger.debug(f"Appended to {npc_id}.attributes.{array_key}: {value}")
+                elif key in ["id", "name"]:
+                    # Top-level NPC fields go at top level
+                    npc[key] = value
+                    logger.debug(f"Override {npc_id}.{key}")
+                else:
+                    # Everything else goes in attributes
+                    npc["attributes"][key] = value
+                    logger.debug(f"Override {npc_id}.attributes.{key}")
+
+        # Merge locations
+        for loc_id, override_fields in overrides.get("locations", {}).items():
+            if loc_id not in merged.get("locations", {}):
+                logger.warning(f"Override for non-existent location '{loc_id}' - skipping")
+                continue
+
+            location = merged["locations"][loc_id]
+            for key, value in override_fields.items():
+                if key == "note":
+                    continue
+                elif key.endswith("_append") and isinstance(value, list):
+                    array_key = key[:-7]
+                    if array_key not in location:
+                        location[array_key] = []
+                    location[array_key].extend(value)
+                    logger.debug(f"Appended to {loc_id}.{array_key}: {value}")
+                elif isinstance(value, dict) and key in location and isinstance(location[key], dict):
+                    # Nested dict: merge instead of replace
+                    location[key].update(value)
+                    logger.debug(f"Merged {loc_id}.{key}")
+                else:
+                    location[key] = value
+                    logger.debug(f"Override {loc_id}.{key}")
+
+        return merged
+
     @classmethod
     def from_file(cls, filepath: str) -> "GameState":
-        """Load game state from JSON file with puzzle system support."""
+        """Load game state from JSON file with puzzle system support.
+
+        Supports override files: If trinity.json exists, will also load
+        trinity_overrides.json if present and merge the data.
+        """
         import json
+        import os
 
         with open(filepath, "r") as f:
             data = json.load(f)
+
+        # Check for override file (e.g., trinity.json -> trinity_overrides.json)
+        base_name = os.path.splitext(filepath)[0]
+        override_path = f"{base_name}_overrides.json"
+
+        if os.path.exists(override_path):
+            logger.info(f"Loading overrides from {override_path}")
+            with open(override_path, "r") as f:
+                overrides = json.load(f)
+
+            # Merge overrides into base data
+            data = cls._merge_overrides(data, overrides)
+            logger.info("Overrides merged successfully")
 
         # Extract puzzles before creating GameState
         puzzles_data = data.pop("puzzles", {})

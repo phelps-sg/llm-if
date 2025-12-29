@@ -64,6 +64,65 @@ def initialize_rule_engine() -> RuleEngine:
     return engine
 
 
+def _handle_dm_debug_question_single_step(
+    question: str, game_state: GameState, gemini_client: GeminiClient
+) -> str:
+    """Handle DM debug question in god mode (single-step version).
+
+    Args:
+        question: Developer's question about game state/mechanics
+        game_state: Current game state
+        gemini_client: Gemini client for LLM calls
+
+    Returns:
+        Debug response from DM
+    """
+    import json
+
+    # Build comprehensive debug context
+    debug_prompt = f"""You are the Dungeon Master for an interactive fiction game, currently in DEBUG/GOD MODE.
+
+The developer is asking you a technical question about the game state or mechanics.
+Analyze the situation and provide helpful debugging advice.
+
+**Current Game State:**
+- Turn: {game_state.turn_count}
+- Location: {game_state.player_location}
+- Player inventory: {game_state.player.inventory}
+
+**Items in game (sample):**
+{json.dumps({k: v.model_dump() for k, v in list(game_state.items.items())[:5]}, indent=2)}
+... and {len(game_state.items) - 5} more items
+
+**Recent History:**
+{json.dumps(game_state.get_recent_history(2), indent=2)}
+
+**World Context:**
+{json.dumps({k: v for k, v in game_state.world_context.items() if k not in ['dm_instructions', 'global_routines']}, indent=2) if game_state.world_context else 'None'}
+
+**Developer Question:**
+{question}
+
+**Instructions:**
+1. Analyze the game state and identify the likely cause of any issues
+2. Suggest specific files/functions/fields to check
+3. Provide concrete debugging advice
+4. Be technical and precise - this is for debugging, not gameplay
+5. If relevant, explain how the game engine should handle this scenario
+
+Respond as a helpful debugging assistant, not as the in-game DM.
+"""
+
+    try:
+        print("\n[Consulting DM for debug help...]")
+        response = gemini_client.generate(debug_prompt)
+
+        return "\n[God Mode Debug Response]\n\n" + response
+
+    except Exception as e:
+        return f"\n[Error generating debug response]\n{str(e)}"
+
+
 def apply_generated_level(
     game_state: GameState, level_data: Dict[str, Any], level_number: int
 ) -> None:
@@ -349,6 +408,12 @@ def create_parser() -> argparse.ArgumentParser:
         help="Maximum width for text output in characters (default: 80)",
     )
 
+    parser.add_argument(
+        "--god-mode",
+        action="store_true",
+        help="Enable god mode: debug commands (/inspect, /state, etc.) and DM debug questions (DM: ...)",
+    )
+
     return parser
 
 
@@ -422,15 +487,55 @@ def run_single_step_mode(args, gcp_project: str) -> None:
         print("Example: python -m src.main --single-step --command 'take sword'")
         sys.exit(1)
 
-    # 3. Initialize game components
+    # 3. Set god mode flag if enabled
+    if args.god_mode:
+        game_state.flags["god_mode"] = True
+        print("⚡ GOD MODE ACTIVE ⚡")
+
+    # 4. Initialize game components
     print("Initializing game engine...")
     gemini = GeminiClient(project=gcp_project, dry_run=args.dry_run)  # Uses default: gemini-2.5-flash-lite (DM)
     zil_translator = GeminiClient(project=gcp_project, model_name="gemini-2.5-flash", dry_run=args.dry_run)  # More capable for ZIL translation
     rule_engine = initialize_rule_engine()
     game_loop = GameLoop(game_state, gemini, rule_engine, zil_translator_client=zil_translator)
 
-    # 4. Execute single command
+    # 5. Execute single command
     print(f"Executing command: {args.command}")
+
+    # Check if this is a god mode command
+    is_god_command = False
+    god_response = None
+
+    if args.god_mode:
+        if args.command.startswith("/"):
+            # God mode inspection command
+            from src.engine.god_mode import handle_god_command
+            is_god_command = True
+            god_response = handle_god_command(args.command, game_state)
+        elif args.command.startswith("DM:"):
+            # God mode debug question
+            is_god_command = True
+            question = args.command[3:].strip()
+            god_response = _handle_dm_debug_question_single_step(
+                question, game_state, gemini
+            )
+
+    if is_god_command:
+        # Output god mode response
+        print("\n" + "=" * 60)
+        print(f"God Mode Command: {args.command}")
+        print("=" * 60)
+        print(god_response)
+
+        # Save state (god mode commands don't modify state, but save anyway)
+        if not args.no_state:
+            os.makedirs(os.path.dirname(args.state_file) or ".", exist_ok=True)
+            game_state.to_file(args.state_file)
+            print(f"\nState saved to: {args.state_file}")
+
+        sys.exit(0)
+
+    # Normal game command
     try:
         result = game_loop.execute_single_step(args.command)
     except Exception as e:
@@ -538,6 +643,21 @@ def main() -> None:
 
         traceback.print_exc()
         sys.exit(1)
+
+    # Set god mode flag if enabled
+    if args.god_mode:
+        game_state.flags["god_mode"] = True
+        print("\n" + "=" * 60)
+        print("⚡ GOD MODE ACTIVE ⚡")
+        print("=" * 60)
+        print("Special commands available:")
+        print("  /inspect <entity>  - Show raw JSON for item/NPC/location")
+        print("  /inventory         - Show inventory with nested structure")
+        print("  /state             - Show game state summary")
+        print("  /context           - Show LLM prompt context")
+        print("  /overrides         - Show active overrides")
+        print("  DM: <question>     - Ask DM for debugging help")
+        print("=" * 60 + "\n")
 
     # Initialize components
     try:

@@ -476,16 +476,21 @@ class WorldConverter:
                 if obj.get("initial_location"):
                     item_locations[item["id"]] = obj.get("initial_location")
 
-        # Second pass: Extract player inventory (items inside player/adventurer)
+        # Second pass: Extract player inventory (ONLY direct children, not nested containers)
+        # Items nested in containers stay in item_locations with their container as location
         initial_inventory = []
         if player_item_id:
-            initial_inventory = [
+            # Only collect direct children of player
+            direct_items = [
                 item_id for item_id, loc in item_locations.items()
                 if loc == player_item_id
             ]
-            # Remove these from item_locations since they're in inventory
-            for item_id in initial_inventory:
-                del item_locations[item_id]
+            initial_inventory = direct_items
+
+            # Remove only direct items from item_locations (they're in player.inventory)
+            for item_id in direct_items:
+                if item_id in item_locations:
+                    del item_locations[item_id]
 
         # Third pass: Build items dict (excluding player item)
         items = {}
@@ -564,8 +569,11 @@ class WorldConverter:
         Heuristics:
         1. Look for room with "START" in name
         2. Look for first room with RLANDBIT
-        3. Default to first room
+        3. Default to first valid room (skipping pseudo-locations)
         """
+        # Pseudo-locations that aren't real starting locations
+        invalid_starts = ["global_objects", "global-objects", "the_end", "rooms", "local_globals"]
+
         for room in rooms:
             if "START" in room.get("zil_name", "").upper():
                 return room["id"]
@@ -574,11 +582,65 @@ class WorldConverter:
             if "RLANDBIT" in room.get("flags", []):
                 return room["id"]
 
-        # Default to first room
+        # Default to first valid room (skip pseudo-locations)
+        for room in rooms:
+            if room["id"] not in invalid_starts:
+                return room["id"]
+
+        # Last resort: return first room even if it's a pseudo-location
         if rooms:
             return rooms[0]["id"]
 
         return "unknown"
+
+    def _collect_inventory_recursive(
+        self,
+        container_id: str,
+        item_locations: Dict[str, str],
+        all_objects: List[Dict[str, Any]],
+        max_depth: int = 5
+    ) -> List[str]:
+        """Recursively collect all items in container and sub-containers.
+
+        Args:
+            container_id: Container to search
+            item_locations: Map of item_id -> location_id
+            all_objects: All object definitions
+            max_depth: Max recursion depth (prevents infinite loops)
+
+        Returns:
+            List of item IDs in container tree
+        """
+        if max_depth <= 0:
+            return []
+
+        inventory = []
+
+        # Find direct children
+        direct_items = [
+            item_id for item_id, loc in item_locations.items()
+            if loc == container_id
+        ]
+
+        for item_id in direct_items:
+            inventory.append(item_id)
+
+            # Check if item is itself a container
+            item_obj = next((obj for obj in all_objects if obj["id"] == item_id), None)
+            if item_obj and self._is_container(item_obj):
+                # Recurse into nested container
+                nested = self._collect_inventory_recursive(
+                    item_id, item_locations, all_objects, max_depth - 1
+                )
+                inventory.extend(nested)
+
+        return inventory
+
+    def _is_container(self, obj: Dict[str, Any]) -> bool:
+        """Check if object is a container."""
+        flags = obj.get("flags", [])
+        obj_type = obj.get("type", "")
+        return "CONTBIT" in flags or "CONTAINER" in flags or obj_type == "container"
 
     def get_todo_notes(self) -> str:
         """Get all TODO notes as formatted markdown."""
@@ -702,6 +764,26 @@ class WorldConverter:
                     ]
                 }
             }
+        elif game_type == "trinity":
+            return {
+                "title": "Trinity",
+                "author": "Brian Moriarty / Infocom (1986)",
+                "intro": "Sharp words between the superpowers. Tanks in East Berlin. And now, reports the BBC, rumors of a satellite blackout. It's enough to spoil your continental breakfast.\n\nBut the world's fate can wait for now; you have more important things to think about. This is the last day of your $599 London Getaway Package, and you're determined to soak up as much of that authentic English ambience as you can. You've already visited Madame Tussaud's, the Tower of London, and Buckingham Palace. But you haven't seen Kensington Gardens yet. Well, there's no time like the present.",
+                "setting": "You are a tourist in London on the last day of a vacation package. The year is 1945, and the date is July 16th - the day of the Trinity nuclear test. The game explores themes of nuclear warfare, time travel, and the moral complexities of the atomic age through a journey across multiple historical bombing sites.",
+                "tone": "Literary and contemplative with moments of whimsy. Balance wonder at time travel and magical realism with the gravity of nuclear warfare themes. The game shifts between peaceful Kensington Gardens and the devastating realities of atomic bombings.",
+                "dm_instructions": [
+                    "This is Trinity - a thoughtful, literary interactive fiction with serious themes underneath playful puzzles.",
+                    "The player begins as a tourist in Kensington Gardens, London. The setting should feel peaceful and whimsical initially.",
+                    "Time travel and magical realism are central - a mysterious umbrella and origami bird enable visits to historical bombing sites.",
+                    "Locations include: Kensington Gardens (present), Nagasaki (1945), London Blitz (1940), New Mexico Trinity test site (1945).",
+                    "NPCs are often mysterious or symbolic - the bird woman, the Japanese woman with radiation scars, the little girl with the paper crane.",
+                    "Puzzles involve time manipulation, symbolic objects (parasol, origami crane, sundial), and environmental logic.",
+                    "The tone should shift based on location: whimsical in Gardens, somber at bombing sites, tense at Trinity test.",
+                    "Handle nuclear themes with appropriate gravity - this game deals with real historical tragedies.",
+                    "The endgame involves preventing or witnessing the Trinity test - treat this with weight and consequence.",
+                    "Descriptions should be vivid and literary, matching Moriarty's poetic writing style."
+                ]
+            }
         elif game_type == "zork":
             return {
                 "title": "Zork I: The Great Underground Empire",
@@ -743,8 +825,16 @@ class WorldConverter:
         """Detect which game this is based on locations, items, and NPCs.
 
         Returns:
-            "planetfall", "zork", or "unknown"
+            "trinity", "planetfall", "zork", or "unknown"
         """
+        # Check for Trinity-specific entities
+        trinity_indicators = [
+            "pal_gate", "broad_walk", "kensington",
+            "parasol", "crane", "wristwatch", "credit_card"
+        ]
+        if any(key in locations or key in items or key in npcs for key in trinity_indicators):
+            return "trinity"
+
         # Check for Planetfall-specific entities
         planetfall_indicators = [
             "escape_pod", "balcony", "floyd", "robot", "bio_lab",

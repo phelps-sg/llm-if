@@ -1,0 +1,64 @@
+{
+  "version": "1.0",
+  "source_world": "trinity.json",
+  "description": "Manual fixes and enhancements for Trinity gameplay",
+
+  "items": {
+    "coin": {
+      "examine_text": "It's standard British currency, worth fifty pence.",
+      "note": "Extracted from COIN-F routine (things.zil:298). HANDLE-COIN? displays this text on EXAMINE."
+    },
+
+    "bag": {
+      "note": "This is the 'bag of crumbs' item. Purchase handled by BWOMAN-F ZIL routine. Ruby trigger from GET-RUBY routine (things.zil:2245).",
+      "triggers": [
+        {
+          "action": "feed",
+          "target": "pigeons",
+          "effect": "create_item",
+          "creates": "ruby",
+          "location": "current",
+          "one_time": true,
+          "success_text": "As you scatter the crumbs, the pigeons surge forward in a cooing mass. Something glints among the breadcrumbs - a brilliant ruby slips out of the bag and falls to the ground!",
+          "note": "Ruby appears when player feeds pigeons with bag of crumbs"
+        }
+      ]
+    },
+
+    "gbag": {
+      "note": "Generic bag displayed with bird woman. When purchased, 'bag' item is given to player instead.",
+      "owned_by_npc": "bwoman",
+      "for_sale": {
+        "price": 30,
+        "currency": "pence",
+        "gives_items": ["bag", "scoin"],
+        "dialog_hints": "Thirty p! Thirty p a bag!"
+      }
+    }
+  },
+
+  "npcs": {
+    "bwoman": {
+      "ambient_phrases": [
+        "Thirty p! Thirty p a bag!",
+        "Feed the hungry birds!",
+        "Thirty p for the starving birds!",
+        "Thirty p!"
+      ],
+      "ambient_frequency": "occasional",
+      "description_override": "An aged woman is selling crumbs nearby.",
+      "note": "Ambient phrases from BWOMAN-CRIES event table (events.zil). Description from FDESC property."
+    }
+  },
+
+  "locations": {
+    "broad_walk": {
+      "examine_details": {
+        "pigeons": "A flock of pigeons struts about, cooing softly and pecking at the ground. They eye you with hopeful expectation.",
+        "perambulators": "A tide of baby carriages surges along the path, pushed by nannies and parents.",
+        "glades": "Shaded glades stretch away to the northeast, cool and inviting."
+      },
+      "note": "Additional examinable details for key scenery elements."
+    }
+  }
+}
