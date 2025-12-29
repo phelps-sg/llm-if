@@ -70,5 +70,24 @@
       },
       "note": "Additional examinable details for key scenery elements."
     }
+  },
+
+  "movement_rules": {
+    "note": "Special movement restrictions for Trinity gameplay",
+    "in_pram_movement": {
+      "description": "When player is inside the pram (IN-PRAM? flag is true), normal movement commands (north, south, east, west, etc.) should be BLOCKED with message: 'The pram won't budge. (You'll need an umbrella to sail it in the wind.)'",
+      "condition": {
+        "flag": "IN-PRAM?",
+        "value": true
+      },
+      "blocks_movement": true,
+      "exception": "Movement IS allowed if player has umbrella AND umbrella is open AND location is windy. In that case, player is blown in the direction the wind is blowing (not the direction they tried to go).",
+      "wind_directions": {
+        "note": "Wind direction changes throughout game. East wind (EWIND) and West wind (WWIND) flags control this.",
+        "ewind_active": "Blown eastward when umbrella opens",
+        "wwind_active": "Blown westward when umbrella opens"
+      },
+      "rejection_message": "The pram won't budge. (You'll need an umbrella to sail it in the wind.)"
+    }
   }
 }
