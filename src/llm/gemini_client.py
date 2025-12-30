@@ -342,6 +342,42 @@ ZIL is a LISP-like language used for classic Infocom interactive fiction games l
 - `,M-ENTER` - player just entered room
 - `,M-LOOK` - player looked at room
 
+## CRITICAL: Converting ZIL Flags to Modern State References
+
+The modern game engine uses standardized attributes and global flags, NOT legacy ZIL flag bits. When translating, you MUST convert ZIL flag operations to modern equivalents:
+
+**EXISTING ATTRIBUTE NAMING CONVENTIONS (use these):**
+- Open/closed state: `is_open` attribute (boolean)
+- Locked state: `is_locked` attribute (boolean)
+- Transparency: `transparent` attribute (boolean)
+- Takeability: `takeable` attribute (boolean)
+- Visibility: `is_visible` attribute (boolean)
+- Container: `is_container` attribute (boolean)
+
+**FLAG CONVERSION RULES:**
+
+1. **Common ZIL flag bits** → Modern attributes:
+   - `OPENBIT` → `is_open` attribute
+   - `LOCKBIT` → `is_locked` attribute
+   - `TRANSBIT` → `transparent` attribute
+   - `TAKEBIT` → `takeable` attribute
+   - `CONTBIT` → `is_container` attribute
+   - `TOUCHBIT`, `NDESCBIT`, `DOORBIT` → metadata (ignore in translation)
+
+2. **Object-specific global flags** (named like `OBJECT-NAME-FLAG`):
+   - Use the CONTEXT below to identify which entity this routine belongs to
+   - Convert to entity.attribute reference using conventions above
+   - Example: In context "kitchen window", `KITCHEN-WINDOW-FLAG` → `kitchen_window.is_open`
+   - Example: In context "trophy case", `TROPHY-CASE-FLAG` → `trophy_case.is_open`
+
+3. **Game-wide global flags** (like `WON-FLAG`, `RAINBOW-FLAG`):
+   - These track game-wide state, not specific to any object
+   - Reference as "global flag [name]" (will be converted to snake_case automatically)
+   - Example: `WON-FLAG` → "global flag won_flag"
+   - Example: `DOME-FLAG` → "global flag dome_flag"
+
+**IMPORTANT:** Your translation should reference modern attributes and global flags, NOT legacy ZIL flag bits!
+
 ## YOUR TASK
 
 Translate this ZIL code into a natural language description for the Dungeon Master to use when managing the game.
@@ -357,13 +393,15 @@ Translate this ZIL code into a natural language description for the Dungeon Mast
 Provide a concise but complete natural language description explaining:
 
 1. **Trigger conditions**: What player actions or game events trigger this behavior?
-2. **Game state checks**: What conditions or flags does it check?
-3. **Actions taken**: What happens (messages printed, state changes, object movements)?
+2. **Game state checks**: What conditions or flags does it check? (Use modern attribute names!)
+3. **Actions taken**: What happens (messages printed, state changes, object movements)? (Use modern attribute names!)
 4. **Special cases**: Any death conditions, special behaviors, or edge cases?
 
 Be specific about mechanics and write clearly so the DM can understand the *intended behavior* and *player experience*. Scale your description to match the complexity of the code - simple code gets a brief description, complex code gets more detail.
 
 **Format your response as clear paragraphs, not bullet lists.**
+
+**Remember: Convert all ZIL flags to modern attributes and global flags as described above!**
 
 **Natural Language Description:**"""
 
@@ -4836,8 +4874,24 @@ Player attributes: {player.get("attributes", dict())}
         npcs_details = []
         for npc in npcs:
             npc_detail = f"  - {npc.get('name')} ({npc.get('id')})"
-            if npc.get("attributes", {}).get("zil_action_description"):
-                npc_detail += f"\n    🔧 Special Behavior: {npc.get('attributes', {}).get('zil_action_description')}"
+            attrs = npc.get("attributes", {})
+
+            # Show ZIL special behavior (translated, not raw code)
+            if attrs.get("zil_action_description"):
+                npc_detail += f"\n    🔧 Special Behavior: {attrs.get('zil_action_description')}"
+
+            # Show all other attributes (excluding verbose/raw data)
+            # Filter out: raw ZIL code (if translation available), internal state
+            exclude_keys = {"zil_action_code", "zil_action_json", "zil_flags", "zil_action"}
+            if attrs.get("zil_action_description"):
+                exclude_keys.update({"zil_action_code", "zil_action_json"})
+
+            for key, value in attrs.items():
+                if key in exclude_keys or key == "zil_action_description":
+                    continue
+                # Show the attribute with appropriate formatting
+                npc_detail += f"\n    📋 {key}: {value}"
+
             npcs_details.append(npc_detail)
         npcs_text = "\n".join(npcs_details) if npcs_details else "  (none)"
 

@@ -100,10 +100,15 @@ class GameState(BaseModel):
         The DM needs to know about invisible items for game logic (e.g., trap door hidden by rug),
         but should be instructed not to describe them to the player.
 
+        Also includes "global objects" listed in the location's zil_global_objects attribute.
+        These are items visible from this location but not physically located here
+        (e.g., white_house, kitchen_window visible from multiple outdoor locations).
+
         Defensive: Skips items that exist in item_locations but not in items dict
         (can happen with complex state update sequences or bugs).
         """
         items = []
+        # Get items physically at this location
         for item_id, loc_id in self.item_locations.items():
             if loc_id == location_id:
                 if item_id in self.items:
@@ -111,6 +116,15 @@ class GameState(BaseModel):
                 else:
                     # Orphaned reference - clean it up
                     logger.warning(f"Orphaned item_id '{item_id}' at location '{location_id}' - cleaning up")
+
+        # Also include global objects listed in the location's attributes
+        if location_id in self.locations:
+            location = self.locations[location_id]
+            global_object_ids = location.attributes.get("zil_global_objects", [])
+            for item_id in global_object_ids:
+                if item_id in self.items and item_id not in [i.id for i in items]:
+                    items.append(self.items[item_id])
+
         return items
 
     def get_items_in_container(self, container_id: str) -> List[Item]:
