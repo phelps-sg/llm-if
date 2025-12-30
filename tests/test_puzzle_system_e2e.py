@@ -26,7 +26,7 @@ def skip_if_no_gcp():
 @pytest.fixture
 def game_setup():
     """Set up a Zork game with puzzle system."""
-    game_state = GameState.from_file("worlds/zork.json")
+    game_state = GameState.from_file("worlds/zork_original.json")
 
     # Verify puzzle was loaded
     assert "puzzles" in game_state.dm_state
