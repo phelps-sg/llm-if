@@ -100,9 +100,11 @@ class GameLoop:
         state_updates = interpretation.get("state_updates", [])
         is_movement = any(update.get("type") == "move_player" for update in state_updates)
 
-        # Detect "look" or "examine" commands by checking if there are no state updates
+        # Detect "look" or "examine" commands by checking if there are no meaningful state updates
+        # (filter out "no_change" updates which are just acknowledgments)
         # and the command is about examining the location
-        is_look = (len(state_updates) == 0 and
+        meaningful_updates = [u for u in state_updates if u.get("type") != "no_change"]
+        is_look = (len(meaningful_updates) == 0 and
                   any(word in command.lower() for word in ["look", "examine", "l "]))
 
         if is_movement or is_look:

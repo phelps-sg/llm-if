@@ -38,7 +38,7 @@ def test_debug_what_game_loop_passes(zork_game, components):
     # Track what gets passed to describe_location
     captured_args = {}
 
-    original_describe = game_loop.zil_translator.describe_location
+    original_describe = game_loop.gemini.describe_location
 
     def spy_describe_location(*args, **kwargs):
         """Capture arguments and call original."""
@@ -67,7 +67,7 @@ def test_debug_what_game_loop_passes(zork_game, components):
 
         return original_describe(*args, **kwargs)
 
-    with patch.object(game_loop.zil_translator, 'describe_location', side_effect=spy_describe_location):
+    with patch.object(game_loop.gemini, 'describe_location', side_effect=spy_describe_location):
         result = game_loop.execute_single_step("look")
 
     print(f"\n=== RESULT ===")
@@ -112,14 +112,14 @@ def test_compare_direct_vs_game_loop_inputs(zork_game, components):
     # Capture what game loop passes
     captured = {}
 
-    original_describe = game_loop.zil_translator.describe_location
+    original_describe = game_loop.gemini.describe_location
 
     def capture_describe(*args, **kwargs):
         captured['location_dict'] = args[0] if args else None
         captured['global_flags'] = kwargs.get('global_flags')
         return original_describe(*args, **kwargs)
 
-    with patch.object(game_loop.zil_translator, 'describe_location', side_effect=capture_describe):
+    with patch.object(game_loop.gemini, 'describe_location', side_effect=capture_describe):
         game_loop.execute_single_step("look")
 
     location_dict_gameloop = captured.get('location_dict')
