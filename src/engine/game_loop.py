@@ -170,10 +170,12 @@ class GameLoop:
                 )
 
                 # Add container contents with LLM-generated prose (Zork-style)
+                # Skip in complete darkness - player cannot see container contents
+                can_see_clearly = lighting.get("can_see_clearly", True)
                 for item in items:
                     if item.attributes.get("container") and item.attributes.get("open"):
                         contents = self.game_state.get_items_in_container(item.id)
-                        if contents:
+                        if contents and can_see_clearly:
                             # Build context for container description (same as main description)
                             container_context = {
                                 "location": location.model_dump(),

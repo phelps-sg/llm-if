@@ -2458,8 +2458,16 @@ Use cached descriptions for CONSISTENCY and BREVITY, but always prioritize CURRE
 
             prompt += "\n"
         elif items and lighting_info:
-            item_names = [item.get("name") for item in items]
-            prompt += f"✅ ITEMS CURRENTLY AT THIS LOCATION (but may not be visible due to darkness): {item_names}\n\n"
+            # Items exist but player cannot see them due to darkness
+            lighting_level = lighting_info.get("level", "bright")
+            if lighting_level in ["pitch_black", "dark"]:
+                # Don't list items in complete darkness - this confuses the LLM
+                prompt += f"✅ ITEMS CURRENTLY AT THIS LOCATION: [] (cannot see in darkness)\n"
+                prompt += f"🚨 NOTE: Items exist here but are NOT visible to player due to darkness. DO NOT describe them!\n\n"
+            else:
+                # Dim lighting - items exist and might be partially visible
+                item_names = [item.get("name") for item in items]
+                prompt += f"✅ ITEMS CURRENTLY AT THIS LOCATION (partially visible in dim light): {item_names}\n\n"
         else:
             prompt += f"✅ ITEMS CURRENTLY AT THIS LOCATION: [] (NONE - location is empty of items)\n\n"
 
@@ -2476,8 +2484,16 @@ Use cached descriptions for CONSISTENCY and BREVITY, but always prioritize CURRE
                     prompt += f"    🔧 SPECIAL BEHAVIOR (from original ZIL code): {zil_desc}\n"
             prompt += "\n"
         elif npcs and lighting_info:
-            npc_names = [npc.get("name") for npc in npcs]
-            prompt += f"✅ NPCs CURRENTLY AT THIS LOCATION (but may not be visible due to darkness): {npc_names}\n\n"
+            # NPCs exist but player cannot see them due to darkness
+            lighting_level = lighting_info.get("level", "bright")
+            if lighting_level in ["pitch_black", "dark"]:
+                # Don't list NPCs in complete darkness - this confuses the LLM
+                prompt += f"✅ NPCs CURRENTLY AT THIS LOCATION: [] (cannot see in darkness)\n"
+                prompt += f"🚨 NOTE: NPCs exist here but are NOT visible to player due to darkness. DO NOT describe them!\n\n"
+            else:
+                # Dim lighting - NPCs might be partially visible
+                npc_names = [npc.get("name") for npc in npcs]
+                prompt += f"✅ NPCs CURRENTLY AT THIS LOCATION (partially visible in dim light): {npc_names}\n\n"
         else:
             prompt += (
                 f"✅ NPCs CURRENTLY AT THIS LOCATION: [] (NONE - no NPCs here)\n\n"
@@ -4155,12 +4171,25 @@ STATE UPDATE TYPES AND REQUIRED PARAMS:
 - "remove_from_inventory": {{"item_id": "item_id"}} - Drop item at current location (item stays in game on ground)
   * ⚠️  ONLY for dropping/placing items - item will appear at player's current location
   * ❌ DO NOT use for eating, drinking, swallowing, destroying - use consume_item instead!
+  * 🔧 IMPORTANT: Check location's Special Behavior for DROP actions!
+    - If location says "item is moved to X location" or "falls to Y room", use BOTH remove_from_inventory AND move_item:
+      [
+        {{"type": "remove_from_inventory", "params": {{"item_id": "item_id"}}}},
+        {{"type": "move_item", "params": {{"item_id": "item_id", "to_location": "destination_location_id"}}}}
+      ]
+    - ❌ WRONG: Using create_item to place existing item at new location
+    - ✅ CORRECT: Using move_item to relocate existing item
+    - Example: Tree room says "nest is moved to PATH room when dropped"
+      ❌ WRONG: [{{"type": "remove_from_inventory", "params": {{"item_id": "nest"}}}}, {{"type": "create_item", "params": {{"item_id": "nest", "location": "path"}}}}]
+      ✅ CORRECT: [{{"type": "remove_from_inventory", "params": {{"item_id": "nest"}}}}, {{"type": "move_item", "params": {{"item_id": "nest", "to_location": "path"}}}}]
 - "consume_item": {{"item_id": "item_id"}} - Eat/drink/swallow/destroy item (removes from game entirely)
   * ✅ Use for: eating food, drinking potions, swallowing objects, burning items, dissolving items
   * Item is PERMANENTLY removed from game (not placed on ground)
   * 💡 TIP: For recoverable consumption (swallowing vs eating), track state in player attributes for future validation
   * See "BE A REALISTIC DM" examples above for validation patterns
-- "create_item": {{"item_id": "unique_id", "name": "Item Name", "attributes": {{}}, "location": "location_id or null"}} - Dynamically create a new item
+- "create_item": {{"item_id": "unique_id", "name": "Item Name", "attributes": {{}}, "location": "location_id or null"}} - Dynamically create a NEW item
+  * ⚠️  CRITICAL: ONLY for items that don't already exist! If item already exists in game, use move_item instead!
+  * ❌ NEVER use create_item to move existing items to different locations - use move_item for that!
   * ⚠️  IMPORTANT: Use create_item for INANIMATE objects only (swords, potions, furniture, rocks)
   * ❌ DO NOT use for living creatures (animals, people, monsters) - use create_npc instead!
   * Use when player action naturally creates a new item (breaking antlers off, splitting item, crafting, etc.)

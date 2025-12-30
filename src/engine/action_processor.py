@@ -171,8 +171,32 @@ class ActionProcessor:
                         )
 
                         if has_location:
-                            # Item already exists AND is placed in world - skip
-                            logger.warning(f"Item '{item_id}' already exists and is placed, skipping create_item")
+                            # Item already exists AND is placed in world
+                            # LLM probably meant to move it, not create it
+                            # Convert to move_item operation
+                            logger.info(f"Item '{item_id}' already exists and is placed - converting create_item to move operation")
+
+                            # Remove from current location first
+                            if item_id in game_state.player.inventory:
+                                game_state.player.remove_item(item_id)
+                            elif item_id in game_state.item_locations:
+                                del game_state.item_locations[item_id]
+
+                            # Then place at new location (same logic as below)
+                            if location is None:
+                                # Add to player inventory
+                                game_state.player.add_item(item_id)
+                                logger.info(f"Moved existing item '{item_id}' to player inventory")
+                            else:
+                                # Resolve location name to ID and place item there
+                                location_id = self._resolve_location_id(location, game_state)
+                                if location_id:
+                                    game_state.item_locations[item_id] = location_id
+                                    logger.info(f"Moved existing item '{item_id}' to location '{location_id}'")
+                                else:
+                                    # Default to player's current location if invalid
+                                    game_state.item_locations[item_id] = game_state.player_location
+                                    logger.info(f"Moved existing item '{item_id}' to current location (invalid target)")
                             continue
                         else:
                             # Item exists as template but not placed yet - place it now
