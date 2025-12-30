@@ -67,6 +67,29 @@
     }
   },
 
+  "automatic_triggers": [
+    {
+      "trigger_id": "ruby_theft",
+      "description": "Roadrunner (meep) automatically steals ruby 1 turn after it becomes visible",
+      "condition": {"item_becomes_visible": "ruby"},
+      "delay_turns": 1,
+      "one_time": true,
+      "event_type": "npc_theft",
+      "params": {
+        "npc_id": "meep",
+        "item_id": "ruby",
+        "narrative_template": "As you reach down to touch the ruby, a very large bird races out from behind a tree. It snatches away the ruby with its beak, zigzags through a group of tourists and disappears to the east.",
+        "suggested_state_updates": [
+          "Remove ruby from player inventory or current location",
+          "Move ruby to meep's possession (npc_inventory_meep)",
+          "Set flag: ruby_stolen = true",
+          "Set flag: meep_has_ruby = true",
+          "Set flag: ruby_stolen_location = current player location"
+        ]
+      }
+    }
+  ],
+
   "items": {
     "ruby": {
       "note": "PRIORITY 1: Ruby theft by roadrunner is critical game mechanic from events.zil:354-391, things.zil:2572-2605",

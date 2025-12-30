@@ -7,6 +7,7 @@ from ..llm.gemini_client import GeminiClient
 from ..llm.zil_translator import ensure_zil_translations
 from ..rules.rule_engine import RuleEngine
 from .action_processor import ActionProcessor
+from .event_processor import EventProcessor
 from ..utils.text_formatter import print_narrative as print_narrative_wrapped
 
 logger = logging.getLogger(__name__)
@@ -26,6 +27,7 @@ class GameLoop:
         self.gemini = gemini_client
         self.rule_engine = rule_engine
         self.action_processor = ActionProcessor(rule_engine)
+        self.event_processor = EventProcessor()
         self.running = False
         self.last_referenced_item: Optional[str] = None  # For pronoun resolution
         self.last_referenced_npc: Optional[str] = None
@@ -397,6 +399,16 @@ class GameLoop:
         # Store NPC actions in interpretation for testing
         interpretation["npc_actions"] = npc_actions
 
+        # Process automatic events and timed sequences
+        # This happens AFTER player action and NPC reactions, BEFORE turn increment
+        event_results = self.event_processor.process_events(self.game_state)
+
+        # Store event results in game state flags for DM narration
+        if event_results:
+            self.game_state.flags["event_results"] = event_results
+            interpretation["event_results"] = event_results
+            logger.info(f"Processed {len(event_results)} event(s) this turn")
+
         # Increment turn
         self.game_state.add_history_entry(
             {
@@ -664,6 +676,14 @@ class GameLoop:
             context = self._build_context()
             npc_narrative = self.gemini.narrate_npc_actions(npc_actions, context)
             print_narrative_wrapped(npc_narrative)
+
+        # Process automatic events and timed sequences
+        pending_events = self.event_processor.process_events(self.game_state)
+
+        # If there are pending events, pass them to DM for interpretation
+        if pending_events:
+            for event in pending_events:
+                self._process_automatic_event(event)
 
         # WORLD TICK: Allow DM to trigger autonomous events after player's action
         self._process_world_tick()
@@ -1062,6 +1082,40 @@ Respond as a helpful debugging assistant, analyzing your own previous actions.
             )
             print(f"  🛡️  Target AC: {attack.get('target_ac')}")
             print("  ❌ MISS!")
+
+    def _process_automatic_event(self, event: Dict[str, Any]) -> None:
+        """Process an automatic event by passing it to the DM.
+
+        The DM interprets the event in full context and generates appropriate
+        state updates and narrative.
+
+        Args:
+            event: Event dictionary from EventProcessor
+        """
+        print("\n" + "=" * 50)
+        print("⚠️  AUTOMATIC EVENT")
+        print("=" * 50)
+
+        # Build context including the event
+        context = self._build_context()
+        context["automatic_event"] = event
+
+        # Ask DM to generate state updates for this event
+        print("[DM interprets event...]")
+        event_interpretation = self.gemini.generate_state_updates_from_event(event, context)
+        state_updates = event_interpretation.get("state_updates", [])
+
+        # Apply state updates
+        if state_updates:
+            print("[DM generates mechanics...]")
+            self.action_processor.apply_state_updates(state_updates, self.game_state)
+
+        # Generate narrative from updated state
+        print("[DM narrates what happened...]")
+        updated_context = self._build_context()
+        narrative = self.gemini.generate_event_narrative(event, updated_context, state_updates)
+
+        print_narrative_wrapped(narrative)
 
     def _update_reference_tracking(
         self,

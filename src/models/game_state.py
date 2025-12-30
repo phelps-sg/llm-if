@@ -8,6 +8,7 @@ from .location import Location
 from .npc import NPC
 from .item import Item
 from .player import Player
+from .event import EventQueue
 
 logger = logging.getLogger(__name__)
 
@@ -82,6 +83,12 @@ class GameState(BaseModel):
     description_cache: Dict[str, Dict[str, Any]] = Field(
         default_factory=dict,
         description="Cache of previously generated descriptions for locations, NPCs, and items"
+    )
+
+    # Event system for timed and automatic events
+    event_queue: EventQueue = Field(
+        default_factory=EventQueue,
+        description="Queue of scheduled events (NPC actions, timed triggers, etc.)"
     )
 
     # Query methods for locations

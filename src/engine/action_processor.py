@@ -466,6 +466,48 @@ class ActionProcessor:
                         puzzle_id = path.split(".")[1]
                         self._handle_puzzle_solved(game_state, puzzle_id)
 
+            elif update_type == "schedule_event":
+                # Schedule a new event in the event queue
+                event_id = str(params.get("event_id", ""))
+                event_type = str(params.get("event_type", ""))
+                execute_at_turn = params.get("execute_at_turn")
+                event_params = params.get("params", {})
+                one_time = bool(params.get("one_time", True))
+                repeating = bool(params.get("repeating", False))
+                repeat_interval = params.get("repeat_interval")
+                description = params.get("description")
+                triggered_by = params.get("triggered_by")
+
+                if not event_id or not event_type or execute_at_turn is None:
+                    logger.error(f"Invalid schedule_event params: {params}")
+                    continue
+
+                game_state.event_queue.schedule_event(
+                    event_id=event_id,
+                    event_type=event_type,
+                    execute_at_turn=int(execute_at_turn),
+                    params=dict(event_params) if isinstance(event_params, dict) else {},
+                    one_time=one_time,
+                    repeating=repeating,
+                    repeat_interval=int(repeat_interval) if repeat_interval is not None else None,
+                    description=str(description) if description is not None else None,
+                    triggered_by=str(triggered_by) if triggered_by is not None else None
+                )
+                logger.info(f"Scheduled event '{event_id}' type={event_type} at turn {execute_at_turn}")
+
+            elif update_type == "cancel_event":
+                # Cancel a scheduled event
+                event_id = str(params.get("event_id", ""))
+                if not event_id:
+                    logger.error(f"Invalid cancel_event params: {params}")
+                    continue
+
+                success = game_state.event_queue.cancel_event(event_id)
+                if success:
+                    logger.info(f"Cancelled event '{event_id}'")
+                else:
+                    logger.warning(f"Event '{event_id}' not found, could not cancel")
+
             elif update_type == "no_change":
                 # Narrative-only action, no state change
                 pass

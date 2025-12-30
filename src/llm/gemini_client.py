@@ -5358,3 +5358,89 @@ Return ONLY valid JSON:
         import json
         with open(filepath, 'w') as f:
             json.dump(self.token_usage, f, indent=2)
+
+    def generate_state_updates_from_event(self, event: dict, context: dict) -> dict:
+        """Generate state updates for an automatic event.
+
+        TODO: Implement full LLM prompt for this.
+        For now, uses suggested_state_updates from event params as a stub.
+
+        Args:
+            event: Event dictionary with params
+            context: Game context
+
+        Returns:
+            Dictionary with state_updates list
+        """
+        logger.info(f"Generating state updates for event: {event.get('event_id')}")
+
+        # Stub implementation: convert suggested_state_updates to actual state_updates
+        suggested = event.get("params", {}).get("suggested_state_updates", [])
+        state_updates = []
+
+        npc_id = event.get("params", {}).get("npc_id")
+        item_id = event.get("params", {}).get("item_id")
+
+        # Parse suggested updates and convert to state_update format
+        for suggestion in suggested:
+            if "Remove ruby from player inventory" in suggestion:
+                # Check if ruby is in inventory
+                if item_id in context.get("player", {}).get("inventory", []):
+                    state_updates.append({
+                        "type": "remove_from_inventory",
+                        "params": {"item_id": item_id}
+                    })
+                # Otherwise remove from location
+                else:
+                    state_updates.append({
+                        "type": "move_item",
+                        "params": {
+                            "item_id": item_id,
+                            "destination": f"npc_inventory_{npc_id}"
+                        }
+                    })
+            elif "Set flag" in suggestion:
+                # Extract flag name and value
+                parts = suggestion.split(":")
+                if len(parts) == 2:
+                    flag_part = parts[1].strip()
+                    if "=" in flag_part:
+                        flag_name, value_str = flag_part.split("=")
+                        flag_name = flag_name.strip()
+                        value = value_str.strip().lower() == "true"
+                        state_updates.append({
+                            "type": "set_flag",
+                            "params": {
+                                "flag_name": flag_name,
+                                "value": value if isinstance(value, bool) else value_str.strip()
+                            }
+                        })
+
+        logger.debug(f"Generated {len(state_updates)} state updates from event")
+        return {"state_updates": state_updates}
+
+    def generate_event_narrative(self, event: dict, context: dict, state_updates: list) -> str:
+        """Generate narrative for an automatic event.
+
+        TODO: Implement full LLM prompt for this.
+        For now, uses narrative_template from event params as a stub.
+
+        Args:
+            event: Event dictionary with params
+            context: Updated game context after state updates
+            state_updates: State updates that were applied
+
+        Returns:
+            Narrative string
+        """
+        logger.info(f"Generating narrative for event: {event.get('event_id')}")
+
+        # Stub implementation: use narrative_template if provided
+        narrative_template = event.get("params", {}).get("narrative_template")
+
+        if narrative_template:
+            return narrative_template
+        else:
+            # Fallback: generate simple description
+            description = event.get("description", "Something happens.")
+            return description
