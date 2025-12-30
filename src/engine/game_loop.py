@@ -102,10 +102,12 @@ class GameLoop:
 
         # Detect "look" or "examine" commands by checking if there are no meaningful state updates
         # (filter out "no_change" updates which are just acknowledgments)
-        # and the command is about examining the location
+        # and the command is about examining the location (not a specific object)
         meaningful_updates = [u for u in state_updates if u.get("type") != "no_change"]
-        is_look = (len(meaningful_updates) == 0 and
-                  any(word in command.lower() for word in ["look", "examine", "l "]))
+        # Only trigger room description for bare "look" commands, not "look at X" or "examine Y"
+        command_words = command.lower().strip().split()
+        is_bare_look = (len(command_words) <= 1 and command_words[0] in ["look", "l"]) if command_words else False
+        is_look = len(meaningful_updates) == 0 and is_bare_look
 
         if is_movement or is_look:
             # Generate room description for the new location
