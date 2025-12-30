@@ -1,7 +1,7 @@
 """On-demand ZIL translation utilities for game loop integration."""
 
 import logging
-from typing import Dict, Any, List, Optional, Union
+from typing import Dict, Any, List, Optional, Union, Sequence
 
 logger = logging.getLogger(__name__)
 
@@ -30,10 +30,10 @@ def _to_dict(entity: Union[Dict[str, Any], Any]) -> Dict[str, Any]:
 
 
 def ensure_zil_translations(
-    llm_client,
+    llm_client: Any,
     location: Optional[Union[Dict[str, Any], Any]] = None,
-    items: Optional[List[Union[Dict[str, Any], Any]]] = None,
-    npcs: Optional[List[Union[Dict[str, Any], Any]]] = None
+    items: Optional[Sequence[Any]] = None,
+    npcs: Optional[Sequence[Any]] = None
 ) -> tuple[Optional[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
     """Ensure all ZIL code in entities has been translated to natural language.
 

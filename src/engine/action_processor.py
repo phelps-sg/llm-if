@@ -135,14 +135,14 @@ class ActionProcessor:
 
             elif update_type == "remove_npc":
                 # Remove an NPC from the current location (for creative player actions)
-                npc_id = params.get("npc_id") or target
+                npc_id = str(params.get("npc_id") or target or "")
                 if npc_id and npc_id in game_state.npc_locations:
                     del game_state.npc_locations[npc_id]
                     # NPC still exists in game_state.npcs for history/lore
 
             elif update_type == "move_npc":
                 # Move an NPC to a different location
-                npc_id = params.get("npc_id") or target
+                npc_id = str(params.get("npc_id") or target or "")
                 to_location = params.get("to_location")
                 if npc_id and to_location:
                     location_id = self._resolve_location_id(to_location, game_state)
@@ -309,15 +309,15 @@ class ActionProcessor:
             elif update_type == "transform_npc_to_item":
                 # Transform an NPC into an item (e.g., petrify spell)
                 # Deletes NPC, creates item, preserves transformation history
-                npc_id = params.get("npc_id") or target
+                npc_id = str(params.get("npc_id") or target or "")
                 item_id = params.get("item_id", npc_id)  # Default to same ID
                 item_name = params.get("item_name")
                 item_attributes = params.get("item_attributes", {})
                 reversible = params.get("reversible", False)
 
                 if npc_id and item_name:
-                    npc = game_state.npcs.get(npc_id)
-                    if not npc:
+                    npc_obj = game_state.npcs.get(npc_id)
+                    if not npc_obj:
                         logger.warning(f"Cannot transform '{npc_id}' to item - NPC doesn't exist")
                         continue
 
@@ -329,8 +329,8 @@ class ActionProcessor:
                         "turn": game_state.turn_count,
                         "from_type": "npc",
                         "from_id": npc_id,
-                        "from_name": npc.name,
-                        "from_attributes": npc.attributes.copy(),
+                        "from_name": npc_obj.name,
+                        "from_attributes": npc_obj.attributes.copy(),
                         "to_type": "item",
                         "to_name": item_name,
                         "to_attributes": item_attributes.copy(),
@@ -670,7 +670,7 @@ class ActionProcessor:
         Returns:
             Dict with NPC actions taken (attacks, chases, etc.)
         """
-        result = {
+        result: Dict[str, List[Dict[str, Any]]] = {
             "npc_attacks": [],
             "npc_chases": [],
         }

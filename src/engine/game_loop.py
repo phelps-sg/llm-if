@@ -153,6 +153,7 @@ class GameLoop:
                 }
 
                 # Generate description using translated dicts
+                assert location_dict is not None, "location_dict should not be None when location exists"
                 narrative = self.gemini.describe_location(
                     location_dict,
                     items_dicts,
@@ -806,6 +807,7 @@ class GameLoop:
             location.id, items, npcs
         )
 
+        assert location_dict is not None, "location_dict should not be None when location exists"
         description = self.gemini.describe_location(
             location_dict,
             items_dicts,
@@ -1290,7 +1292,7 @@ Respond as a helpful debugging assistant, analyzing your own previous actions.
         for item_id in self.game_state.player.inventory:
             if item_id in self.game_state.items:
                 item = self.game_state.items[item_id]
-                item_dict = {"id": item.id, "name": item.name, "attributes": dict(item.attributes)}
+                item_dict: Dict[str, Any] = {"id": item.id, "name": item.name, "attributes": dict(item.attributes)}
 
                 # Translate ZIL action code on-demand if present
                 if "zil_action_code" in item_dict["attributes"] and not item_dict["attributes"].get("zil_action_description"):
@@ -1359,7 +1361,7 @@ Respond as a helpful debugging assistant, analyzing your own previous actions.
         # IMPORTANT: Check recursively - containers can be inside other containers!
         container_contents = {}
 
-        def check_container_recursive(item, checked_ids=None):
+        def check_container_recursive(item: Any, checked_ids: Optional[set[str]] = None) -> None:
             """Recursively check if item is an open or transparent container and collect its contents."""
             if checked_ids is None:
                 checked_ids = set()
@@ -1417,7 +1419,7 @@ Respond as a helpful debugging assistant, analyzing your own previous actions.
 
         # Build detailed context
         # Helper function to translate ZIL code for items on-demand
-        def translate_item_zil(item_dict):
+        def translate_item_zil(item_dict: Dict[str, Any]) -> Dict[str, Any]:
             """Translate ZIL action code for an item dict if present and not already translated.
 
             IMPORTANT: After translation, removes raw ZIL code to save tokens and prevent DM confusion.
@@ -1457,7 +1459,7 @@ Respond as a helpful debugging assistant, analyzing your own previous actions.
         translated_container_contents = {}
         for container_id, contents_list in container_contents.items():
             translated_container_contents[container_id] = [
-                translate_item_zil({"id": c["id"], "name": c["name"], "attributes": dict(c["attributes"])})
+                translate_item_zil({"id": c["id"], "name": c["name"], "attributes": c["attributes"]})
                 for c in contents_list
             ]
 
@@ -1489,7 +1491,7 @@ Respond as a helpful debugging assistant, analyzing your own previous actions.
         # Process NPCs - translate ZIL and remove raw code
         npcs_processed = []
         for npc in npcs_at_location:
-            npc_dict = {"id": npc.id, "name": npc.name, "attributes": dict(npc.attributes)}
+            npc_dict: Dict[str, Any] = {"id": npc.id, "name": npc.name, "attributes": dict(npc.attributes)}
 
             # Translate NPC ZIL if present
             if "zil_action_code" in npc_dict["attributes"] and not npc_dict["attributes"].get("zil_action_description"):
@@ -1580,6 +1582,7 @@ Respond as a helpful debugging assistant, analyzing your own previous actions.
         from ..models.npc import NPC
         from ..models.item import Item
 
+        assert self.game_state.rogue_config is not None, "rogue_config must be set in rogue mode"
         current_level = self.game_state.rogue_config["current_level"]
         next_level = current_level + 1
 
