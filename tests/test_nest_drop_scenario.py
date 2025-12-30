@@ -112,16 +112,20 @@ def test_nest_drop_from_tree_moves_to_ground(zork_up_a_tree, game_components):
     result = game_loop.execute_single_step("look")
     print(f"Narrative: {result['narrative']}")
 
-    # Get items currently at tree location
+    # Get items currently at tree location and path location
     items_at_tree = game_state.get_items_at_location("up_a_tree")
-    items_at_forest = game_state.get_items_at_location("forest_1")  # Assuming tree is connected to forest_1
+    items_at_path = game_state.get_items_at_location("path")  # PATH is the ground below tree
 
     print(f"\nItems at tree: {[item.name for item in items_at_tree]}")
-    print(f"Items at forest: {[item.name for item in items_at_forest]}")
+    print(f"Items at path (ground below): {[item.name for item in items_at_path]}")
 
     # CRITICAL ASSERTION: Nest should NOT be in tree anymore
     nest_in_tree = any(item.id == "nest" for item in items_at_tree)
     assert not nest_in_tree, "Nest should NOT be in tree after dropping - it fell to ground"
+
+    # CRITICAL ASSERTION: Nest SHOULD be at path location (ground below)
+    nest_at_path = any(item.id == "nest" for item in items_at_path)
+    assert nest_at_path, "Nest SHOULD be at path location (the ground below the tree)"
 
     # CRITICAL ASSERTION: Nest item should NOT appear in description
     # (checking for "bird's nest" or "nest" as standalone word, not "nestled")
@@ -132,10 +136,9 @@ def test_nest_drop_from_tree_moves_to_ground(zork_up_a_tree, game_components):
                      "a nest" in narrative_lower)
     assert not has_nest_item, "Should NOT see bird's nest item in tree after dropping it"
 
-    # CRITICAL ASSERTION: No create_item warnings
-    # (This would be caught by checking logs, but we verify state is consistent)
-    assert nest_location_after_drop is not None, "Nest should have a location after drop"
-    assert nest_location_after_drop != "up_a_tree", "Nest should not be back in tree"
+    # CRITICAL ASSERTION: Verify exact location per ZIL behavior
+    # ZIL says: Items dropped from tree are moved to PATH room (the ground below)
+    assert nest_location_after_drop == "path", f"Nest should be at 'path' location (was: {nest_location_after_drop})"
 
     print("\n" + "="*60)
     print("✅ TEST PASSED")
