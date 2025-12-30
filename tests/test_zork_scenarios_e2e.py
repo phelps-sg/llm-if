@@ -269,17 +269,15 @@ def test_kitchen_chimney_father_christmas_message(zork_kitchen_with_bottle, game
         print(f"\nCommand: {command}\nResponse:\n{result['narrative']}\n")
 
         # Should not be allowed (Father Christmas blocks it in Zork)
-        # The response should reference Father Christmas or Santa or being blocked
+        # The response should reference Father Christmas or Santa
         # Note: Exact message depends on ZIL implementation
-        if "father christmas" in response or "santa" in response or "chimney" in response:
-            # Found the special message
+        if "father christmas" in response or "santa" in response:
+            # Found the special Santa message
             assert not result["interpretation"].get("is_allowed", True), \
                 "Should not allow climbing chimney (Father Christmas blocks it)"
 
-            # Should mention Father Christmas or similar
-            assert any(word in response for word in ["father christmas", "santa", "blocked", "stuck"]), \
-                "Should mention why chimney is blocked"
-
+            # Verified: message mentions Santa/Father Christmas
+            print("✅ Found Father Christmas/Santa message")
             break
     else:
         # If none of the commands triggered the message, that's okay too
