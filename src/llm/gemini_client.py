@@ -2944,16 +2944,26 @@ Generate a vivid, engaging narrative (2-4 sentences) describing what just happen
 7. **MOVEMENT ACTIONS**: If player moved locations, describe ARRIVING at the current location.
    DO NOT describe what was at the previous location. The NPCs/items listed are at the NEW location.
 
+🚨 CRITICAL - NPC HALLUCINATION PREVENTION:
+- IGNORE NPCs from conversation history if they are NOT in "NPCs at this location" list
+- Even if an NPC was present in previous turns, if they are NOT listed NOW, they are NOT here
+- DO NOT describe NPCs speaking, watching, reacting, or being present unless listed in current state
+- Example: If Blather was at previous location but "NPCs at this location: none", DO NOT mention Blather!
+- ✅ CORRECT: Player moved away, describe new location WITHOUT mentioning Blather
+- ❌ WRONG: "Blather continues to loom over you..." when NPCs list says 'none'
+
 Examples of CORRECT narration:
 - Movement: "You head south through the forest. As you enter the clearing, you notice a white deer grazing peacefully."
 - Item pickup: "You reach down and pick up the sword. It now rests securely in your belt."
 - Item drop: "You toss the sword aside. It clatters to the ground at your feet."
 - NPC at location: "The guard watches you warily as you approach."
 - NPC not present: "You look around the empty chamber."
+- NPC from history but not present: "You step into the quiet corridor, leaving the commotion behind."
 
 Examples of WRONG narration for movement:
 - ❌ "You leave the chamber. The guard watches you go." (guard is at NEW location, not old one)
 - ❌ "The deer observes as you depart." (deer is at destination, can't watch you leave origin)
+- ❌ "Blather continues to loom over you..." when NPCs at this location: none
 
 Return ONLY the narrative text (2-4 sentences), nothing else."""
 
