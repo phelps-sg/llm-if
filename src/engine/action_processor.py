@@ -98,10 +98,21 @@ class ActionProcessor:
                 value = params.get("value")
 
                 if entity_id and attribute_path:
-                    # Parse attribute path and set value
-                    self._set_nested_attribute(
-                        game_state, entity_id, attribute_path, value
-                    )
+                    # Special case: LLM tries to set 'location' attribute
+                    # This is invalid - items are tracked via item_locations dict
+                    # Convert to move_item operation
+                    if attribute_path == "location" and entity_id in game_state.items:
+                        logger.info(f"Converting modify_attribute(location) to move_item for '{entity_id}' to '{value}'")
+                        location_id = self._resolve_location_id(value, game_state)
+                        if location_id:
+                            game_state.move_item_to_location(entity_id, location_id)
+                        else:
+                            logger.warning(f"Invalid location '{value}' for item '{entity_id}', ignoring")
+                    else:
+                        # Parse attribute path and set value
+                        self._set_nested_attribute(
+                            game_state, entity_id, attribute_path, value
+                        )
 
             elif update_type == "set_flag":
                 flag_name = params.get("flag_name")
@@ -387,6 +398,20 @@ class ActionProcessor:
                 # Permanently remove an item from the game world
                 item_id = params.get("item_id") or target
                 if item_id:
+                    # Handle container contents before destroying
+                    # Find items inside this container and move them to container's location
+                    container_location = game_state.item_locations.get(item_id)
+                    items_inside = [
+                        iid for iid, loc in game_state.item_locations.items()
+                        if loc == item_id
+                    ]
+
+                    if items_inside and container_location:
+                        logger.info(f"Destroying container '{item_id}' - moving {len(items_inside)} items to '{container_location}'")
+                        for contained_item_id in items_inside:
+                            game_state.item_locations[contained_item_id] = container_location
+                            logger.info(f"  Moved '{contained_item_id}' from destroyed '{item_id}' to '{container_location}'")
+
                     # Remove from player inventory if present
                     if item_id in game_state.player.inventory:
                         game_state.player.remove_item(item_id)

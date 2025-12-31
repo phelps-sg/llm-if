@@ -14,6 +14,7 @@ from src.models.game_state import GameState
 from src.llm.gemini_client import GeminiClient
 from src.rules.rule_engine import RuleEngine
 from src.engine.game_loop import GameLoop
+from src.config import DEFAULT_DM_MODEL, DEFAULT_ZIL_TRANSLATOR_MODEL
 
 
 @pytest.fixture
@@ -23,8 +24,8 @@ def game_components():
     if not gcp_project:
         pytest.skip("GCP_PROJECT environment variable not set")
 
-    gemini = GeminiClient(project=gcp_project, model_name="gemini-2.5-flash-lite")
-    zil_translator = GeminiClient(project=gcp_project, model_name="gemini-2.5-flash")
+    gemini = GeminiClient(project=gcp_project, model_name=DEFAULT_DM_MODEL)
+    zil_translator = GeminiClient(project=gcp_project, model_name=DEFAULT_ZIL_TRANSLATOR_MODEL)
 
     from src.main import initialize_rule_engine
     rule_engine = initialize_rule_engine()

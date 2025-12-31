@@ -19,11 +19,7 @@ class GeminiClient:
         self,
         project: Optional[str] = None,
         location: Optional[str] = None,
-        # model_name: str = "gemini-2.0-flash-001",
-        # model_name: str = "gemini-2.5-pro",
-        # model_name: str = "gemini-2.0-flash-001",
-        model_name: str = "gemini-2.5-flash",
-        # model_name: str = "gemini-2.5-flash-lite",  # Default for DM (fast/cheap)
+        model_name: Optional[str] = None,  # If None, uses DEFAULT_DM_MODEL from config
         dry_run: bool = False,
         include_raw_zil: bool = False,
     ):
@@ -32,14 +28,16 @@ class GeminiClient:
         Args:
             project: GCP project ID (or set GCP_PROJECT env var)
             location: GCP location (or set GCP_LOCATION env var, default: us-west1)
-            model_name: Model to use (default: gemini-2.0-flash-001)
-                       Options: gemini-2.0-flash-001, gemini-2.5-flash
+            model_name: Model to use (default: from config.DEFAULT_DM_MODEL)
+                       Options: gemini-2.5-flash, gemini-2.5-flash-lite, gemini-2.5-pro
             dry_run: If True, estimate tokens without making API calls (for testing/cost analysis)
             include_raw_zil: If True, include raw ZIL code in prompts (default: False for token efficiency)
         """
+        from ..config import DEFAULT_DM_MODEL
+
         self.project = project or os.getenv("GCP_PROJECT")
         self.location = location or os.getenv("GCP_LOCATION", "us-west1")
-        self.model_name = model_name
+        self.model_name = model_name or DEFAULT_DM_MODEL
         self.dry_run = dry_run
         self.include_raw_zil = include_raw_zil
 
@@ -5223,6 +5221,18 @@ You MUST follow these behaviors when generating state updates.
 - You MUST set the flag: {{"type": "set_flag", "params": {{"flag_name": "ITEM-REVEALED", "value": true}}}}
 - You MUST also make the item visible: {{"type": "modify_attribute", "params": {{"entity_id": "item_id", "attribute_path": "is_visible", "value": true}}}}
 - Example: Moving leaves reveals a grate → set GRATE-REVEALED=true AND set grate.is_visible=true
+
+🔧 LOCATION DROP BEHAVIORS: If the LOCATION has a Special Behavior describing DROP actions:
+- Read the DROP condition carefully (e.g., "If player drops `NEST` and `EGG` is inside `NEST`...")
+- Check container_contents to verify what items are inside containers
+- If conditions match, generate ALL state_updates described:
+  * destroy_item or remove items mentioned
+  * create_item or move items to specified locations (like `PATH`)
+- Example: "If player drops NEST and EGG is inside NEST... The EGG object is removed, and BROKEN-EGG is moved to PATH"
+  → Check: egg in container_contents["nest"] ✓
+  → Generate: {{"type": "destroy_item", "params": {{"item_id": "egg"}}}}
+  → Generate: {{"type": "create_item", "params": {{"item_id": "broken_egg", "name": "broken jewel-encrusted egg", "location": "path"}}}}
+  → Also move other dropped items to correct location per behavior
 
 VALID IDs FOR CURRENT LOCATION:
 - Item IDs here: {item_ids_at_location}

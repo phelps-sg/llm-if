@@ -494,8 +494,10 @@ def run_single_step_mode(args, gcp_project: str) -> None:
 
     # 4. Initialize game components
     print("Initializing game engine...")
-    gemini = GeminiClient(project=gcp_project, dry_run=args.dry_run)  # Uses default: gemini-2.5-flash-lite (DM)
-    zil_translator = GeminiClient(project=gcp_project, model_name="gemini-2.5-flash", dry_run=args.dry_run)  # More capable for ZIL translation
+    from .config import DEFAULT_DM_MODEL, DEFAULT_ZIL_TRANSLATOR_MODEL
+
+    gemini = GeminiClient(project=gcp_project, model_name=DEFAULT_DM_MODEL, dry_run=args.dry_run)
+    zil_translator = GeminiClient(project=gcp_project, model_name=DEFAULT_ZIL_TRANSLATOR_MODEL, dry_run=args.dry_run)
     rule_engine = initialize_rule_engine()
     game_loop = GameLoop(game_state, gemini, rule_engine, zil_translator_client=zil_translator)
 
@@ -664,8 +666,11 @@ def main() -> None:
         print("Initializing Gemini client...")
         if args.dry_run:
             print("⚠️  DRY RUN MODE - No API calls will be made, token usage will be estimated")
-        gemini = GeminiClient(project=gcp_project, dry_run=args.dry_run)  # Uses default: gemini-2.5-flash-lite (DM)
-        zil_translator = GeminiClient(project=gcp_project, model_name="gemini-2.5-flash", dry_run=args.dry_run)  # More capable for ZIL translation
+
+        from .config import DEFAULT_DM_MODEL, DEFAULT_ZIL_TRANSLATOR_MODEL
+
+        gemini = GeminiClient(project=gcp_project, model_name=DEFAULT_DM_MODEL, dry_run=args.dry_run)
+        zil_translator = GeminiClient(project=gcp_project, model_name=DEFAULT_ZIL_TRANSLATOR_MODEL, dry_run=args.dry_run)
 
         rule_engine = initialize_rule_engine()
 

@@ -5,6 +5,7 @@ from src.models.game_state import GameState
 from src.llm.gemini_client import GeminiClient
 from src.engine.game_loop import GameLoop
 from src.main import initialize_rule_engine
+from src.config import DEFAULT_DM_MODEL, DEFAULT_ZIL_TRANSLATOR_MODEL
 
 
 def test_trace_execution():
@@ -16,8 +17,8 @@ def test_trace_execution():
     game_state = GameState.from_file("worlds/zork_original.json")
     game_state.player_location = "west_of_house"
 
-    gemini = GeminiClient(project=gcp_project, model_name="gemini-2.5-flash-lite")
-    zil_translator = GeminiClient(project=gcp_project, model_name="gemini-2.5-flash")
+    gemini = GeminiClient(project=gcp_project, model_name=DEFAULT_DM_MODEL)
+    zil_translator = GeminiClient(project=gcp_project, model_name=DEFAULT_ZIL_TRANSLATOR_MODEL)
     rule_engine = initialize_rule_engine()
 
     game_loop = GameLoop(game_state, gemini, rule_engine, zil_translator_client=zil_translator)
