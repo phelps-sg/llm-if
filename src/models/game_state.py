@@ -306,7 +306,19 @@ class GameState(BaseModel):
             item = self.items.get(item_id)
             if item and item.attributes.get("provides_light", False):
                 # CRITICAL: Only provide light if the item is actually lit/on
-                is_lit = item.attributes.get("is_lit", True)  # Default True for items without is_lit attribute
+                # Check both is_lit and is_on (DM sometimes uses is_on instead of is_lit)
+                is_lit_attr = item.attributes.get("is_lit")
+                is_on_attr = item.attributes.get("is_on")
+                # If either is explicitly True, light is on
+                if is_lit_attr is True or is_on_attr is True:
+                    is_lit = True
+                # If either is explicitly False (and the other isn't True), light is off
+                elif is_lit_attr is False or is_on_attr is False:
+                    is_lit = False
+                # If both are None/missing, default to True (light is on by default)
+                else:
+                    is_lit = True
+
                 if is_lit:
                     light_level = item.attributes.get("light_level", "dim")
                     light_sources.append(f"{item.name} (carried)")
@@ -322,7 +334,19 @@ class GameState(BaseModel):
                 item = self.items.get(item_id)
                 if item and item.attributes.get("provides_light", False):
                     # CRITICAL: Only provide light if the item is actually lit/on
-                    is_lit = item.attributes.get("is_lit", True)  # Default True for items without is_lit attribute
+                    # Check both is_lit and is_on (DM sometimes uses is_on instead of is_lit)
+                    is_lit_attr = item.attributes.get("is_lit")
+                    is_on_attr = item.attributes.get("is_on")
+                    # If either is explicitly True, light is on
+                    if is_lit_attr is True or is_on_attr is True:
+                        is_lit = True
+                    # If either is explicitly False (and the other isn't True), light is off
+                    elif is_lit_attr is False or is_on_attr is False:
+                        is_lit = False
+                    # If both are None/missing, default to True (light is on by default)
+                    else:
+                        is_lit = True
+
                     if is_lit:
                         light_level = item.attributes.get("light_level", "dim")
                         light_sources.append(f"{item.name} (here)")
