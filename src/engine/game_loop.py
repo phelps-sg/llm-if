@@ -288,8 +288,19 @@ class GameLoop:
         Returns:
             Tuple of (narrative_response, interpretation)
         """
+        # Check for GOD MODE prefix
+        god_mode_active = player_input.upper().startswith("GOD MODE:")
+        if god_mode_active:
+            # Strip the prefix but keep the actual command
+            player_input = player_input[9:].strip()  # Remove "GOD MODE:"
+            logger.info(f"God mode activated for command: {player_input}")
+
         # STEP 1: Build context and interpret intent
         context = self._build_context()
+
+        # Add god mode flag to context if active
+        if god_mode_active:
+            context["god_mode_active"] = True
 
         # Ensure ZIL translations are available (on-demand translation with caching)
         # Update context with translated versions
@@ -321,6 +332,20 @@ class GameLoop:
         is_allowed = intent_result["is_allowed"]
         invalid_reason = intent_result.get("invalid_reason")
         not_allowed_reason = intent_result.get("not_allowed_reason")
+
+        # GOD MODE: Override validation - always allow the action
+        if god_mode_active:
+            is_valid = True
+            is_allowed = True
+            invalid_reason = None
+            not_allowed_reason = None
+            # Update the intent_result dict to reflect the override
+            intent_result["is_valid"] = True
+            intent_result["is_allowed"] = True
+            intent_result["invalid_reason"] = None
+            intent_result["not_allowed_reason"] = None
+            intent_result["god_mode_override"] = True
+            logger.info("God mode: Forcing is_valid=True and is_allowed=True")
 
         # STEP 2: Generate mechanics (only if valid AND allowed)
         state_updates = []
@@ -357,6 +382,10 @@ class GameLoop:
         else:
             # For non-movement actions, generate narrative from current state
             updated_context = self._build_context()
+
+            # Preserve god mode flag if it was active
+            if god_mode_active:
+                updated_context["god_mode_active"] = True
 
             # Ensure ZIL translations in the updated context for narrative generation
             updated_location_dict, updated_items_dicts, updated_npcs_dicts = ensure_zil_translations(
@@ -530,102 +559,18 @@ class GameLoop:
                 print(f"\nError loading save file: {e}")
             return
 
-        # STEP 1: Interpret intent and check permission
+        # Use process_turn() to handle the action (includes god mode support)
         print("[DM interprets your action...]")
-        context = self._build_context()
+        narrative, interpretation = self.process_turn(player_input)
 
-        # Add pronoun resolution hints to context
-        if self.last_referenced_item:
-            context["last_item"] = self.last_referenced_item
-        if self.last_referenced_npc:
-            context["last_npc"] = self.last_referenced_npc
-
-        # Interpret intent and check permission
-        intent_result = self.gemini.interpret_intent(player_input, context)
-        intent = intent_result["intent"]
-        is_valid = intent_result["is_valid"]
-        is_allowed = intent_result["is_allowed"]
-        invalid_reason = intent_result.get("invalid_reason")
-        not_allowed_reason = intent_result.get("not_allowed_reason")
-
-        # Log what LLM returned
-        logger.debug("Intent Interpretation:")
-        logger.debug(f"  Intent: {intent}")
-        logger.debug(f"  is_valid: {is_valid}")
-        logger.debug(f"  is_allowed: {is_allowed}")
-        if invalid_reason:
-            logger.debug(f"  invalid_reason: {invalid_reason}")
-        if not_allowed_reason:
-            logger.debug(f"  not_allowed_reason: {not_allowed_reason}")
-
-        # STEP 2: Generate mechanics (only if valid AND allowed)
-        state_updates = []
-        mechanics_result = {}
-        if is_valid and is_allowed:
-            print("[DM generates mechanics...]")
-            mechanics_result = self.gemini.generate_state_updates(intent, context, intent_result)
-            state_updates = mechanics_result.get("state_updates", [])
-
-            logger.debug("Mechanics:")
-            logger.debug(f"  State Updates: {state_updates}")
-
-            # Track what was referenced for pronoun resolution
-            temp_interpretation = {**intent_result, **mechanics_result}
-            self._update_reference_tracking(temp_interpretation, player_input, context)
-
-        # Extract metadata about current state BEFORE applying updates
-        action_metadata = self._extract_action_metadata(state_updates, context)
-
-        # Track previous location for chase mechanics
-        previous_location = self.game_state.player_location
-
-        # Apply state updates
-        if state_updates:
-            self.action_processor.apply_state_updates(state_updates, self.game_state)
-
-        # Apply time advancement (DM controls time)
-        if mechanics_result.get("new_time"):
-            self.game_state.game_time = mechanics_result["new_time"]
-
-            # Log state after updates
-            logger.debug("State After Updates:")
-            logger.debug(f"  Player location: {self.game_state.player_location}")
-            logger.debug(f"  Player inventory: {self.game_state.player.inventory}")
-            logger.debug(
-                f"  Items at location: {[item.name for item in self.game_state.get_items_at_location(self.game_state.player_location)]}"
-            )
-            logger.debug(f"  Item locations: {self.game_state.item_locations}")
-            logger.debug(
-                f"  NPCs at location: {[npc.name for npc in self.game_state.get_npcs_at_location(self.game_state.player_location)]}"
-            )
-            logger.debug(f"  NPC locations: {self.game_state.npc_locations}")
-
-        # STEP 3: Generate narrative (skip for movement - location description handles that)
+        # Check if action resulted in state updates
+        state_updates = interpretation.get("state_updates", [])
         is_movement = any(update.get("type") == "move_player" for update in state_updates)
 
-        if is_movement:
-            # For movement, skip narrative - location description will show new state
-            narrative = ""
-        else:
-            # For non-movement actions, generate narrative from current state
-            print("[DM narrates what happened...]")
-            updated_context = self._build_context()
-            narrative = self.gemini.generate_narrative(
-                player_input,
-                intent,
-                updated_context,
-                action_metadata=action_metadata,
-                state_updates=state_updates,  # Pass state updates so LLM can narrate what changed
-                is_valid=is_valid,
-                invalid_reason=invalid_reason,
-                not_allowed_reason=not_allowed_reason
-            )
-
-        # Combine results for backward compatibility
-        interpretation = {**intent_result, **mechanics_result, "narrative_response": narrative}
-
         # Show narrative response (if any)
-        if narrative:
+        if narrative and not is_movement:
+            print("[DM narrates what happened...]")
+            print()
             print_narrative_wrapped(narrative)
 
         # Show combat results if combat occurred
@@ -649,16 +594,11 @@ class GameLoop:
                 if current_location and current_location.attributes.get("is_dungeon_exit"):
                     self._handle_level_transition()
 
-        # Process NPC turns (aggressive NPCs attack, chase fleeing player)
-        player_moved = any(update.get("type") == "move_player" for update in state_updates)
-        npc_actions = self.action_processor.process_npc_turns(
-            self.game_state,
-            player_moved=player_moved,
-            previous_location=previous_location if player_moved else None
-        )
+        # Get NPC actions from interpretation (already processed in process_turn)
+        npc_actions = interpretation.get("npc_actions", {})
 
         # Show NPC actions (chases, attacks) with LLM narration - immediately after they occur
-        if npc_actions["npc_attacks"] or npc_actions["npc_chases"]:
+        if npc_actions.get("npc_attacks") or npc_actions.get("npc_chases"):
             # Show mechanical details first (dice rolls for transparency)
             print("\n" + "=" * 50)
 

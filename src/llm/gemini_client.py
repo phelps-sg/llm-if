@@ -2092,6 +2092,11 @@ Return JSON: {{"id": "...", "name": "...", "attributes": {{}}, "location": "..."
             intent, context, interpretation
         )
 
+        # Log god mode status
+        if context.get("god_mode_active"):
+            logger.warning(f"🔧 GOD MODE ACTIVE: Generating state updates for '{intent}'")
+            logger.warning(f"🔧 Context has god_mode_active: {context.get('god_mode_active')}")
+
         # Define schema for structured output (similar to current state_updates schema)
         response_schema = {
             "type": "OBJECT",
@@ -2137,6 +2142,15 @@ Return JSON: {{"id": "...", "name": "...", "attributes": {{}}, "location": "..."
 
             # Post-process to fill missing params
             parsed = self._fill_missing_params(parsed, context)
+
+            # Log god mode results
+            if context.get("god_mode_active"):
+                state_updates = parsed.get("state_updates", [])
+                logger.warning(f"🔧 GOD MODE: DM generated {len(state_updates)} state_updates")
+                if state_updates:
+                    logger.warning(f"🔧 GOD MODE: State updates: {state_updates}")
+                else:
+                    logger.warning(f"🔧 GOD MODE: WARNING - DM returned EMPTY state_updates despite god mode!")
 
             return parsed
 
@@ -2257,26 +2271,47 @@ Return JSON: {{"id": "...", "name": "...", "attributes": {{}}, "location": "..."
 Location: {location.get("name", "Unknown")}
 Attributes: {filtered_location_attrs}
 
-⏰ CURRENT TIME (for lighting only): {player_context.get("game_time") if player_context else "Unknown"}
-🚨 CRITICAL LIGHTING RULES - DO NOT OVERDO LIGHTING:
-- Use time to DETERMINE LIGHTING: Morning/Afternoon = bright; Evening = dusk; Night = darkness
-- DO NOT mention clock times like "at 5:15 PM" in the description!
-- 🚨 LIGHTING MUST BE MINIMAL: Maximum 3-4 words, mentioned ONCE at most
-- The room/objects are the focus, NOT the lighting
-- Acceptable: "The bright kitchen...", "The dimly lit corridor...", "The kitchen..."
-- UNACCEPTABLE: "bathed in soft light", "awash in gentle light", "streaming through windows"
-- If it's daytime and there are no visibility issues, you can often SKIP mentioning lighting entirely
-- Only emphasize lighting if it's unusual (pitch black, sunset, candlelight) or affects gameplay
+⏰ CURRENT TIME: {player_context.get("game_time") if player_context else "Unknown"}
+
+🚨 CRITICAL TIME-OF-DAY AND LIGHTING RULES:
+
+1. **MATCH THE ACTUAL TIME** - The time above tells you when it is:
+   - Early Morning (5-8 AM): Dawn, sunrise, morning light
+   - Morning (8 AM-12 PM): Morning, mid-morning
+   - Afternoon (12 PM-5 PM): Afternoon, midday (NEVER "dawn" or "dusk"!)
+   - Evening (5 PM-8 PM): Evening, dusk, sunset
+   - Night (8 PM-5 AM): Night, darkness, moonlight
+
+2. **NEVER CONTRADICT THE TIME**:
+   - ❌ WRONG: "dim light of dawn" when time is 3:30 PM
+   - ❌ WRONG: "evening shadows" when time is 10:00 AM
+   - ❌ WRONG: "midnight darkness" when time is 2:00 PM
+   - ✅ CORRECT: "afternoon sun" when time is 3:30 PM
+   - ✅ CORRECT: "morning light" when time is 9:00 AM
+
+3. **KEEP LIGHTING MINIMAL** (max 3-4 words, mentioned ONCE at most):
+   - The room/objects are the focus, NOT the lighting
+   - Acceptable: "The bright kitchen...", "The dimly lit corridor...", "The kitchen..."
+   - UNACCEPTABLE: "bathed in soft light", "awash in gentle light", "streaming through windows"
+   - If it's daytime (6 AM - 6 PM) and there are no visibility issues, you can often SKIP mentioning lighting entirely
+   - Only emphasize lighting if it's unusual (pitch black, sunset, candlelight) or affects gameplay
+
+4. **DO NOT mention clock times** like "at 5:15 PM" in the description!
 """
 
         if world_context:
                 prompt = prompt + f"""
 Game context:
  {context_if_present("Author", "author")}
- {context_if_present("Instructions", "dm_instructions")}
  {context_if_present("Setting", "setting")}
  {context_if_present("Tone", "tone")}
 """
+                # Add dm_instructions with special emphasis
+                if dm_instructions := world_context.get("dm_instructions"):
+                    prompt += "\n⚠️ CRITICAL - DUNGEON MASTER INSTRUCTIONS (MUST FOLLOW):\n"
+                    for i, instruction in enumerate(dm_instructions, 1):
+                        prompt += f"  {i}. {instruction}\n"
+                    prompt += "\nThese instructions override default behavior. Follow them carefully.\n"
 
         # Add cached descriptions if available
         if cached_descriptions:
@@ -2433,10 +2468,23 @@ Use cached descriptions for CONSISTENCY and BREVITY, but always prioritize CURRE
                     auto_describe = item.get('attributes', {}).get('auto_describe', False)
                     if desc_hints and auto_describe:
                         prompt += f"    📝 REQUIRED DESCRIPTION (use this exact text): {desc_hints}\n"
+
                     # Highlight ZIL special behavior if present
                     zil_desc = item.get('attributes', {}).get('zil_action_description')
                     if zil_desc:
                         prompt += f"    🔧 SPECIAL BEHAVIOR (from original ZIL code): {zil_desc}\n"
+                    else:
+                        # If no zil_action_description but there is zil_action_code, translate it on-demand with caching
+                        zil_action_code = item.get('attributes', {}).get('zil_action_code')
+                        if zil_action_code:
+                            # Translate ZIL code to natural language using cache
+                            zil_desc = self.translate_zil_with_cache(
+                                zil_code=zil_action_code,
+                                routine_name=item.get('attributes', {}).get('zil_action', 'item_action'),
+                                context=f"item action for '{item.get('name', item.get('id'))}'"
+                            )
+                            if zil_desc:
+                                prompt += f"    🔧 SPECIAL BEHAVIOR (from original ZIL code, translated on-demand): {zil_desc}\n"
 
             if invisible_items:
                 invisible_names = [item.get("name") for item in invisible_items]
@@ -2446,10 +2494,22 @@ Use cached descriptions for CONSISTENCY and BREVITY, but always prioritize CURRE
                     filtered_attrs = self._filter_item_attributes(item.get('attributes', {}))
                     prompt += f"    Attributes: {filtered_attrs}\n"
                     prompt += f"    🚨 DO NOT mention this item in your description! It is hidden (e.g., under a rug, behind a panel)\n"
+
                     # Still include special behavior for game logic
                     zil_desc = item.get('attributes', {}).get('zil_action_description')
                     if zil_desc:
                         prompt += f"    🔧 SPECIAL BEHAVIOR (you need to know this, but don't describe it): {zil_desc}\n"
+                    else:
+                        # If no zil_action_description but there is zil_action_code, translate it on-demand
+                        zil_action_code = item.get('attributes', {}).get('zil_action_code')
+                        if zil_action_code:
+                            zil_desc = self.translate_zil_with_cache(
+                                zil_code=zil_action_code,
+                                routine_name=item.get('attributes', {}).get('zil_action', 'item_action'),
+                                context=f"item action for '{item.get('name', item.get('id'))}'"
+                            )
+                            if zil_desc:
+                                prompt += f"    🔧 SPECIAL BEHAVIOR (you need to know this, but don't describe it): {zil_desc}\n"
 
             if not visible_items and not invisible_items:
                 prompt += f"✅ ITEMS CURRENTLY AT THIS LOCATION: [] (NONE)\n"
@@ -2476,10 +2536,22 @@ Use cached descriptions for CONSISTENCY and BREVITY, but always prioritize CURRE
                 prompt += f"\n  • {npc.get('name')} ({npc.get('id')})\n"
                 filtered_attrs = self._filter_item_attributes(npc.get('attributes', {}))
                 prompt += f"    Attributes: {filtered_attrs}\n"
+
                 # Highlight ZIL special behavior if present
                 zil_desc = npc.get('attributes', {}).get('zil_action_description')
                 if zil_desc:
                     prompt += f"    🔧 SPECIAL BEHAVIOR (from original ZIL code): {zil_desc}\n"
+                else:
+                    # If no zil_action_description but there is zil_action_code, translate it on-demand
+                    zil_action_code = npc.get('attributes', {}).get('zil_action_code')
+                    if zil_action_code:
+                        zil_desc = self.translate_zil_with_cache(
+                            zil_code=zil_action_code,
+                            routine_name=npc.get('attributes', {}).get('zil_action', 'npc_action'),
+                            context=f"npc action for '{npc.get('name', npc.get('id'))}'"
+                        )
+                        if zil_desc:
+                            prompt += f"    🔧 SPECIAL BEHAVIOR (from original ZIL code, translated on-demand): {zil_desc}\n"
             prompt += "\n"
         elif npcs and lighting_info:
             # NPCs exist but player cannot see them due to darkness
@@ -2699,9 +2771,23 @@ NOW write the description:
         can_see = lighting_info.get("can_see_clearly", True)
         light_level = lighting_info.get("level", "bright")
 
+        # Check for god mode
+        god_mode_note_narrative = ""
+        if context.get("god_mode_active"):
+            god_mode_note_narrative = """
+🔧 GOD MODE WAS ACTIVE FOR THIS COMMAND
+⚠️ CRITICAL NARRATIVE INSTRUCTIONS:
+1. IGNORE all ZIL special behaviors (🔧 SPECIAL BEHAVIOR) that would contradict the state_updates
+2. The action succeeded via god mode override
+3. Narrate based on the state_updates that were applied, NOT the ZIL restrictions
+4. Example: Door has ZIL "cannot be opened" BUT state_updates show is_open=true
+   → Narrate: "The door creaks open" (follow state_updates, ignore ZIL)
+
+"""
+
         prompt = f"""You are a Dungeon Master narrating the outcome of a player's action.
 {self._build_world_context(context)}
-WHAT THE PLAYER DID: "{player_input}"
+{god_mode_note_narrative}WHAT THE PLAYER DID: "{player_input}"
 INTERPRETED INTENT: {intent}
 
 CURRENT GAME STATE (after action was processed):
@@ -2800,7 +2886,10 @@ When the player reads an item that has a "text" attribute:
         if location_zil_desc:
             prompt += "\n🔧 LOCATION SPECIAL BEHAVIOR (from original ZIL code):\n"
             prompt += f"{location_zil_desc}\n\n"
-            prompt += "⚠️ CRITICAL: Follow this behavior description! If it mentions conditional text based on flags, check the global flags in the context.\n\n"
+            if context.get("god_mode_active"):
+                prompt += "⚠️ GOD MODE: IGNORE the above behavior if it contradicts state_updates. Narrate based on state_updates only.\n\n"
+            else:
+                prompt += "⚠️ CRITICAL: Follow this behavior description! If it mentions conditional text based on flags, check the global flags in the context.\n\n"
 
         # Add ZIL interpretation hints if ZIL attributes are present
         # Include items at location, inventory items, AND items in open containers
@@ -2812,7 +2901,7 @@ When the player reads an item that has a "text" attribute:
             if contents:
                 all_relevant_items.extend(contents)
 
-        prompt += self._build_zil_interpretation_hints(all_relevant_items, location, context.get("global_flags"))
+        prompt += self._build_zil_interpretation_hints(all_relevant_items, location, context.get("global_flags"), context)
 
         # Add state updates section (CRITICAL for narrating what happened)
         if state_updates:
@@ -3286,13 +3375,14 @@ Generate ONLY the description (no preamble, no explanation). If cannot see, retu
 
         return prompt
 
-    def _build_zil_interpretation_hints(self, items: list, location: Optional[Dict] = None, global_flags: Optional[Dict] = None) -> str:
+    def _build_zil_interpretation_hints(self, items: list, location: Optional[Dict] = None, global_flags: Optional[Dict] = None, context: Optional[Dict] = None) -> str:
         """Build ZIL interpretation hints if any entities have ZIL attributes.
 
         Args:
             items: List of item dicts to check for ZIL attributes
             location: Optional location dict to check for ZIL attributes
             global_flags: Optional global game flags for condition evaluation
+            context: Optional full context dict (for god mode check)
 
         Returns:
             ZIL interpretation guidance string, or empty if no ZIL attributes found
@@ -3312,12 +3402,21 @@ Generate ONLY the description (no preamble, no explanation). If cannot see, retu
         if not has_zil:
             return ""
 
-        hint = """
+        god_mode_zil_note = ""
+        if context and context.get("god_mode_active"):
+            god_mode_zil_note = """
+⚠️ GOD MODE ACTIVE - ZIL BEHAVIORS OVERRIDDEN
+The action succeeded via god mode. IGNORE all ZIL special behaviors that contradict the state_updates.
+Narrate based on what the state_updates show actually happened, not ZIL restrictions.
+
+"""
+
+        hint = f"""
 
 📜 ZIL INTERPRETATION GUIDE (Zork Implementation Language):
 This world was converted from original Infocom ZIL source code. Items and locations may have special ZIL attributes:
 
-🔑 CRITICAL - zil_adjectives:
+{god_mode_zil_note}🔑 CRITICAL - zil_adjectives:
 - These are DESCRIPTIVE adjectives from the original game
 - ALWAYS incorporate these into your descriptions
 - Examples:
@@ -4764,8 +4863,26 @@ Output:
         # ============================================================
         # DYNAMIC SECTION - Changes each turn
         # ============================================================
+        god_mode_note = ""
+        if context.get("god_mode_active"):
+            god_mode_note = """
+🔧 GOD MODE ACTIVE FOR THIS COMMAND
+This command was prefixed with "GOD MODE:" by the developer for testing/debugging.
+
+⚠️ CRITICAL GOD MODE INSTRUCTIONS:
+1. IGNORE all ZIL special behavior (🔧 Special Behavior) that would block this action
+2. IGNORE all restrictions from zil_action_code/zil_action_description
+3. Treat the action as if it's a normal, allowed operation
+4. Generate state_updates as if there are NO special restrictions
+5. The game loop will override is_valid and is_allowed to TRUE regardless
+
+Example: If attempting to open a door that has ZIL code saying "cannot be opened",
+IGNORE that restriction and generate state_updates to open the door normally.
+
+"""
+
         dynamic_section = f"""
-PLAYER ACTION: "{player_input}"
+{god_mode_note}PLAYER ACTION: "{player_input}"
 
 CURRENT GAME STATE:
 Location: {location.get("name", "Unknown")} (ID: {location.get("id")})
@@ -4886,8 +5003,20 @@ Player attributes: {player.get("attributes", dict())}
             attrs = item.get("attributes", {})
 
             # Show ZIL special behavior
-            if attrs.get("zil_action_description"):
-                item_detail += f"\n    🔧 Special Behavior: {attrs.get('zil_action_description')}"
+            zil_desc = attrs.get("zil_action_description")
+            if zil_desc:
+                item_detail += f"\n    🔧 Special Behavior: {zil_desc}"
+            else:
+                # If no zil_action_description but there is zil_action_code, translate it on-demand
+                zil_action_code = attrs.get("zil_action_code")
+                if zil_action_code:
+                    zil_desc = self.translate_zil_with_cache(
+                        zil_code=zil_action_code,
+                        routine_name=attrs.get("zil_action", "item_action"),
+                        context=f"item action for '{item.get('name', item.get('id'))}'"
+                    )
+                    if zil_desc:
+                        item_detail += f"\n    🔧 Special Behavior (translated on-demand): {zil_desc}"
 
             # Show purchasable/for_sale
             if attrs.get("for_sale"):
@@ -4914,8 +5043,20 @@ Player attributes: {player.get("attributes", dict())}
             attrs = npc.get("attributes", {})
 
             # Show ZIL special behavior (translated, not raw code)
-            if attrs.get("zil_action_description"):
-                npc_detail += f"\n    🔧 Special Behavior: {attrs.get('zil_action_description')}"
+            zil_desc = attrs.get("zil_action_description")
+            if zil_desc:
+                npc_detail += f"\n    🔧 Special Behavior: {zil_desc}"
+            else:
+                # If no zil_action_description but there is zil_action_code, translate it on-demand
+                zil_action_code = attrs.get("zil_action_code")
+                if zil_action_code:
+                    zil_desc = self.translate_zil_with_cache(
+                        zil_code=zil_action_code,
+                        routine_name=attrs.get("zil_action", "npc_action"),
+                        context=f"npc action for '{npc.get('name', npc.get('id'))}'"
+                    )
+                    if zil_desc:
+                        npc_detail += f"\n    🔧 Special Behavior (translated on-demand): {zil_desc}"
 
             # Show all other attributes (excluding verbose/raw data)
             # Filter out: raw ZIL code (if translation available), internal state
@@ -4937,6 +5078,22 @@ Player attributes: {player.get("attributes", dict())}
         for item in player.get("inventory", []):
             item_detail = f"  - {item.get('name')} ({item.get('id')})"
             attrs = item.get("attributes", {})
+
+            # Show ZIL special behavior
+            zil_desc = attrs.get("zil_action_description")
+            if zil_desc:
+                item_detail += f"\n    🔧 Special Behavior: {zil_desc}"
+            else:
+                # If no zil_action_description but there is zil_action_code, translate it on-demand
+                zil_action_code = attrs.get("zil_action_code")
+                if zil_action_code:
+                    zil_desc = self.translate_zil_with_cache(
+                        zil_code=zil_action_code,
+                        routine_name=attrs.get("zil_action", "item_action"),
+                        context=f"item action for '{item.get('name', item.get('id'))}'"
+                    )
+                    if zil_desc:
+                        item_detail += f"\n    🔧 Special Behavior (translated on-demand): {zil_desc}"
 
             # Show triggers
             if attrs.get("triggers"):
@@ -5198,13 +5355,25 @@ Return ONLY valid JSON:
         # ============================================================
         # DYNAMIC SECTION - Changes each turn
         # ============================================================
+        god_mode_note_mechanics = ""
+        if context.get("god_mode_active"):
+            god_mode_note_mechanics = """
+🔧 GOD MODE ACTIVE FOR THIS COMMAND
+⚠️ CRITICAL: IGNORE ALL ZIL SPECIAL BEHAVIORS THAT WOULD BLOCK THIS ACTION
+- Do NOT follow "Special Behavior" restrictions that would prevent this action
+- Generate state_updates as if there are NO special restrictions
+- Example: Door with "cannot be opened" → Generate modify_attribute to open it anyway
+- Treat the action as a normal, allowed operation
+
+"""
+
         dynamic_section = f"""
 PLAYER INTENT: {intent}
 
 This action has been PRE-APPROVED (is_valid=true, is_allowed=true).
 Your job is to generate the state updates to make it happen.
 
-CURRENT GAME STATE:
+{god_mode_note_mechanics}CURRENT GAME STATE:
 {location_details}
 Exit Destinations: {exit_destinations}
 
@@ -5219,7 +5388,7 @@ Player inventory:
 
 🔧 IMPORTANT: Some entities have "Special Behavior" descriptions above.
 These describe special game mechanics from the original ZIL code.
-You MUST follow these behaviors when generating state updates.
+{"You MUST follow these behaviors when generating state updates." if not context.get("god_mode_active") else "These are DISABLED by GOD MODE - ignore any restrictions from Special Behaviors."}
 
 🔧 SPECIAL BEHAVIORS may mention conditions (flags, counters, etc.):
 - Read the Special Behavior description carefully

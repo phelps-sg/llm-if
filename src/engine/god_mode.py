@@ -1,8 +1,11 @@
 """God mode - debugging and inspection tools for developers."""
 
 import json
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 from ..models.game_state import GameState
+from ..models.location import Location
+from ..models.item import Item
+from ..models.npc import NPC
 from ..llm.zil_translation_cache import get_cache
 
 
@@ -68,6 +71,13 @@ def _show_help() -> str:
 DM: <question>      Ask the DM for debugging help
                     Example: DM: Why doesn't the ruby appear?
 
+GOD MODE: <command> Force an action to always succeed
+                    Overrides is_valid, is_allowed, and ZIL special behaviors
+                    The DM will ignore all restrictions and generate state updates
+                    Example: GOD MODE: open boarded door
+                    Example: GOD MODE: teleport to castle
+                    Example: GOD MODE: take immovable object
+
 =========================
 """
 
@@ -91,7 +101,7 @@ def _get_zil_translation(zil_code: str) -> Optional[str]:
         return f"[Error loading translation: {e}]"
 
 
-def _format_zil_section(attributes: dict) -> str:
+def _format_zil_section(attributes: Dict[str, Any]) -> str:
     """Format ZIL code sections with translations if available.
 
     Args:
@@ -188,13 +198,13 @@ def _inspect_entity(args: List[str], game_state: GameState) -> str:
 
     # Check locations
     if entity_id in game_state.locations:
-        location = game_state.locations[entity_id]
+        loc = game_state.locations[entity_id]
 
-        result = f"\n=== LOCATION: {entity_id} ({location.name}) ===\n\n"
-        result += json.dumps(location.model_dump(), indent=2)
+        result = f"\n=== LOCATION: {entity_id} ({loc.name}) ===\n\n"
+        result += json.dumps(loc.model_dump(), indent=2)
 
         # Add ZIL translation section if ZIL code exists
-        zil_section = _format_zil_section(location.attributes)
+        zil_section = _format_zil_section(loc.attributes)
         if zil_section:
             result += f"\n\n{'=' * 60}"
             result += "\nZIL CODE & TRANSLATIONS"
@@ -304,9 +314,9 @@ def _show_context(game_state: GameState) -> str:
     # Player inventory
     result += f"Player Inventory ({len(game_state.player.inventory)} items):\n"
     for item_id in game_state.player.inventory:
-        item = game_state.items.get(item_id)
-        if item:
-            result += f"  • {item.name}\n"
+        inv_item: Optional[Item] = game_state.items.get(item_id)
+        if inv_item:
+            result += f"  • {inv_item.name}\n"
     result += "\n"
 
     # Recent history
@@ -361,7 +371,11 @@ def _show_history(args: List[str], game_state: GameState) -> str:
 
         # Show interpretation details
         result += f"Intent: {interpretation.get('intent', 'N/A')}\n"
-        result += f"Valid: {interpretation.get('is_valid', 'N/A')}\n\n"
+        result += f"Valid: {interpretation.get('is_valid', 'N/A')}\n"
+        result += f"Allowed: {interpretation.get('is_allowed', 'N/A')}\n"
+        if interpretation.get("god_mode_override"):
+            result += f"🔧 GOD MODE OVERRIDE: is_valid and is_allowed forced to True\n"
+        result += "\n"
 
         # Show state_updates (the important part for debugging!)
         state_updates = interpretation.get("state_updates", [])

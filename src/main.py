@@ -490,7 +490,9 @@ def run_single_step_mode(args, gcp_project: str) -> None:
     # 3. Set god mode flag if enabled
     if args.god_mode:
         game_state.flags["god_mode"] = True
-        print("⚡ GOD MODE ACTIVE ⚡")
+        print("\n⚡ GOD MODE ACTIVE ⚡")
+        print("Special command: GOD MODE: <action> - Force any action to succeed")
+        print("Example: GOD MODE: open boarded door\n")
 
     # 4. Initialize game components
     print("Initializing game engine...")
@@ -653,12 +655,16 @@ def main() -> None:
         print("⚡ GOD MODE ACTIVE ⚡")
         print("=" * 60)
         print("Special commands available:")
+        print("  GOD MODE: <action> - Force any action to succeed (ignores all restrictions)")
+        print("                       Example: GOD MODE: open boarded door")
+        print("                       Example: GOD MODE: teleport to castle")
         print("  /inspect <entity>  - Show raw JSON for item/NPC/location")
         print("  /inventory         - Show inventory with nested structure")
         print("  /state             - Show game state summary")
         print("  /context           - Show LLM prompt context")
         print("  /overrides         - Show active overrides")
         print("  DM: <question>     - Ask DM for debugging help")
+        print("  Type /help for full list of god mode commands")
         print("=" * 60 + "\n")
 
     # Initialize components
