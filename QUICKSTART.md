@@ -24,7 +24,7 @@ gcloud auth application-default login
 
 # Set environment variables
 export GCP_PROJECT='your-gcp-project-id'
-export GCP_LOCATION='us-west1'
+export GCP_LOCATION='your-gcp-region'
 ```
 
 Or create a `.env` file:
