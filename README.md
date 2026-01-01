@@ -27,6 +27,7 @@ This means:
 - **Unlimited sessions**: State persists across any number of turns
 - **Enforced mechanics**: Rules engine prevents impossible actions
 - **Reproducibility**: Same inputs = same outcomes
+- **Emergent gameplay**: DM isn't mechanistically executing pre-defined rules—it uses descriptions and ZIL as metadata to guide its judgment, applying creative AI reasoning to decide what happens. This enables novel interactions and solutions that diverge from the original game design
 
 ## The Problem We Solve
 
