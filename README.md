@@ -2,9 +2,35 @@
 
 **Remaster classic Infocom games with genuine AI narration, or create entirely new worlds**—all while maintaining perfect consistency through retrieval-augmented generation.
 
-## The Problem with Pure LLM Interactive Fiction
+## How It Works: LLM as Dungeon Master
 
-Modern LLMs can simulate text adventure games entirely in conversation:
+This engine uses **LLMs as a Dungeon Master (DM)**, not as the game itself. The LLM narrates the story, but **a structured game state is the source of truth**. Here's the three-step architecture:
+
+**1. Interpret** → Player input converted to structured intent
+**2. Execute** → Deterministic mechanics update game state
+**3. Narrate** → LLM describes outcomes based on updated state
+
+### The Key Insight: Retrieval-Augmented Generation (RAG)
+
+Instead of letting the LLM hallucinate game state in conversation, we **inject the actual game state into every prompt**. The LLM receives:
+- Current location details
+- Visible items and NPCs
+- Player inventory
+- Recent action history
+- Relevant game rules
+
+The LLM then **issues structured commands** to modify state (like `{"type": "move_player", "destination": "hall"}` or `{"type": "add_to_inventory", "item": "sword"}`), which the rules engine validates and executes. Finally, the LLM narrates what happened using the **updated** state.
+
+This means:
+- **Zero hallucination**: LLM only describes what exists in state
+- **Perfect consistency**: Same state = same world, always
+- **Unlimited sessions**: State persists across any number of turns
+- **Enforced mechanics**: Rules engine prevents impossible actions
+- **Reproducibility**: Same inputs = same outcomes
+
+## The Problem We Solve
+
+Traditional pure-LLM interactive fiction fails because:
 
 ```
 You: "Let's play a text adventure. I'm in a dungeon."
@@ -21,37 +47,56 @@ LLM: "You return to the dungeon. There's a shield on the ground."  ← HALLUCINA
 3. **Inconsistency**: Same location described differently each visit
 4. **No Mechanics**: Can't enforce rules like combat, puzzles, or inventory limits
 
-## Our Solution: Retrieval-Augmented Generation (RAG)
+## Our Solution: State-Driven RAG Architecture
 
-This engine treats the LLM as a **Dungeon Master**, not a game engine. The LLM narrates, but doesn't store state:
+Here's how the three-step architecture flows with RAG:
 
 ```
-┌─────────────────────────────────────────────────┐
-│  STRUCTURED GAME STATE (Source of Truth)       │
-│  ┌──────────────────────────────────────────┐  │
-│  │ Locations: {"dungeon": {...}, "hall": {..}} │
-│  │ Items: {"sword": {location: "dungeon"}}  │  │
-│  │ Player: {location: "dungeon", inventory: []} │
-│  └──────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────┘
+Player Input: "I take the sword and go north"
                       │
                       ▼
-         ┌─────────────────────────┐
-         │  LLM (Dungeon Master)   │
-         │  Narrates from state    │
-         └─────────────────────────┘
+         ┌────────────────────────────────┐
+         │  STEP 1: INTERPRET             │
+         │  LLM receives game state +     │
+         │  player input in prompt        │
+         │  ────────────────────────       │
+         │  Returns structured intent:    │
+         │  [{"type": "take", "item":     │
+         │    "sword"},                   │
+         │   {"type": "move", "dir": "N"}]│
+         └────────────┬───────────────────┘
                       │
                       ▼
-         "You stand in a dark dungeon.
-          A rusty sword lies at your feet."
+         ┌────────────────────────────────┐
+         │  STEP 2: EXECUTE               │
+         │  Rules engine validates &      │
+         │  executes state updates        │
+         │  ────────────────────────       │
+         │  Game State (Source of Truth): │
+         │  player.inventory += ["sword"] │
+         │  player.location = "hall"      │
+         └────────────┬───────────────────┘
+                      │
+                      ▼
+         ┌────────────────────────────────┐
+         │  STEP 3: NARRATE               │
+         │  LLM receives UPDATED state    │
+         │  in prompt + what changed      │
+         │  ────────────────────────       │
+         │  Returns creative narrative:   │
+         │  "You grab the rusty sword...  │
+         │   Moving north, you enter a    │
+         │   grand hall with vaulted      │
+         │   ceilings."                   │
+         └────────────────────────────────┘
 ```
 
-**Benefits:**
-- **Perfect Consistency**: Same state = same world, always
-- **No Hallucination**: LLM only describes what exists in state
-- **Unlimited History**: State persists across any number of turns
-- **Enforced Mechanics**: Rules engine handles combat, puzzles, inventory
-- **Reproducibility**: Same actions = same outcomes
+**Key Benefits:**
+- **State Injection**: Every LLM call receives current game state in the prompt
+- **Structured Commands**: LLM issues JSON commands, not free text
+- **Validation Layer**: Rules engine prevents impossible actions
+- **No Hallucination**: LLM can only describe what's actually in state
+- **Separation of Concerns**: Mechanics are deterministic, narrative is creative
 
 ## The Killer Feature: ZIL Import & AI Remastering
 
