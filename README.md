@@ -198,3 +198,10 @@ no game code in the turn context, no condition evaluation, no DM brief — and
 its end-to-end tests need GCP. The architectural principles it was built on are
 in [`CLAUDE.md`](CLAUDE.md); older design notes are in `docs/` and the
 root-level `*.md` files.
+
+## License
+
+The project's code is [MIT](LICENSE). The games are not: their ZIL source and the
+text carried into converted worlds belong to their rights holders. Zork I–III's
+source is MIT-licensed by Microsoft (2025); other Infocom titles have no clear
+licence, which is why their source is kept out of this repository.
