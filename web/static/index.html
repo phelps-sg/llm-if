@@ -128,6 +128,7 @@
     padding: 4px 10px; cursor: pointer; box-shadow: 0 2px 0 #8f866f;
   }
   .knob:active { transform: translateY(2px); box-shadow: none; }
+  .knob.off { opacity: .5; }
 
   #kbd { position: fixed; left: -1000px; top: 0; opacity: 0; width: 1px; height: 1px; }
 
@@ -173,6 +174,7 @@
       <span class="badge">Monochrome Display</span>
       <div class="controls">
         <button class="knob" id="phosphor" title="Change phosphor (F2)">PHOSPHOR</button>
+        <button class="knob" id="sound" title="Disk drive sound (F3)">SOUND</button>
         <span class="led" id="pwr"><i class="pwr"></i>POWER</span>
         <span class="led"><i class="disk" id="disk"></i>DISK</span>
       </div>
@@ -205,6 +207,108 @@
     store.set("phosphor", phosphor); applyPhosphor();
   };
   $("phosphor").addEventListener("click", e => { e.stopPropagation(); cyclePhosphor(); kbd.focus(); });
+
+  // ---------- disk drive sound (synthesised: Web Audio, no files) ----------
+  // Spindle motor while the drive is busy, stepper-head seeks while the DM thinks,
+  // a calibration seek at boot. Browsers allow audio only after a gesture, so the
+  // context is unlocked on the first key or click.
+  const Floppy = (() => {
+    let ctx = null, master = null, noiseBuf = null, motor = null, timer = 0, active = false;
+    let enabled = store.get("sound", "on") === "on";
+    const ensure = () => {
+      if (!ctx) {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) return null;
+        ctx = new AC();
+        master = ctx.createGain(); master.gain.value = 0.5; master.connect(ctx.destination);
+      }
+      if (ctx.state === "suspended") ctx.resume().catch(() => {});
+      return ctx;
+    };
+    const noise = () => {
+      if (!noiseBuf) {
+        noiseBuf = ctx.createBuffer(1, ctx.sampleRate / 2, ctx.sampleRate);
+        const d = noiseBuf.getChannelData(0);
+        for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+      }
+      const src = ctx.createBufferSource(); src.buffer = noiseBuf; return src;
+    };
+    const env = (g, t, peak, attack, decay) => {
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(peak, t + attack);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + attack + decay);
+    };
+    // One head step: a bright click (band-passed noise) over a small mechanical thump.
+    const step = (t, vol = 1) => {
+      const n = noise(), bp = ctx.createBiquadFilter(), g = ctx.createGain();
+      bp.type = "bandpass"; bp.frequency.value = 1300 + Math.random() * 600; bp.Q.value = 2.5;
+      env(g, t, 0.3 * vol, 0.002, 0.022);
+      n.connect(bp).connect(g).connect(master); n.start(t, Math.random() * 0.4); n.stop(t + 0.03);
+      const o = ctx.createOscillator(), g2 = ctx.createGain();
+      o.frequency.setValueAtTime(150, t); o.frequency.exponentialRampToValueAtTime(70, t + 0.03);
+      env(g2, t, 0.22 * vol, 0.003, 0.035);
+      o.connect(g2).connect(master); o.start(t); o.stop(t + 0.05);
+    };
+    // A seek: a rapid train of steps — the classic "brrrt".
+    const seek = (steps, interval = 0.009, at = null) => {
+      const t0 = at ?? ctx.currentTime + 0.01;
+      for (let i = 0; i < steps; i++) step(t0 + i * interval, 0.7 + Math.random() * 0.3);
+      return t0 + steps * interval;
+    };
+    const motorOn = () => {
+      if (motor) return;
+      const t = ctx.currentTime, o = ctx.createOscillator(), lp = ctx.createBiquadFilter();
+      const n = noise(), bp = ctx.createBiquadFilter(), ng = ctx.createGain(), g = ctx.createGain();
+      o.type = "sawtooth"; o.frequency.value = 50; lp.type = "lowpass"; lp.frequency.value = 170;
+      n.loop = true; bp.type = "bandpass"; bp.frequency.value = 900; bp.Q.value = 0.7; ng.gain.value = 0.25;
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.05, t + 0.3);
+      o.connect(lp).connect(g); n.connect(bp).connect(ng).connect(g); g.connect(master);
+      o.start(t); n.start(t);
+      motor = { o, n, g };
+    };
+    const motorOff = () => {
+      if (!motor) return;
+      const { o, n, g } = motor, t = ctx.currentTime;
+      g.gain.cancelScheduledValues(t); g.gain.setValueAtTime(Math.max(g.gain.value, 0.0001), t);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.6);
+      o.stop(t + 0.65); n.stop(t + 0.65); motor = null;
+    };
+    const chatter = () => {
+      if (!active || !ctx) return;
+      const r = Math.random();
+      if (r < 0.45) seek(3 + Math.floor(Math.random() * 14), 0.008 + Math.random() * 0.004);
+      else if (r < 0.75) step(ctx.currentTime + 0.01, 0.8);
+      timer = setTimeout(chatter, 180 + Math.random() * 650);
+    };
+    return {
+      get enabled() { return enabled; },
+      unlock() { if (enabled) ensure(); },
+      start() {
+        active = true;
+        if (!enabled || !ensure()) return;
+        motorOn(); clearTimeout(timer); seek(6);
+        timer = setTimeout(chatter, 250);
+      },
+      stop() { active = false; clearTimeout(timer); if (ctx) motorOff(); },
+      calibrate() {   // boot: seek to track 0 and back out
+        if (!enabled || !ensure()) return;
+        motorOn();
+        const end = seek(40, 0.006);
+        seek(12, 0.009, end + 0.12);
+      },
+      toggle() {
+        enabled = !enabled; store.set("sound", enabled ? "on" : "off");
+        if (!enabled) { const was = active; this.stop(); active = was; }
+        else if (active) this.start();
+        return enabled;
+      },
+    };
+  })();
+  const soundBtn = $("sound");
+  const showSound = () => soundBtn.classList.toggle("off", !Floppy.enabled);
+  showSound();
+  soundBtn.addEventListener("click", e => { e.stopPropagation(); Floppy.toggle(); showSound(); kbd.focus(); });
+  ["pointerdown", "keydown"].forEach(ev => document.addEventListener(ev, () => Floppy.unlock(), true));
 
   // ---------- output ----------
   const atBottom = () => scroll.scrollHeight - scroll.scrollTop - scroll.clientHeight < 40;
@@ -261,12 +365,14 @@
     busy = b;
     inputline.classList.toggle("hidden", b);
     disk.classList.toggle("active", b);
+    b ? Floppy.start() : Floppy.stop();
     if (!b) { typed.textContent = kbd.value; toBottom(); }
   };
   const focus = () => { if (document.activeElement !== kbd) kbd.focus({ preventScroll: true }); };
   screen.addEventListener("click", () => { if (!getSelection().toString()) focus(); });
   document.addEventListener("keydown", e => {
     if (e.key === "F2") { e.preventDefault(); cyclePhosphor(); return; }
+    if (e.key === "F3") { e.preventDefault(); Floppy.toggle(); showSound(); return; }
     if (e.target !== kbd && !e.metaKey && !e.ctrlKey && e.key.length === 1) focus();
   });
   kbd.addEventListener("input", () => { typed.textContent = kbd.value; toBottom(); });
@@ -354,7 +460,11 @@
     try { state = await (await fetch("/api/state")).json(); } catch {}
     screen.classList.remove("off");
     $("pwr").classList.add("on");
-    if (!store.sget("booted")) { disk.classList.add("active"); await bootSequence(); store.sset("booted", "1"); }
+    if (!store.sget("booted")) {
+      disk.classList.add("active"); Floppy.calibrate();
+      await bootSequence(); store.sset("booted", "1");
+      Floppy.stop();
+    }
     document.removeEventListener("keydown", skipper);
     screen.removeEventListener("click", skipper);
 
