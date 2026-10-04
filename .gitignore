@@ -67,3 +67,4 @@ saves/
 resources/zil/
 evals/results/
 !evals/*.json
+tools/floppy_tuning/*.wav
