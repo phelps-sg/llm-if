@@ -10,6 +10,28 @@ mean, try things the authors never anticipated, and the DM plays them out.
 
 ![Trinity in the retro web terminal: the player throws the soccer ball at a swan on the Round Pond; the swan leans aside, and a small girl returns the ball with a look of grave reproach.](docs/images/trinity-web-terminal.png)
 
+## Why not just ask a chatbot to play it?
+
+You can ask any LLM to "play Trinity with me". It will oblige, from memory — and
+memory is the problem:
+
+| | Ad-hoc chat | This harness |
+|---|---|---|
+| **The game itself** | A fuzzy recollection from training data: rooms, wording and puzzles half-remembered or invented | Built from Infocom's own ZIL source: the real map, objects, text and puzzle logic |
+| **State** | Lives in the conversation; objects appear and vanish, inventory is forgotten, rooms change between visits | Held by a deterministic engine in a save file; consistent across hundreds of turns, restarts and sessions |
+| **Time** | No clock: Trinity's deadlines are forgotten or improvised | The game's own clock — 15 seconds a move, the air raid at 3:57:45 — and its timed events, on schedule |
+| **Puzzles** | Either anything works, or things fail arbitrarily | The intended solution works; clever alternatives are judged fairly and land where the intended one would; bypasses don't |
+| **Spoilers** | The model knows the walkthrough, and it shows | The solutions are DM-only, used to judge actions, never to hint |
+| **Long games** | The context fills, and early facts drift or fall away | Each turn starts from fresh engine state; nothing depends on remembering the transcript |
+| **Checking it** | Trust | Regression tests and scripted evaluations of the game's logic |
+
+This isn't hypothetical. Working from memory alone, the DM described Palace
+Gate's glades as stretching "to the east" (the source says northeast), made up
+the wristwatch's time, and an earlier set of DM notes invented a "London Blitz"
+episode that Trinity doesn't have. With the source and the engine behind it,
+those errors went away. The LLM is still the storyteller, and it's free to be
+creative, but the world it describes is the real one.
+
 ## Showcase: Trinity (Brian Moriarty, 1986)
 
 Trinity is the showcase world: Moriarty's game about the atomic age, which opens
