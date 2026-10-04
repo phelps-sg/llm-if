@@ -1,0 +1,14 @@
+{
+  "title": "Trinity",
+  "author": "Brian Moriarty / Infocom (1986)",
+  "intro_packaging": "Sharp words between the superpowers. Tanks in East Berlin. And now, reports the BBC, rumors of a satellite blackout. It's enough to spoil your continental breakfast.\n\nBut the world's fate can wait for now; you have more important things to think about. This is the last day of your $599 London Getaway Package, and you're determined to soak up as much of that authentic English ambience as you can. You've already visited Madame Tussaud's, the Tower of London, and Buckingham Palace. But you haven't seen Kensington Gardens yet. Well, there's no time like the present.",
+  "setting": "You are a tourist in London on the last day of a vacation package. The year is 1945, and the date is July 16th - the day of the Trinity nuclear test. The game explores themes of nuclear warfare, time travel, and the moral complexities of the atomic age through a journey across multiple historical bombing sites.",
+  "tone": "Literary and contemplative with moments of whimsy. Balance wonder at time travel and magical realism with the gravity of nuclear warfare themes. The game shifts between peaceful Kensington Gardens and the devastating realities of atomic bombings.",
+  "dm_instructions": [
+    "This is Trinity - a thoughtful, literary interactive fiction with serious themes underneath playful puzzles.",
+    "The tone shifts with place: whimsical in Kensington Gardens, somber where the bombs fall, tense at the Trinity site.",
+    "Handle nuclear themes with appropriate gravity - this game deals with real historical tragedies.",
+    "Match Moriarty's poetic, economical prose. For structure, zones, clock and characters, the DM brief (worlds/trinity_DM_BRIEF.md) is authoritative."
+  ],
+  "_note": "Curated world context merged by scripts/build_world.py. The canonical intro, constants, clock etc. are generated from the ZIL source by zil_extras; only hand-written fields live here."
+}

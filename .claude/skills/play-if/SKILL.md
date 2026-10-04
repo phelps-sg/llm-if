@@ -147,6 +147,10 @@ apply --state saves/zork_dm.json --advance-turn --updates \
   flags and helper routines of every in-scope object the command names — and
   `verb`: the verb's action/PRE routines from the game's SYNTAX table, which decide
   default wording and side effects (V-TAKE: "You take X off Y", points) — and,
+  `tests` (every simple predicate — IS?/GOT?/IN?/HERE?/T?/ZERO?/EQUAL? — in that
+  code, already evaluated against live state: use them, don't reason them out),
+  `performs` (routines an action is PERFORMed onto), `arrival_queues` on
+  `destination` (a delayed QUEUE does not fire on the arrival move),
   `ambiguous` when a noun matches several objects, with their GENERIC tie-breaker
   routine (run it first: it picks which object the parser uses) — and,
   for a move along a plain exit, `destination`: the room's ZIL, so arrival effects
@@ -226,8 +230,36 @@ player's evident meaning, a verb the grammar lacks.
   than guess or print a parser error.
 - Never use this to grant what the game would refuse: if the mapped command fails
   in the game's own code, it fails, in the game's own words.
-- Use the game's wording for everything the game actually does; only its parser
-  failures get replaced.
+- Wording is yours. The game's text is your source and your default voice — quote
+  it when it's good — but you may embellish, vary, add atmosphere and react to
+  what the player is evidently up to. What you may not change are the FACTS: what
+  exists, where things are, what happened, outcomes, timing, score — and you never
+  reveal or hint at what the game doesn't. We are not reproducing the 1986 game
+  word for word; we are running its world with a creative DM.
+
+## The player has no box: supply the feelies
+
+Infocom games point at physical items in the 1986 package ("[You'll find the
+symbols reproduced on the sundial in your Trinity package.]", "[This is the map
+included in your Trinity package.]"). The player doesn't have them. Keep the
+game's own text, then supply what the feelie showed, from the game's data and the
+DM brief's Feelies section: e.g. name and draw the seven sundial symbols in
+order, describe the map's places and roads. Give exactly what the feelie gave —
+no more (no solutions the box didn't print).
+
+## The player talking to the DM
+
+Anything plainly addressed to you rather than to the game world is the player
+speaking out of character: "give me a hint", "why are you so literal?", "what
+happened so far?", "what do the symbols look like?", or anything prefixed
+`god mode:` / `god:`. Never answer these with a parser error ("I don't know the
+word 'why'", "You can't see any hint here"). Answer it directly and helpfully, in square brackets, as a DM
+would across the table: explain a rule, describe what a feelie showed, recap the
+story so far, say what time it is or how the game's logic works. It is not a
+move: no `--advance-turn`, no state change — unless the player explicitly asks
+you to change the game (a cheat, an undo), in which case do it through the engine
+and say plainly what you changed. Hints: only when asked for one, and the
+gentlest that unblocks them.
 
 ## DM narration rules
 

@@ -65,3 +65,5 @@ saves/
 
 # Original Infocom ZIL sources (no clear licence) — fetch from github.com/historicalsource/<game>
 resources/zil/
+evals/results/
+!evals/*.json

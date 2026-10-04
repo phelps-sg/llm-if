@@ -1,0 +1,327 @@
+{
+  "game": "trinity",
+  "world": "worlds/trinity.json",
+  "_about": "Kensington Gardens to the first portal (the Meadow). Checks are game LOGIC only — location, score, inventory, what happened and when, facts like directions — never exact wording. Steps marked adhoc probe creativity and are rated by the judge.",
+  "steps": [
+    {
+      "cmd": "__open",
+      "expect": {
+        "loc": "pal_gate",
+        "contains": [
+          "northeast"
+        ],
+        "not_contains": [
+          "glades[^.]*to the east"
+        ]
+      }
+    },
+    {
+      "cmd": "i",
+      "expect": {
+        "contains": [
+          "wristwatch"
+        ]
+      }
+    },
+    {
+      "cmd": "x watch",
+      "expect": {
+        "contains": [
+          "3:30:00"
+        ]
+      }
+    },
+    {
+      "cmd": "who am I?",
+      "adhoc": true,
+      "expect": {
+        "not_contains": [
+          "^\\s*I don't know the word",
+          "^\\s*You can't see any"
+        ]
+      }
+    },
+    {
+      "cmd": "ne",
+      "expect": {
+        "loc": "wabe"
+      }
+    },
+    {
+      "cmd": "unscrew the gnomon",
+      "expect": {
+        "loc": "wabe"
+      }
+    },
+    {
+      "cmd": "take gnomon",
+      "expect": {
+        "score": 5,
+        "inv_has": [
+          "gnomon"
+        ]
+      }
+    },
+    {
+      "cmd": "lie on the grass and watch the clouds",
+      "adhoc": true,
+      "expect": {
+        "loc": "wabe",
+        "score": 5
+      }
+    },
+    {
+      "cmd": "se",
+      "expect": {
+        "loc": "flower_walk",
+        "contains": [
+          "ball"
+        ]
+      }
+    },
+    {
+      "cmd": "take ball",
+      "expect": {
+        "score": 6,
+        "inv_has": [
+          "ball"
+        ]
+      }
+    },
+    {
+      "cmd": "follow the little path",
+      "adhoc": true,
+      "expect": {
+        "not_contains": [
+          "^\\s*You can't see any",
+          "which way do you want"
+        ],
+        "loc": "wabe"
+      }
+    },
+    {
+      "cmd": "se",
+      "expect": {
+        "loc": "flower_walk"
+      }
+    },
+    {
+      "cmd": "n",
+      "expect": {
+        "loc": "lan_walk"
+      }
+    },
+    {
+      "cmd": "n",
+      "expect": {
+        "loc": "lan_gate",
+        "contains": [
+          "umbrella",
+          "east wind"
+        ],
+        "not_contains": [
+          "snatch",
+          "west wind"
+        ]
+      }
+    },
+    {
+      "cmd": "say hello to the old woman",
+      "adhoc": true,
+      "expect": {
+        "loc": "lan_gate",
+        "contains": [
+          "gust|wind|tree"
+        ],
+        "_note": "I-BLOW (QUEUEd 2 on arrival) fires at the end of this move"
+      }
+    },
+    {
+      "cmd": "wait",
+      "expect": {
+        "loc": "lan_gate"
+      }
+    },
+    {
+      "cmd": "throw ball at umbrella",
+      "expect": {
+        "contains": [
+          "umbrella"
+        ],
+        "inv_lacks": [
+          "ball"
+        ]
+      }
+    },
+    {
+      "cmd": "take umbrella",
+      "expect": {
+        "inv_has": [
+          "parasol"
+        ],
+        "score": 11
+      }
+    },
+    {
+      "cmd": "twirl the umbrella like Mary Poppins",
+      "adhoc": true,
+      "expect": {
+        "loc": "lan_gate",
+        "score": 11
+      }
+    },
+    {
+      "cmd": "sw",
+      "expect": {
+        "loc": "round_pond"
+      }
+    },
+    {
+      "cmd": "w",
+      "expect": {
+        "loc": "broad_walk",
+        "not_contains": [
+          "take yer bag"
+        ]
+      }
+    },
+    {
+      "cmd": "ask the bird woman what she thinks of the news from Berlin",
+      "adhoc": true,
+      "expect": {
+        "loc": "broad_walk"
+      }
+    },
+    {
+      "cmd": "buy a bag of crumbs",
+      "expect": {
+        "not_contains": [
+          "don't have any money",
+          "no money"
+        ],
+        "inv_lacks": [
+          "coin"
+        ]
+      }
+    },
+    {
+      "cmd": "take the bag",
+      "expect": {
+        "inv_has": [
+          "bag"
+        ]
+      }
+    },
+    {
+      "cmd": "n",
+      "expect": {
+        "loc": "lion_gate"
+      }
+    },
+    {
+      "cmd": "open pram",
+      "expect": {
+        "loc": "lion_gate"
+      }
+    },
+    {
+      "cmd": "push pram se",
+      "expect": {
+        "loc": "round_pond"
+      }
+    },
+    {
+      "cmd": "take the paper bird",
+      "repeat_until": {
+        "contains": "pluck|take|paper bird|you now have",
+        "max": 3
+      },
+      "expect": {
+        "score_min": 14
+      }
+    },
+    {
+      "cmd": "unfold it",
+      "expect": {
+        "loc": "round_pond"
+      }
+    },
+    {
+      "cmd": "push pram e",
+      "expect": {
+        "loc": "lan_walk"
+      }
+    },
+    {
+      "cmd": "get in the pram",
+      "expect": {
+        "loc": "lan_walk"
+      }
+    },
+    {
+      "cmd": "pretend to be a baby",
+      "adhoc": true,
+      "expect": {
+        "loc": "lan_walk"
+      }
+    },
+    {
+      "cmd": "reach into the bag",
+      "expect": {
+        "contains": [
+          "ruby"
+        ]
+      }
+    },
+    {
+      "cmd": "wait",
+      "expect": {
+        "contains": [
+          "roadrunner|bird"
+        ]
+      }
+    },
+    {
+      "cmd": "open umbrella",
+      "expect": {
+        "loc": "long_water"
+      }
+    },
+    {
+      "cmd": "take all",
+      "expect": {
+        "loc": "long_water"
+      }
+    },
+    {
+      "cmd": "wait",
+      "repeat_until": {
+        "contains": "white door",
+        "max": 4
+      },
+      "expect": {
+        "contains": [
+          "door"
+        ]
+      }
+    },
+    {
+      "cmd": "e",
+      "expect": {
+        "loc": "in_water"
+      }
+    },
+    {
+      "cmd": "close umbrella",
+      "expect": {
+        "loc": "in_water"
+      }
+    },
+    {
+      "cmd": "e",
+      "expect": {
+        "loc": "in_meadow"
+      }
+    }
+  ]
+}

@@ -47,16 +47,10 @@ def wait(port: int, timeout: float) -> int:
             else:
                 print(f"PLAYER: {job['cmd']}")
             print(f"SITUATION: {json.dumps(job['situation'])}")
-            if job.get("interrupts"):
-                print(f"INTERRUPTS (QUEUEd; you run them each move): {json.dumps(job['interrupts'])}")
-            if job.get("mentioned"):
-                print(f"MENTIONED: {json.dumps(job['mentioned'])}")
-            if job.get("ambiguous"):
-                print(f"AMBIGUOUS: {json.dumps(job['ambiguous'])}")
-            if job.get("verb"):
-                print(f"VERB: {json.dumps(job['verb'])}")
-            if job.get("destination"):
-                print(f"DESTINATION: {json.dumps(job['destination'])}")
+            for k in ("out_of_character", "feelie", "interrupts", "mentioned", "ambiguous",
+                      "performs", "verb", "destination", "tests"):
+                if job.get(k):
+                    print(f"{k.upper()}: {json.dumps(job[k])}")
             return 0
     print("relay: no command yet (timed out) — run wait again")
     return 2

@@ -1,0 +1,91 @@
+{
+  "game": "trinity",
+  "world": "worlds/trinity.json",
+  "_about": "Out-of-character talk, feelies and hints: the DM must answer the player, not imitate the 1986 parser, and these must not cost game time.",
+  "steps": [
+    {
+      "cmd": "__open",
+      "expect": {
+        "loc": "pal_gate"
+      }
+    },
+    {
+      "cmd": "ne",
+      "expect": {
+        "loc": "wabe"
+      }
+    },
+    {
+      "cmd": "examine the symbols",
+      "expect": {
+        "contains": [
+          "mercury|☿",
+          "neptune|♆"
+        ]
+      }
+    },
+    {
+      "cmd": "god mode: describe the symbols as they would have appeared in the package",
+      "adhoc": true,
+      "expect": {
+        "not_contains": [
+          "^\\s*I don't know the word"
+        ]
+      }
+    },
+    {
+      "cmd": "why are you being so slavish to the original interpreter?",
+      "adhoc": true,
+      "expect": {
+        "not_contains": [
+          "^\\s*I don't know the word"
+        ]
+      }
+    },
+    {
+      "cmd": "give me a hitn",
+      "adhoc": true,
+      "expect": {
+        "not_contains": [
+          "^\\s*I don't know the word",
+          "^\\s*You can't see any"
+        ]
+      }
+    },
+    {
+      "cmd": "hint",
+      "adhoc": true,
+      "expect": {
+        "not_contains": [
+          "available at most Infocom dealers"
+        ]
+      }
+    },
+    {
+      "cmd": "give me a hint",
+      "adhoc": true,
+      "expect": {
+        "not_contains": [
+          "^\\s*You can't see any"
+        ]
+      }
+    },
+    {
+      "cmd": "help please",
+      "adhoc": true,
+      "expect": {
+        "not_contains": [
+          "available at most Infocom dealers"
+        ]
+      }
+    },
+    {
+      "cmd": "x watch",
+      "expect": {
+        "contains": [
+          "3:30:30"
+        ]
+      }
+    }
+  ]
+}

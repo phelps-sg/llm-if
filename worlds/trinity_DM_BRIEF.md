@@ -213,6 +213,24 @@ At the start the player holds nothing, wears the wristwatch, and has a credit ca
   - The breaker is opened twice.
   - Desert walking without the boots wastes the clock.
 
+## 5a. Feelies (the player has no box — supply these when the game points at them)
+
+- **Sundial** (`SYMBOLS`: "[You'll find the symbols reproduced on the sundial in
+  your Trinity package.]"). Seven symbols round the dial, running clockwise from omega,
+  in the order of §2's symbol table: 1 Ω Omega · 2 ☿ Mercury · 3 ♇ Pluto ·
+  4 ♆ Neptune · 5 ♎ Libra · 6 ♂ Mars · 7 α Alpha — plus a compass rose, and
+  "TEMPUS EDAX RERUM" across the bottom. In the mirror world (`FLIP?`) they run
+  counterclockwise and are inscribed backwards. Do NOT add which door each symbol
+  opens — the dial never said.
+- **Map of the Trinity site** (`MAP-F`, the large map on the wall: "[This is the map
+  included in your Trinity package.]"). Describe the site as a map would: the
+  named places and the roads between them, from the engine's locations around the
+  tower (the shack, the S100 / W100 / N75 bunkers and the others, the ranch, the
+  reservoir). Names and layout only.
+- **HELP** points at InvisiClues booklets and an order form. Say there are no
+  booklets in this edition, and that the player can ask the DM for a hint with
+  `god mode:`.
+
 ## 6. DM-ONLY SPOILERS — use only to adjudicate whether an action succeeds; never hint, foreshadow or steer
 
 - **Gardens:**

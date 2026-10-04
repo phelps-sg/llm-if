@@ -39,7 +39,8 @@ ENGINE = [str(REPO / ".venv/bin/python"), str(REPO / "scripts/if_engine.py")]
 OPENING_PROMPT = (
     "The player has just switched on the terminal. Present the opening screen. "
     "If an [intro] block is given (turn 0), print it verbatim first, then the "
-    "room as if the player had typed LOOK. Otherwise just describe where the "
+    "room as if the player had typed LOOK — render its M-LOOK text from loc.zil, "
+    "resolving every ,CONSTANT from loc.refs (,TON is \" to the north\"). Otherwise just describe where the "
     "player is now, as LOOK would. This is not a move: no --advance-turn."
 )
 
@@ -55,21 +56,19 @@ def engine(*args: str) -> Dict[str, Any]:
 _seen_queues: Dict[str, List[str]] = {}
 
 
+# Turn-context blocks the DM sees, in order (all optional except situation).
+CONTEXT_BLOCKS = ["out_of_character", "feelie", "interrupts", "mentioned", "ambiguous", "performs",
+                  "verb", "destination", "tests"]
+
+
 def context(state: Path, cmd: str = "", fresh: bool = False) -> Dict[str, Any]:
     """Fresh brief truth (room ZIL, clock, timers) plus the ZIL of any object the
-    command names — handed to the DM with every command so a turn rarely needs a
-    lookup round trip. The QUEUEd interrupts' code is included on a fresh DM and
-    whenever the queue changes, so the DM can run them without inspecting."""
+    command names, the verb's routines, evaluated predicates, ... — handed to the DM
+    with every command so a turn rarely needs a lookup round trip. The QUEUEd
+    interrupts' code is included on a fresh DM and whenever the queue changes."""
     res = engine("context", "--state", str(state), "--cmd", cmd, "--interrupts")
     out: Dict[str, Any] = {"situation": res.get("situation") or {}}
-    if res.get("mentioned"):
-        out["mentioned"] = res["mentioned"]
-    if res.get("verb"):
-        out["verb"] = res["verb"]
-    if res.get("ambiguous"):
-        out["ambiguous"] = res["ambiguous"]
-    if res.get("destination"):
-        out["destination"] = res["destination"]
+    out.update({k: res[k] for k in CONTEXT_BLOCKS if res.get(k) and k != "interrupts"})
     queue = sorted((out["situation"].get("timers") or {}).keys())
     if res.get("interrupts") and (fresh or _seen_queues.get(str(state)) != queue):
         out["interrupts"] = res["interrupts"]
@@ -92,16 +91,9 @@ def turn_message(state: Path, text: str, opening: bool = False, fresh: bool = Fa
     if intro:
         msg += f"[intro]\n{intro}\n\n"
     msg += f"[situation]\n{json.dumps(ctx['situation'])}\n\n"
-    if ctx.get("interrupts"):
-        msg += f"[interrupts — QUEUEd routines you run each move]\n{json.dumps(ctx['interrupts'])}\n\n"
-    if ctx.get("mentioned"):
-        msg += f"[mentioned]\n{json.dumps(ctx['mentioned'])}\n\n"
-    if ctx.get("ambiguous"):
-        msg += f"[ambiguous]\n{json.dumps(ctx['ambiguous'])}\n\n"
-    if ctx.get("verb"):
-        msg += f"[verb]\n{json.dumps(ctx['verb'])}\n\n"
-    if ctx.get("destination"):
-        msg += f"[destination]\n{json.dumps(ctx['destination'])}\n\n"
+    for k in CONTEXT_BLOCKS:
+        if ctx.get(k):
+            msg += f"[{k}]\n{json.dumps(ctx[k])}\n\n"
     return msg + f"[player]\n{text}"
 
 
@@ -201,7 +193,8 @@ class RelayDM(Game):
 class HeadlessDM(Game):
     """One persistent Claude Code process; one turn at a time."""
 
-    def __init__(self, game: str, state: Path, model: str, new: bool):
+    def __init__(self, game: str, state: Path, model: str, new: bool,
+                 brief_game: Optional[str] = None):
         super().__init__(game, state, new)
         self.model = model
         self.proc: Optional[subprocess.Popen] = None
@@ -212,7 +205,7 @@ class HeadlessDM(Game):
         info = world_notes(state)
         rel_state = str(state.relative_to(REPO))
         notes = info["notes"]
-        brief = dm_brief(game)
+        brief = dm_brief(brief_game or game)
         if brief:
             notes += "\n\n" + brief.read_text()
         self.system_prompt = (

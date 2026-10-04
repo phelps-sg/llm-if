@@ -30,13 +30,27 @@ Transcripts are kept in `saves/<game>.weblog.jsonl` (a reload redraws the screen
 
 ## Preparing a world
 
-After converting a game with `tools/zil_converter`, run
+Worlds are rebuilt from the original source, reproducibly (no LLM):
 
 ```
-.venv/bin/python scripts/zil_extras.py worlds/<game>.json resources/zil/<game>
+.venv/bin/python scripts/build_world.py trinity        # -> worlds/trinity.json
 ```
 
-with the original source from `github.com/historicalsource/<game>` (kept out of
-git). It adds what the converter drops: string constants and object names, the
-game clock and its interrupts, the boot queue, the canonical intro, verb syntax,
-object point values, conditional exits, missing routines, and late-era flag names.
+It runs `tools/zil_converter`, merges the hand-written context in
+`worlds/<game>_context.json`, then `scripts/zil_extras.py`, which adds what the
+converter drops: constants and object names, the clock and its interrupts, the boot
+queue, the canonical intro, verb syntax, object values, conditional exits, GENERIC
+tie-breakers, missing routines and late-era flag names. Source lives in
+`resources/zil/<game>/` (from `github.com/historicalsource/<game>`, kept out of git).
+
+## Testing
+
+- `tests/test_if_engine_zil.py` — deterministic engine regressions (no LLM, seconds).
+- `scripts/dm_eval.py evals/trinity_gardens.json --model sonnet [--judge sonnet]` —
+  plays a scripted route through the real headless DM and checks game LOGIC after
+  every step (location, score, inventory, what happened and when — never exact
+  wording); improvised steps are rated for creativity by an LLM judge. Reports go to
+  `evals/results/` (git-ignored). Costs real model calls.
+
+The DM is meant to be creative, not a reproduction of the 1986 game: the game's
+logic binds, its parser and its exact wording don't.

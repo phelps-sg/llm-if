@@ -538,7 +538,12 @@ def _scope_ids(gs: GameState) -> List[str]:
     if loc is not None:
         for it in gs.get_items_at_location(loc.id):
             add(it.id)
-        ids += [n.id for n in gs.get_npcs_at_location(loc.id)]
+        for n in gs.get_npcs_at_location(loc.id):
+            ids.append(n.id)
+            # what NPCs hold is in scope too (the bird woman's bags of crumbs)
+            for item_id, holder in list(gs.item_locations.items()):
+                if holder == n.id:
+                    add(item_id)
     for item_id in gs.player.inventory:
         add(item_id)
     # ZIL GLOBAL-OBJECTS are in scope everywhere (PATH, SKY, SUN, the gates...);
@@ -660,7 +665,10 @@ def verb_routines(gs: GameState, command: str) -> Optional[Dict[str, Any]]:
         canon = VERB_ABBREVS.get(w, synonyms.get(w, w))
     entries = verbs.get(canon) or []
     if not entries:
-        return {"word": w, "verb": canon, "note": "no SYNTAX entry; the parser rejects this verb"}
+        return {"word": w, "verb": canon,
+                "note": "not one of the game's verbs. Don't print a parser error: the player "
+                        "may be talking to you (the DM) or phrasing an action loosely — "
+                        "work out what they mean and respond to that"}
     cmd_words = {x.upper() for x in words[1:]}
     fit = [e for e in entries
            if (not e.get("prep_first") or (len(words) > 1 and words[1].upper() == e["preps"][0]))
@@ -724,7 +732,128 @@ def destination_preview(gs: GameState, command: str) -> Optional[Dict[str, Any]]
         helpers = small_helpers(gs, code)
         if helpers:
             out["helpers"] = helpers
+        queues = []
+        for a, n, b, m in re.findall(r'\("QUEUE" "([^"]+)" (-?\d+)\)|<QUEUE\s+([A-Z0-9?!\-]+)\s+(-?\d+)>', code):
+            name, delay = (a or b), int(n or m)
+            if delay > 0:
+                queues.append(f"{name}:{delay} — if the arrival branch runs, queue it in the same apply "
+                              f"as the move; it fires at the end of the move {delay - 1} move(s) AFTER "
+                              f"this one, NOT now")
+            else:
+                queues.append(f"{name} — runs every move from the end of this one")
+        if queues:
+            out["arrival_queues"] = queues
     return out
+
+
+# --- deterministic evaluation of ZIL predicates ---------------------------------
+# The DM shouldn't have to work out IS? ,EWIND ,SEEN or GOT? ,COIN in its head:
+# every simple predicate in the code we hand it is evaluated against live state.
+_PRED_RE = re.compile(r'[(<]"?(IS\?|IN\?|GOT\?|HERE\?|T\?|ZERO\?|EQUAL\?)"?\s+([^()<>]*?)[)>]')
+_ARG_RE = re.compile(r'"?([,.]?[A-Z0-9?!\-]+|-?\d+)"?')
+_FALSY = (None, 0, False, "", "<>", [])
+
+
+def _zid(name: str) -> str:
+    return name.lstrip(",").lower().replace("-", "_")
+
+
+def _global_value(gs: GameState, name: str) -> Any:
+    setg = gs.flags.get(SETG_FLAG) or {}
+    if name in setg:
+        return setg[name]
+    return ((gs.world_context or {}).get("zil_globals") or {}).get(name)
+
+
+def _holder_of(gs: GameState, eid: str) -> Optional[str]:
+    if eid in gs.player.inventory:
+        return "player"
+    if eid in gs.item_locations:
+        return gs.item_locations[eid]
+    return gs.npc_locations.get(eid)
+
+
+def _resolve_ref(gs: GameState, tok: str) -> Optional[str]:
+    name = tok.lstrip(",")
+    if name == "HERE":
+        return gs.player_location
+    if name in ("PLAYER", "ME", "WINNER", "PROTAGONIST"):
+        return "player"
+    return _zid(name)
+
+
+def _eval_pred(gs: GameState, op: str, args: List[str]) -> Optional[bool]:
+    if any(a.startswith(".") for a in args):
+        return None  # depends on a local variable
+    if op == "IS?" and len(args) == 2:
+        eid, flag = _resolve_ref(gs, args[0]), args[1].lstrip(",").lower()
+        ent = gs.items.get(eid) or gs.npcs.get(eid) or gs.locations.get(eid)
+        if ent is None:
+            return None
+        return flag in ((ent.attributes or {}).get("zil_flags") or [])
+    if op == "HERE?" and args:
+        return gs.player_location in {_zid(a) for a in args}
+    if op == "IN?" and len(args) == 2:
+        return _holder_of(gs, _resolve_ref(gs, args[0])) == _resolve_ref(gs, args[1])
+    if op == "GOT?" and len(args) == 1:
+        eid, seen = _resolve_ref(gs, args[0]), set()
+        while eid and eid not in seen:  # carried directly or inside something carried
+            seen.add(eid)
+            eid = _holder_of(gs, eid)
+            if eid == "player":
+                return True
+        return False
+    if op in ("T?", "ZERO?") and len(args) == 1 and args[0].startswith(","):
+        truthy = _global_value(gs, args[0][1:]) not in _FALSY
+        return truthy if op == "T?" else not truthy
+    if op == "EQUAL?" and len(args) >= 2 and args[0].startswith(","):
+        val = _global_value(gs, args[0][1:])
+        rest = [int(a) for a in args[1:] if re.fullmatch(r"-?\d+", a)]
+        if len(rest) != len(args) - 1:
+            return None
+        return val in rest
+    return None
+
+
+def eval_tests(gs: GameState, codes: List[str], cap: int = 150) -> Dict[str, bool]:
+    out: Dict[str, bool] = {}
+    for code in codes:
+        for op, argstr in _PRED_RE.findall(code or ""):
+            args = _ARG_RE.findall(argstr)
+            key = f"{op} " + " ".join(a.lstrip(",") for a in args)
+            if key in out:
+                continue
+            val = _eval_pred(gs, op, args)
+            if val is not None:
+                out[key] = val
+                if len(out) >= cap:
+                    return out
+    return out
+
+
+def _codes_in(obj: Any) -> List[str]:
+    """Every ZIL routine string inside a context result."""
+    if isinstance(obj, str):
+        return [obj] if obj.lstrip().startswith(("<ROUTINE", "(ROUTINE")) else []
+    if isinstance(obj, dict):
+        return [c for v in obj.values() for c in _codes_in(v)]
+    if isinstance(obj, list):
+        return [c for v in obj for c in _codes_in(v)]
+    return []
+
+
+_OOC_RE = re.compile(
+    r"^\s*(god( mode)?\s*:|why\b|how (do|can|should|does)\b|what (should|do|does|is|are|happened)\b|"
+    r"can you\b|could you\b|would you\b|please\b|hint|help\b|i('m| am) stuck)|"
+    r"\b(you|your)\b.*\?\s*$|\bhints?\b|\bdm\b", re.I)
+
+
+def out_of_character(command: str) -> Optional[str]:
+    """Heuristic: is the player talking to the DM rather than acting in the world?"""
+    if _OOC_RE.search(command or ""):
+        return ("probably addressed to you, the DM, not the game world: answer it out of "
+                "character in [brackets] — no parser error, no tick, no state change")
+    return None
 
 
 def cmd_context(args: argparse.Namespace) -> Dict[str, Any]:
@@ -756,6 +885,31 @@ def cmd_context(args: argparse.Namespace) -> Dict[str, Any]:
                     code[name + " refs"] = refs
         if code:
             result["interrupts"] = code
+    # PERFORM hands an action to another object's routine (TRY-BUY -> PERFORM
+    # ,V?GIVE ,COIN ,BWOMAN): include those routines for objects in scope.
+    scope = set(_scope_ids(gs))
+    performs: Dict[str, str] = {}
+    for code in _codes_in(result):
+        for objs in re.findall(r'PERFORM"?\s+"?,V\?[A-Z\-]+"?((?:\s+"?[,.][A-Z0-9?!\-]+"?)*)', code):
+            for tok in re.findall(r'[,.]([A-Z0-9?!\-]+)', objs):
+                eid = _zid(tok)
+                ent = gs.items.get(eid) or gs.npcs.get(eid)
+                rc = ((ent.attributes or {}).get("zil_action_code") if ent else "") or ""
+                if eid in scope and rc and eid not in (result.get("mentioned") or {}):
+                    performs[eid] = rc[:CODE_CAP]
+    if performs:
+        result["performs"] = performs
+    tests = eval_tests(gs, _codes_in(result))
+    if tests:
+        result["tests"] = tests
+    if args.cmd:
+        ooc = out_of_character(args.cmd)
+        if ooc:
+            result["out_of_character"] = ooc
+        if any("package" in c for c in _codes_in(result)):
+            result["feelie"] = ("this code points at the 1986 box ('...in your Trinity package'). "
+                                "The player has no box: give what it showed (DM brief, Feelies); "
+                                "for HELP/hints, offer your own hint instead of InvisiClues")
     return result
 
 
@@ -791,6 +945,21 @@ def cmd_apply(args: argparse.Namespace) -> Dict[str, Any]:
             "valid_types": sorted(VALID_UPDATE_TYPES),
         }
 
+    # Objects a routine hasn't created yet (no LOC, e.g. the crumb bag before the
+    # bird woman sells it) can't simply be taken: mirror the routine's MOVE first.
+    placed = set()
+    for u in updates:
+        params = u.get("params") or {}
+        if u.get("type") == "move_item" and params.get("item_id"):
+            placed.add(params["item_id"])
+        if u.get("type") == "add_to_inventory":
+            iid = params.get("item_id")
+            if (iid in gs.items and iid not in gs.player.inventory and iid not in placed
+                    and gs.item_locations.get(iid) is None):
+                return {"ok": False, "error":
+                        f"add_to_inventory: '{iid}' isn't anywhere in the world yet. Objects "
+                        f"appear only when a routine MOVEs them in — mirror that first "
+                        f"(move_item to its holder in the same apply), or the action fails."}
     inv_before = set(gs.player.inventory)
     engine = _build_engine()
     errors: List[str] = []
