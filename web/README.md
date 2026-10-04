@@ -10,6 +10,8 @@ narration; the deterministic engine (`scripts/if_engine.py`) keeps the state.
 ```
 
 Open http://127.0.0.1:8086. Stdlib only; Claude runs on your normal `claude` login.
+Add `--style remastered` for richer, sensory descriptions in the original's mood —
+the same facts, a fuller telling.
 
 ## DM backends
 

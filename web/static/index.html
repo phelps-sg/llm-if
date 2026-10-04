@@ -513,7 +513,7 @@
     setStatus(state);
     if (state.title) {
       line(state.title.toUpperCase(), "title");
-      line("Interactive Fiction \u2014 with a Claude Dungeon Master", "title");
+      line(`Interactive Fiction \u2014 ${state.tagline || "with a Claude Dungeon Master"}`, "title");
       line("");
     }
     for (const h of state.history || []) {

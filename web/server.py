@@ -58,6 +58,42 @@ def engine(*args: str) -> Dict[str, Any]:
 _seen_queues: Dict[str, List[str]] = {}
 
 
+# Narrative styles. Facts never change between them — only the prose does.
+STYLES = {
+    "classic": {
+        "line": "Keep a similar economy to the original: a vivid line beats a florid paragraph.",
+        "section": "",
+        "reminder": "",
+        "tagline": "with a Claude Dungeon Master",
+    },
+    "remastered": {
+        "line": "Style: REMASTERED — see the section below.",
+        "section": """## Style: remastered
+
+The player chose the remastered edition: same world, richer telling.
+
+- Write descriptions as a modern remaster of this game would: fuller and more
+  sensory — light, sound, smell, texture, weather, the small life of the place —
+  in the SAME mood, tone and intent as the original text. Trinity's whimsy stays
+  whimsical, its dread stays dreadful. Roughly two to three times the original's
+  length for a room; less for an action.
+- Every fact stays exactly as the game has it: exits, objects, people, states,
+  what happened, the clock, the score. Keep the original's best lines — quote them
+  — and build around them.
+- Embellishment is atmosphere only. Never add an object the player could
+  interact with, an exit, a clue or a hint; never contradict what the game will
+  say later; give puzzle objects no more emphasis than the original does.
+- Keep the mechanics crisp: room names, score notices, the watch's reading, and
+  out-of-character answers stay plain.
+- On repeat visits, describe a room more briefly and vary the details, as a
+  storyteller would.
+""",
+        "reminder": " Style: remastered — richer, sensory prose in the original's mood; facts unchanged, "
+                    "nothing new to interact with, no hints.",
+        "tagline": "remastered, with a Claude Dungeon Master",
+    },
+}
+
 # Turn-context blocks the DM sees, in order (all optional except situation).
 CONTEXT_BLOCKS = ["out_of_character", "feelie", "interrupts", "mentioned", "ambiguous", "performs",
                   "verb", "destination", "tests"]
@@ -106,7 +142,7 @@ PARSER_ERROR_RE = re.compile(
 
 
 def turn_message(state: Path, text: str, opening: bool = False, fresh: bool = False,
-                 recap: str = "") -> str:
+                 recap: str = "", style_note: str = "") -> str:
     ctx = context(state, "" if opening else text, fresh)
     msg = ""
     intro = opening_intro(state) if opening else None
@@ -118,7 +154,7 @@ def turn_message(state: Path, text: str, opening: bool = False, fresh: bool = Fa
             msg += f"[{k}]\n{json.dumps(ctx[k])}\n\n"
     if recap:
         msg += f"[recent transcript — you are picking up this game mid-play]\n{recap}\n\n"
-    msg += f"[how to answer]\n{HOW_TO_ANSWER}\n\n"
+    msg += f"[how to answer]\n{HOW_TO_ANSWER}{style_note}\n\n"
     return msg + f"[player]\n{text}"
 
 
@@ -156,7 +192,8 @@ class Game:
 
     def status(self) -> Dict[str, Any]:
         s = engine("look", "--state", str(self.state), "--brief").get("situation") or {}
-        return {"title": self.title, "loc": (s.get("loc") or {}).get("name", ""), "turn": s.get("turn", 0)}
+        return {"title": self.title, "loc": (s.get("loc") or {}).get("name", ""), "turn": s.get("turn", 0),
+                "tagline": STYLES[getattr(self, "style", "classic")]["tagline"]}
 
     def history(self) -> List[Dict[str, str]]:
         if not self.log_path.exists():
@@ -219,9 +256,10 @@ class HeadlessDM(Game):
     """One persistent Claude Code process; one turn at a time."""
 
     def __init__(self, game: str, state: Path, model: str, new: bool,
-                 brief_game: Optional[str] = None, effort: Optional[str] = None):
+                 brief_game: Optional[str] = None, effort: Optional[str] = None,
+                 style: str = "classic"):
         super().__init__(game, state, new)
-        self.model, self.effort = model, effort
+        self.model, self.effort, self.style = model, effort, style
         self.proc: Optional[subprocess.Popen] = None
         self.events: "queue.Queue[Optional[dict]]" = queue.Queue()
         meta = json.loads(self.meta_path.read_text()) if self.meta_path.exists() else {}
@@ -235,6 +273,8 @@ class HeadlessDM(Game):
             (WEB / "dm_system.md").read_text()
             .replace("{STATE}", rel_state)
             .replace("{WORLD_NOTES}", notes)
+            .replace("{STYLE_LINE}", STYLES[style]["line"])
+            .replace("{STYLE}", STYLES[style]["section"])
         )
         # A changed prompt gets a fresh DM conversation on the same game: resuming
         # the old one lets its old answers outweigh the new rules.
@@ -301,7 +341,8 @@ class HeadlessDM(Game):
             recap = "\n".join(f">{h['cmd']}\n{h['out']}" if h.get("cmd") else h["out"]
                               for h in self.history()[-12:])
             self.needs_recap = False
-        final = yield from self._exchange(turn_message(self.state, text, opening, fresh, recap))
+        final = yield from self._exchange(turn_message(self.state, text, opening, fresh, recap,
+                                                       STYLES[self.style]["reminder"]))
         if final is None:
             return
         if not opening and PARSER_ERROR_RE.match(final) and len(final) < 240:
@@ -418,6 +459,9 @@ def main() -> None:
     ap.add_argument("--dm", choices=["headless", "relay"], default="headless",
                     help="headless: own claude -p process; relay: an interactive session DMs via web/relay.py")
     ap.add_argument("--model", default="opus", help="claude model alias for --dm headless (opus, sonnet, ...)")
+    ap.add_argument("--style", choices=sorted(STYLES), default="classic",
+                    help="classic: the original's economy; remastered: richer, sensory prose "
+                         "in the same mood — facts unchanged")
     ap.add_argument("--effort", choices=["low", "medium", "high", "xhigh", "max"],
                     help="DM reasoning effort (default: the model's default); lower is faster")
     ap.add_argument("--port", type=int, default=8086)
@@ -435,8 +479,10 @@ def main() -> None:
         Handler.dm = RelayDM(args.game, state, args.new)
         mode = "relay — DM with: .venv/bin/python web/relay.py wait"
     else:
-        Handler.dm = HeadlessDM(args.game, state, args.model, args.new, effort=args.effort)
-        mode = f"headless, model {args.model}" + (f", effort {args.effort}" if args.effort else "")
+        Handler.dm = HeadlessDM(args.game, state, args.model, args.new, effort=args.effort,
+                                style=args.style)
+        mode = (f"headless, model {args.model}" + (f", effort {args.effort}" if args.effort else "")
+                + f", {args.style}")
     srv = ThreadingHTTPServer(("127.0.0.1", args.port), Handler)
     print(f"{Handler.dm.title} — http://127.0.0.1:{args.port}  ({mode}; Ctrl-C to quit)", flush=True)
     try:

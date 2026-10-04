@@ -84,7 +84,10 @@ timing, score) but should not be slavish to the 1986 parser: improvised or
 playful commands deserve a creative, in-tone response that changes nothing the
 game wouldn't, invents no objects/exits/facts, and never hints at solutions.
 
-Rate each exchange below. Reply with ONLY a JSON list, one object per exchange:
+Below is the whole session in order, so you know the game state at each point (what
+the player holds, where they are, what already happened). Rate ONLY the exchanges
+marked [RATE]; the rest are context. Reply with ONLY a JSON list, one object per
+[RATE] exchange:
 {{"cmd": ..., "creativity": 1-5, "fidelity": 1-5, "invented": [facts the DM made up that matter],
   "note": "one sentence"}}
 
@@ -92,7 +95,7 @@ Rate each exchange below. Reply with ONLY a JSON list, one object per exchange:
 
 
 def judge(model: str, game: str, rows: List[Dict[str, Any]]) -> Optional[List[Dict[str, Any]]]:
-    ex = "\n\n".join(f">{r['cmd']}\n{r['text']}" for r in rows)
+    ex = "\n\n".join(("[RATE] " if r["adhoc"] else "") + f">{r['cmd']}\n{r['text']}" for r in rows)
     res = subprocess.run(["claude", "-p", "--model", model, "--tools", "", "--strict-mcp-config",
                           JUDGE_PROMPT.format(game=game, exchanges=ex)],
                          capture_output=True, text=True, cwd=REPO)
@@ -108,17 +111,19 @@ def main() -> None:
     ap.add_argument("spec", type=Path)
     ap.add_argument("--model", default="sonnet")
     ap.add_argument("--effort", choices=["low", "medium", "high", "xhigh", "max"])
+    ap.add_argument("--style", choices=["classic", "remastered"], default="classic")
     ap.add_argument("--judge", metavar="MODEL", help="rate adhoc steps with this model")
     ap.add_argument("--stop-on-fail", action="store_true")
     args = ap.parse_args()
 
     spec = json.loads(args.spec.read_text())
-    game = f"eval-{args.spec.stem}-{args.model}"
+    game = f"eval-{args.spec.stem}-{args.model}-{args.style}"
     state = REPO / "saves" / f"{game}.json"
     res = server.engine("init", "--world", spec["world"], "--state", str(state), "--force")
     if not res.get("ok"):
         sys.exit(res.get("error"))
-    dm = server.HeadlessDM(game, state, args.model, True, brief_game=spec["game"], effort=args.effort)
+    dm = server.HeadlessDM(game, state, args.model, True, brief_game=spec["game"], effort=args.effort,
+                           style=args.style)
 
     rows: List[Dict[str, Any]] = []
     try:
@@ -146,7 +151,7 @@ def main() -> None:
         if dm.proc and dm.proc.poll() is None:
             dm.proc.terminate()
 
-    verdicts = judge(args.judge, spec["game"], [r for r in rows if r["adhoc"]]) if args.judge else None
+    verdicts = judge(args.judge, spec["game"], rows) if args.judge else None
     checked = [r for r in rows if spec["steps"][r["step"] - 1].get("expect")]
     summary = {"spec": str(args.spec), "model": args.model, "steps": len(rows),
                "checked": len(checked), "passed": sum(1 for r in checked if not r["fails"]),

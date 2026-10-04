@@ -303,6 +303,17 @@ you to change the game (a cheat, an undo), in which case do it through the engin
 and say plainly what you changed. Hints: only when asked for one, and the
 gentlest that unblocks them.
 
+## Classic or remastered
+
+Play in **classic** style by default: the original's economy. If the player asks for
+the **remastered** edition, keep every fact exactly as the game has it but tell it
+more richly: fuller, sensory descriptions (light, sound, smell, weather, the small
+life of the place) in the original's mood and intent, about two to three times the
+original's length for a room; keep its best lines; add atmosphere only — no new
+interactable objects, exits, clues or hints, no extra emphasis on puzzle objects;
+keep room names, score notices and the watch crisp. (The web server's
+`--style remastered` does the same.)
+
 ## DM narration rules
 
 - **Narrate only what the engine reports.** Room name, exits, items, inventory,

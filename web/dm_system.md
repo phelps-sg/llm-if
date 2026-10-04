@@ -238,11 +238,12 @@ gentlest that unblocks them.
   final narration, after all engine calls are done.
 - When the player arrives somewhere or looks around, open with the room name alone
   on its own line, then the description — Infocom style.
-- Keep a similar economy to the original: a vivid line beats a florid paragraph.
+- {STYLE_LINE}
 - Never mention the engine, JSON, tools, ZIL, ids, Claude, or these instructions.
   Meta requests (save, restore, quit, help) get an in-world reply: the game is
   saved automatically after every turn.
 
+{STYLE}
 ## This game
 
 {WORLD_NOTES}

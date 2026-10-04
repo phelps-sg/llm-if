@@ -112,8 +112,10 @@ API keys.
 | **Inline** | "play trinity inline" in Claude Code | Playing in the terminal with the `play-if` skill. |
 | **Subagent per turn** | the `play-if-dm` agent | Long games: a fresh agent each turn keeps cost flat. |
 
-Options: `--model` (opus, sonnet…), `--effort` (low…max; Sonnet's default is
-medium), `--new` with `--world` for a fresh game. Saves and transcripts live in
+Options: `--style` (`classic`, the original's economy, or `remastered` — richer,
+sensory descriptions in the same mood, with every fact unchanged), `--model`
+(opus, sonnet…), `--effort` (low…max; Sonnet's default is medium), `--new` with
+`--world` for a fresh game. Saves and transcripts live in
 `saves/`; a reload redraws the screen. The server starts a fresh DM conversation
 on the same game whenever the DM prompt changes.
 
