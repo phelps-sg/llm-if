@@ -47,698 +47,154 @@ before the bombs fall.
 ## Play
 
 ```bash
-# once: build the world from the original source (github.com/historicalsource/trinity
-# in resources/zil/trinity/; kept out of git)
-.venv/bin/python scripts/build_world.py trinity
+uv venv .venv && uv pip install --python .venv/bin/python pydantic pyyaml sexpdata
 
 # play in the retro terminal at http://127.0.0.1:8086
 .venv/bin/python web/server.py --game trinity --world worlds/trinity.json --new --model sonnet
 ```
 
-The DM runs on your Claude Code login (`claude -p`); no API keys. Or play inline in a
-Claude Code session with the `play-if` skill. Details, the DM backends and the test
-and evaluation tools are in [web/README.md](web/README.md). Zork I–III's source is
-MIT-licensed (Microsoft, 2025) and is the natural next world.
+The DM runs on your Claude Code login — no API keys. `worlds/trinity.json` is
+included; to rebuild it from Infocom's source, see [Worlds](#worlds). Other ways to
+play (inline in Claude Code, relay, subagent per turn) are under
+[Ways to run](#ways-to-run).
 
----
+## How it works
 
-The rest of this README describes the original engine architecture, which the DM
-harness builds on.
-
-## How It Works: LLM as Dungeon Master
-
-This engine uses **LLMs as a Dungeon Master (DM)**, not as the game itself. The LLM narrates the story, but **a structured game state is the source of truth**. Here's the three-step architecture:
-
-**1. Interpret** → Player input converted to structured intent
-**2. Execute** → Deterministic mechanics update game state
-**3. Narrate** → LLM describes outcomes based on updated state
-
-### The Key Insight: Retrieval-Augmented Generation (RAG)
-
-Instead of letting the LLM hallucinate game state in conversation, we **inject the actual game state into every prompt**. The LLM receives:
-- Current location details
-- Visible items and NPCs
-- Player inventory
-- Recent action history
-- Relevant game rules
-
-The LLM then **issues structured commands** to modify state (like `{"type": "move_player", "destination": "hall"}` or `{"type": "add_to_inventory", "item": "sword"}`), which the rules engine validates and executes. Finally, the LLM narrates what happened using the **updated** state.
-
-This means:
-- **Zero hallucination**: LLM only describes what exists in state
-- **Perfect consistency**: Same state = same world, always
-- **Unlimited sessions**: State persists across any number of turns
-- **Enforced mechanics**: Rules engine prevents impossible actions
-- **Reproducibility**: Same inputs = same outcomes
-- **Emergent gameplay**: DM isn't mechanistically executing pre-defined rules—it uses descriptions and ZIL as metadata to guide its judgment, applying creative AI reasoning to decide what happens. This enables novel interactions and solutions that diverge from the original game design
-
-## The Problem We Solve
-
-Traditional pure-LLM interactive fiction fails because:
+An LLM left to run a text adventure on its own drifts: objects appear and vanish,
+rooms change between visits, rules bend. Here the LLM is the Dungeon Master, and
+the world lives somewhere else.
 
 ```
-You: "Let's play a text adventure. I'm in a dungeon."
-LLM: "You stand in a dark dungeon. There's a sword on the ground."
-You: "I take the sword and go north."
-LLM: "You pick up the sword and head north into a grand hall."
-You: "I go back south."
-LLM: "You return to the dungeon. There's a shield on the ground."  ← HALLUCINATION
+ Infocom ZIL source ──► converter + zil_extras ──► world JSON
+                                                      │
+                          ┌───────────────────────────┴──────┐
+     player ──► DM (Claude) ◄── turn context ── engine (scripts/if_engine.py)
+                   │                               ▲  state · clock · interrupts
+                   └──── apply updates ────────────┘  score · scope · conditions
+                   │
+                   └──► narration
 ```
 
-**Problems:**
-1. **Hallucination**: The sword disappeared, a shield appeared from nowhere
-2. **Context Loss**: Conversations exceed context windows, losing critical state
-3. **Inconsistency**: Same location described differently each visit
-4. **No Mechanics**: Can't enforce rules like combat, puzzles, or inventory limits
+- **The world** is built from the game's own source. `tools/zil_converter` turns
+  ZIL into JSON; `scripts/zil_extras.py` adds what a plain conversion loses: string
+  constants and object names, the game clock and its interrupt routines, the
+  objects' point values, the verb grammar, conditional exits, the parser's
+  tie-breaker routines, and the canonical intro.
+- **The engine** (`scripts/if_engine.py`) holds the truth: where everything is,
+  the turn and the clock, the queued interrupts and when each one is due, the
+  score, the game's global variables and object flags.
+- **Each turn** the DM receives a context built for that command: the room and its
+  code, the code of every object the command names, the verb's own routines,
+  the interrupts running, and every condition in that code already evaluated
+  against live state (`IS? EWIND SEEN: true`, `GOT? COIN: true`). The DM decides
+  what happens, applies it through the engine — mirroring the game's own
+  operations (`--queue I-BLOW:2`, `--make lwdoor:touched`, `--set-clock`) — and
+  narrates the result. Most turns need one engine call.
+- **The DM's rules**: the game's logic binds; its 1986 parser and its wording
+  don't. Refusals that only covered what the old engine couldn't simulate become
+  play; refusals that protect the map or a puzzle keep their outcome. Clever,
+  unanticipated solutions can work; trivial bypasses don't. Anything addressed to
+  the DM gets an out-of-character answer. The full rules are in
+  [`web/dm_system.md`](web/dm_system.md).
+- **A DM brief per game** (`worlds/<game>_DM_BRIEF.md`) sets out the structure, the
+  clock and every deadline, text conventions, characters, the feelies, and a
+  DM-only spoiler section used to judge whether an action succeeds.
 
-## Our Solution: State-Driven RAG Architecture
+## Ways to run
 
-Here's how the three-step architecture flows with RAG:
+The Dungeon Master is Claude, through Claude Code — your normal `claude` login, no
+API keys.
 
-```
-Player Input: "I take the sword and go north"
-                      │
-                      ▼
-         ┌────────────────────────────────┐
-         │  STEP 1: INTERPRET             │
-         │  LLM receives game state +     │
-         │  player input in prompt        │
-         │  ────────────────────────       │
-         │  Returns structured intent:    │
-         │  [{"type": "take", "item":     │
-         │    "sword"},                   │
-         │   {"type": "move", "dir": "N"}]│
-         └────────────┬───────────────────┘
-                      │
-                      ▼
-         ┌────────────────────────────────┐
-         │  STEP 2: EXECUTE               │
-         │  Rules engine validates &      │
-         │  executes state updates        │
-         │  ────────────────────────       │
-         │  Game State (Source of Truth): │
-         │  player.inventory += ["sword"] │
-         │  player.location = "hall"      │
-         └────────────┬───────────────────┘
-                      │
-                      ▼
-         ┌────────────────────────────────┐
-         │  STEP 3: NARRATE               │
-         │  LLM receives UPDATED state    │
-         │  in prompt + what changed      │
-         │  ────────────────────────       │
-         │  Returns creative narrative:   │
-         │  "You grab the rusty sword...  │
-         │   Moving north, you enter a    │
-         │   grand hall with vaulted      │
-         │   ceilings."                   │
-         └────────────────────────────────┘
-```
+| Mode | Start it with | Best for |
+|---|---|---|
+| **Web terminal, headless** | `web/server.py --game trinity --model sonnet` | Playing. One persistent `claude -p` session per game behind the retro terminal; narration streams; a guard catches parser-style replies. |
+| **Web terminal, relay** | `web/server.py --game trinity --dm relay` | Watching a Claude Code session DM in the browser. |
+| **Inline** | "play trinity inline" in Claude Code | Playing in the terminal with the `play-if` skill. |
+| **Subagent per turn** | the `play-if-dm` agent | Long games: a fresh agent each turn keeps cost flat. |
 
-**Key Benefits:**
-- **State Injection**: Every LLM call receives current game state in the prompt
-- **Structured Commands**: LLM issues JSON commands, not free text
-- **Validation Layer**: Rules engine prevents impossible actions
-- **No Hallucination**: LLM can only describe what's actually in state
-- **Separation of Concerns**: Mechanics are deterministic, narrative is creative
+Options: `--model` (opus, sonnet…), `--effort` (low…max; Sonnet's default is
+medium), `--new` with `--world` for a fresh game. Saves and transcripts live in
+`saves/`; a reload redraws the screen. The server starts a fresh DM conversation
+on the same game whenever the DM prompt changes.
 
-## The Killer Feature: ZIL Import & AI Remastering
+There is also the project's original harness, which uses Gemini — see
+[The original Gemini harness](#the-original-gemini-harness).
 
-We go beyond static JSON worlds. The engine **imports original Infocom game source code** (ZIL - Zork Implementation Language) and **translates procedural logic into natural language** on-demand:
+## Worlds
 
-### How It Works
+| World | State |
+|---|---|
+| `trinity` | **Showcase.** Rebuilt from the original source with the full DM layer, DM brief and evals. |
+| `zork_original`, `planetfall`, `colossal_cave` | Earlier conversions. Playable, but not yet rebuilt with the fixed converter and `zil_extras`. |
+| `example_dungeon` | Small hand-written world. |
 
-1. **Import Original ZIL**: Load authentic Infocom game source (Zork, Planetfall, Trinity, etc.)
-2. **Convert to Structured State**: Extract locations, items, NPCs, relationships
-3. **On-Demand Translation**: When LLM needs logic, translate ZIL routines to natural language
-4. **Caching**: Translations cached for performance
-5. **Manual Overrides**: Enhance specific behaviors without touching base data
+**Adding a game**
 
-**Example - Trinity Coin Description:**
+1. Put its ZIL source in `resources/zil/<game>/` (from
+   `github.com/historicalsource/<game>`; kept out of git). Zork I–III are
+   MIT-licensed (Microsoft, 2025).
+2. `.venv/bin/python scripts/build_world.py <game>` — converter, the hand-written
+   context in `worlds/<game>_context.json`, then `zil_extras`. The build is
+   reproducible: rebuilding Trinity gives the committed world exactly.
+3. Write `worlds/<game>_DM_BRIEF.md` from the source (clock, deadlines,
+   conventions, feelies, spoilers) — Trinity's is the template.
+4. Add an eval spec in `evals/`.
 
-```zil
-; Original ZIL Code (things.zil:298)
-<ROUTINE COIN-F ()
-  <COND (<VERB? EXAMINE>
-         <TELL "It's standard British currency, worth fifty pence">)>>
-```
+## Testing and evaluation
 
-↓ **Automatic Translation** ↓
+- **Engine regressions** — `tests/test_if_engine_zil.py`: 18 deterministic tests,
+  no LLM, a few seconds. Each pins a bug found in play-testing.
+  ```bash
+  .venv/bin/python -m pytest tests/test_if_engine_zil.py
+  ```
+- **DM evaluation** — `scripts/dm_eval.py` plays a scripted route through the real
+  headless DM on a fresh save and checks the game's logic after every step
+  (location, score, inventory, timing), never its wording. Improvised steps can be
+  rated by an LLM judge for creativity and invented facts. Reports go to
+  `evals/results/`.
+  ```bash
+  .venv/bin/python scripts/dm_eval.py evals/trinity_gardens.json --model sonnet --judge sonnet
+  ```
 
-```
-examine_text: "It's standard British currency, worth fifty pence"
-```
+  | Spec | Checks |
+  |---|---|
+  | `trinity_gardens` | The Gardens to the first portal: route, score, gust timing, the purchase |
+  | `trinity_meta` | Hints, "why…?", `god mode:`, feelies — answered, not parsed, no time lost |
+  | `trinity_sleight` | Cosmetic refusals become play; load-bearing ones hold |
+  | `trinity_emergent` | Trivial bypasses fail; alternative solutions are judged fairly |
 
-↓ **LLM Receives** ↓
+  Sonnet reached the Meadow passing 39 of 40 logic checks, at a median of 6.8 s
+  a turn.
 
-The LLM narrates naturally while staying true to the original:
-```
-> examine coin
-You withdraw the curious seven-sided coin from your pocket.
-It's standard British currency, worth fifty pence.
-```
-
-### Why This Matters
-
-- **Authentic Experience**: Original Infocom game logic preserved
-- **AI Enhancement**: Modern LLM narration brings classics to life
-- **Best of Both Worlds**: Classic game design + contemporary AI storytelling
-- **Extensible**: Override specific behaviors without breaking imports
-
-## Core Features
-
-### 🎮 ZIL Converter & Import System
-Convert original Infocom game source code to playable JSON:
-- **Automatic extraction**: Locations, items, NPCs, relationships
-- **Smart pattern matching**: Recognizes common ZIL patterns
-- **Multi-game support**: Zork, Planetfall, Trinity, and more
-- **Preservation**: ZIL code embedded for reference and translation
-- **Manual enhancement**: Override system for custom improvements
-
-**Example Usage:**
-```bash
-python -m tools.zil_converter ~/zork1 --output worlds/zork.json
-```
-
-### 🔧 Override System (Source-Agnostic)
-Manually enhance imported games without modifying base data:
-- **Persistent overrides**: Survives re-imports from ZIL
-- **Merge at runtime**: `trinity.json` + `trinity_overrides.json` = final world
-- **Any game source**: Works for ZIL imports, manual JSON, or procedural generation
-- **Structured enhancements**: Add examine text, NPC dialog, triggers, purchasables
-
-**Example - Trinity Override:**
-```json
-{
-  "items": {
-    "coin": {
-      "examine_text": "It's standard British currency, worth fifty pence."
-    },
-    "crumbs": {
-      "purchasable": {
-        "price": 30,
-        "seller_npc": "bwoman",
-        "dialog": {
-          "ask_price": "Thirty p! Thirty p a bag!"
-        }
-      }
-    }
-  },
-  "npcs": {
-    "bwoman": {
-      "ambient_phrases": [
-        "Thirty p! Thirty p a bag!",
-        "Feed the hungry birds!"
-      ]
-    }
-  }
-}
-```
-
-### ⚡ God Mode (Developer Debugging)
-Powerful introspection and debugging tools:
-- **Inspection commands**: `/inspect <entity>`, `/inventory`, `/state`, `/context`
-- **DM debug questions**: `DM: why isn't the coin visible?` → AI analyzes game state
-- **Works everywhere**: Interactive mode and single-step mode
-- **State transparency**: See exactly what the LLM sees
-
-**Example Session:**
-```bash
-poetry run python -m src.main worlds/trinity.json --god-mode
-
-> /inspect coin
-=== ITEM: coin (seven-sided coin) ===
-Location: pocket
-{
-  "examine_text": "It's standard British currency, worth fifty pence.",
-  "zil_action": "COIN-F",
-  ...
-}
-
-> DM: why does the coin have a custom examine text?
-[God Mode Debug Response]
-The examine_text field is from trinity_overrides.json, which takes
-precedence over the base trinity.json. This override was added to
-provide the authentic Infocom description from COIN-F routine...
-```
-
-### 🔄 On-Demand ZIL Translation
-Translate ZIL routines to natural language only when needed:
-- **Lazy translation**: Only translate referenced code
-- **Persistent caching**: Translations saved to `.cache/zil_translations/`
-- **LLM-powered**: Gemini translates ZIL logic to readable descriptions
-- **Performance**: Cached translations reused across sessions
-
-### 🎭 Personality-Driven NPC Dialogue
-NPCs speak with quoted dialogue that reflects their personality:
-- **Genie**: Mystical, formal dialogue explaining wish mechanics
-- **Guards**: Threatening, hostile warnings
-- **Creatures**: Behavior-based responses (passive animals, defensive beasts)
-- **Dialogue teaches mechanics**: Game rules explained through character voice
-
-### ⚔️ D&D 5e Combat System
-Full tactical combat with transparent mechanics:
-- Attack rolls, damage calculation, armor class
-- Real-time combat narration
-- NPC counterattacks based on hostility
-- Complete combat logging with dice rolls visible
-
-### 🧞 Dynamic Wish System
-Reality-bending genie mechanics:
-- Create items, NPCs, or locations dynamically
-- Wish tracking with decremented counter
-- Precise fulfillment (grants exactly what is asked)
-- State validation to prevent exploits
-
-### 💡 Intelligent Lighting System
-Context-aware descriptions based on light levels:
-- **Pitch black**: Only sounds, smells, sensations
-- **Dark**: Vague shapes and outlines
-- **Dim**: Limited visibility with shadows
-- **Bright**: Full detailed descriptions
-- **Dynamic**: Outdoor lighting changes with time of day
-
-### 🔍 Container Visibility System
-Sophisticated container and inventory handling:
-- **Open containers**: Contents visible when opened
-- **Transparent containers**: Glass bottles show contents even when closed
-- **Nested containers**: Pocket → coin, credit card (Trinity-style)
-- **ZIL flag support**: Auto-detects `opened`, `transbit`, `container` flags
-
-### 🚫 Blocked Exit System
-Permanent blocked exits with narrative explanations:
-- Custom blocking messages ("Only Santa Claus climbs down chimneys")
-- Imported from ZIL conditional exits
-- Maintains immersion with contextual feedback
-
-### 🎲 Procedural Rogue Mode
-Generate entire dungeons on-the-fly:
-- **Genre-driven**: Dark fantasy, sci-fi horror, ancient ruins
-- **Plot guidance**: "escape the depths", "find the artifact"
-- **Configurable**: Control location count, NPC density, item distribution
-- **Coherent generation**: LLM creates interconnected levels
-
-### 🧪 Single-Step Testing Mode
-Command-line mode for systematic testing:
-- Execute one command at a time
-- State persistence between commands
-- Custom save file locations
-- Perfect for CI/CD integration
-
-### 📊 Token Optimization & Dry Run
-Performance monitoring and cost analysis:
-- **Token tracking**: Monitor API usage per call
-- **Dry run mode**: Estimate costs without API calls
-- **Implicit caching**: Optimized prompts for Gemini context caching
-- **Compact topology**: Efficient state representation
-
-## Architecture Overview
+## Repository layout
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                   WORLD SOURCES                              │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐      │
-│  │ ZIL Import   │  │ Manual JSON  │  │  Procedural  │      │
-│  │  (Trinity)   │  │   (Custom)   │  │  (Rogue LLM) │      │
-│  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘      │
-│         │                 │                  │               │
-│         └─────────────────┼──────────────────┘               │
-│                           ▼                                  │
-│                  ┌─────────────────┐                         │
-│                  │  Override Merge │                         │
-│                  └────────┬────────┘                         │
-└───────────────────────────┼──────────────────────────────────┘
-                            ▼
-              ┌──────────────────────────┐
-              │   GAME STATE (RAG Core)  │
-              │  Structured JSON World   │
-              └──────────┬───────────────┘
-                         │
-          ┌──────────────┼──────────────┐
-          ▼              ▼              ▼
-    ┌─────────┐   ┌──────────┐   ┌─────────────┐
-    │ Player  │   │  Action  │   │    Rule     │
-    │  Input  │──>│Processor │──>│   Engine    │
-    └─────────┘   └─────┬────┘   └──────┬──────┘
-                        │                │
-                        └────────┬───────┘
-                                 ▼
-                    ┌─────────────────────────┐
-                    │  LLM (Dungeon Master)   │
-                    │   Context: Relevant     │
-                    │   state slice only      │
-                    └────────┬────────────────┘
-                             ▼
-                       ┌──────────┐
-                       │Narrative │
-                       │ Output   │
-                       └──────────┘
+scripts/if_engine.py      engine CLI the DM drives (init/look/context/apply/inspect)
+scripts/zil_extras.py     post-conversion: constants, clock, interrupts, grammar, ...
+scripts/build_world.py    reproducible world build from ZIL source
+scripts/dm_eval.py        scripted DM evaluation with optional LLM judge
+web/                      retro terminal: server.py, relay.py, dm_system.md, static/
+.claude/skills/play-if/   the play-if skill (inline DM)
+.claude/agents/           play-if-dm (subagent-per-turn DM)
+tools/zil_converter/      ZIL -> world JSON converter
+worlds/                   built worlds, DM briefs, hand-written contexts
+evals/                    eval specs (results git-ignored)
+src/                      engine models and rules; the original Gemini harness
+tests/                    test suite
 ```
 
-## Key Design Principles
-
-### 1. Separation of State and Presentation
-- Game state is pure structured data
-- All descriptions generated dynamically by LLM
-- Same state can be rendered different ways based on context
-
-### 2. LLM as Narrative Layer Only
-- LLM never stores state
-- LLM doesn't make mechanical decisions (dice rolls, outcomes)
-- LLM interprets and narrates, doesn't adjudicate
-
-### 3. Retrieval-Augmented Generation
-- LLM receives **relevant state slice** (not entire world)
-- Recent history for narrative continuity
-- Context window optimized for Gemini caching
-- No hallucination - everything grounded in state
-
-### 4. Deterministic Core, Creative Surface
-- Game mechanics are deterministic and testable
-- Narrative is creative and contextual
-- Clear boundary between the two
-
-### 5. Source-Agnostic World Model
-- Works with ZIL imports, manual JSON, procedural generation
-- Override system preserves enhancements across re-imports
-- Unified model for all game sources
-
-## Technology Stack
-
-- **Language**: Python 3.11+
-- **LLM Provider**: Google Gemini (Vertex AI)
-- **ZIL Parser**: Custom S-expression parser
-- **Dependencies**:
-  - `google-cloud-aiplatform`: Vertex AI SDK
-  - `pydantic`: Data validation and schema
-  - `click`: CLI framework
-  - Standard library: `json`, `random`, `typing`, `textwrap`
-
-## Quick Start
-
-### Installation
-
-```bash
-# Clone repository
-git clone https://github.com/yourusername/llm-if
-cd llm-if
-
-# Install dependencies
-poetry install
-
-# Set up Google Cloud credentials
-export GCP_PROJECT=your-project-id
-gcloud auth application-default login
-```
-
-### Play an Imported Classic
-
-```bash
-# Play Trinity (imported from original ZIL)
-poetry run python -m src.main worlds/trinity.json
-
-# Or Zork
-poetry run python -m src.main worlds/zork_original.json
-
-# With god mode for debugging
-poetry run python -m src.main worlds/trinity.json --god-mode
-```
-
-### Import Your Own ZIL Game
-
-```bash
-# Convert ZIL source to playable JSON
-python -m tools.zil_converter ~/path/to/zil_source --output worlds/mygame.json
-
-# Play it
-poetry run python -m src.main worlds/mygame.json
-```
-
-### Create Manual Overrides
-
-```bash
-# Create override file
-cp worlds/trinity_overrides.json worlds/mygame_overrides.json
-
-# Edit with your enhancements
-vim worlds/mygame_overrides.json
-
-# Overrides auto-merge at runtime
-poetry run python -m src.main worlds/mygame.json
-```
-
-### Generate a Procedural Dungeon
-
-```bash
-# Rogue mode - generate on the fly
-poetry run python -m src.main \
-  --game-mode rogue \
-  --genre "dark fantasy" \
-  --plot "escape the ancient catacombs" \
-  --num-locations 5
-```
-
-## Usage Examples
-
-### Interactive Gameplay
-
-```
-$ poetry run python -m src.main worlds/trinity.json
-
-Sharp words between the superpowers. Tanks in East Berlin...
-
-A tide of people surges north along the crowded Broad Walk.
-Shaded glades stretch away to the northeast...
-
-> inventory
-You are carrying:
-  - your pocket
-  - wristwatch
-
-> look in pocket
-You reach into your pocket. Inside, you find a seven-sided coin
-and your credit card.
-
-> examine coin
-It's standard British currency, worth fifty pence.
-```
-
-### God Mode Debugging
-
-```
-$ poetry run python -m src.main worlds/trinity.json --god-mode
-
-⚡ GOD MODE ACTIVE ⚡
-Special commands: /inspect, /inventory, /state, DM: <question>
-
-> /inspect coin
-
-=== ITEM: coin (seven-sided coin) ===
-Location: pocket
-{
-  "examine_text": "It's standard British currency, worth fifty pence.",
-  "zil_action": "COIN-F",
-  "zil_flags": ["takeable"]
-}
-
-> DM: why is the coin in a nested container?
-
-[God Mode Debug Response]
-The coin's location is "pocket" in item_locations, which means it's
-inside the pocket container. Trinity uses nested containers for
-realistic inventory - items don't float in abstract inventory space.
-The pocket is marked with "container" and "opened" in zil_flags...
-```
-
-### Single-Step Testing
-
-```bash
-# Initialize new game
-poetry run python -m src.main worlds/zork.json \
-  --single-step \
-  --init worlds/zork.json \
-  --command "look"
-
-# Execute commands sequentially
-poetry run python -m src.main worlds/zork.json \
-  --single-step \
-  --command "go north"
-
-poetry run python -m src.main worlds/zork.json \
-  --single-step \
-  --command "take sword"
-```
-
-## Project Structure
-
-```
-llm-if/
-├── README.md
-├── pyproject.toml
-├── src/
-│   ├── main.py                    # Entry point
-│   ├── models/
-│   │   ├── game_state.py          # RAG core - state management
-│   │   ├── location.py            # Location model
-│   │   ├── npc.py                 # NPC model
-│   │   ├── item.py                # Item model
-│   │   └── player.py              # Player model
-│   ├── engine/
-│   │   ├── game_loop.py           # Main orchestration
-│   │   ├── action_processor.py    # Action pipeline
-│   │   └── god_mode.py            # Debug/inspection tools
-│   ├── llm/
-│   │   └── gemini_client.py       # Vertex AI integration
-│   ├── rules/
-│   │   ├── rule_engine.py         # Rule evaluation
-│   │   └── dnd_rules.py           # D&D 5e mechanics
-│   └── utils/
-│       ├── text_formatter.py      # Output formatting
-│       └── logging_config.py      # Logging setup
-├── tools/
-│   └── zil_converter/
-│       ├── cli.py                 # Converter CLI
-│       ├── parser.py              # S-expression parser
-│       ├── extractor.py           # Entity extraction
-│       └── converter.py           # ZIL → JSON conversion
-├── worlds/
-│   ├── trinity.json               # Trinity (imported from ZIL)
-│   ├── trinity_overrides.json     # Manual enhancements
-│   ├── zork_original.json         # Zork I (imported from ZIL)
-│   └── planetfall.json            # Planetfall (imported from ZIL)
-└── .cache/
-    └── zil_translations/
-        └── translations.json      # Cached ZIL translations
-```
-
-## Development Status
-
-### Completed Features ✅
-
-**Core Engine:**
-- [x] Structured game state (RAG foundation)
-- [x] Gemini LLM integration
-- [x] Action interpretation pipeline
-- [x] State update mechanism
-- [x] Narrative generation from state
-- [x] Game loop orchestration
-
-**World Sources:**
-- [x] ZIL import & conversion
-- [x] Manual JSON worlds
-- [x] Procedural generation (rogue mode)
-- [x] Override system
-
-**ZIL Integration:**
-- [x] S-expression parser
-- [x] Entity extraction (locations, items, NPCs)
-- [x] Relationship mapping
-- [x] On-demand ZIL translation
-- [x] Translation caching
-- [x] Multi-game support (Zork, Planetfall, Trinity)
-
-**Game Systems:**
-- [x] D&D 5e combat with dice rolls
-- [x] Inventory management
-- [x] Container system (open/transparent/nested)
-- [x] Lighting system
-- [x] Blocked exits
-- [x] NPC personality-driven dialogue
-- [x] Dynamic wish mechanics (genie)
-
-**Developer Tools:**
-- [x] God mode inspection commands
-- [x] DM debug questions
-- [x] Single-step testing mode
-- [x] Token usage tracking
-- [x] Dry run mode
-- [x] State persistence (save/load)
-
-**Performance:**
-- [x] Implicit context caching
-- [x] Compact state representation
-- [x] ZIL translation caching
-- [x] Configurable text width
-
-### In Progress 🔄
-
-- [ ] Generic behavior extraction from ZIL (examine_text, triggers, etc.)
-- [ ] Auto-generate override suggestions from ZIL analysis
-- [ ] God mode on-the-fly state editing
-
-### Future Enhancements 💡
-
-- [ ] Inform 7 import support
-- [ ] Web UI for easier gameplay
-- [ ] Multiplayer support
-- [ ] Voice narration output
-- [ ] Fine-tuned models for specific game types
-
-## Performance & Cost
-
-**Token Optimization:**
-- Implicit caching reduces repeated context costs by ~70%
-- Compact topology representation saves ~40% vs full world
-- ZIL translation caching eliminates repeat translation costs
-- Average game session: ~50K-100K tokens
-
-**Dry Run Mode:**
-```bash
-# Estimate costs without API calls
-poetry run python -m src.main worlds/zork.json --dry-run
-
-Token usage stats:
-  Total tokens: 89,234
-  Cached tokens: 62,156 (70%)
-  New tokens: 27,078
-  Estimated cost: $0.08
-```
-
-## Contributing
-
-Contributions welcome! Key areas:
-
-1. **New ZIL Game Support**: Test importer with more Infocom titles
-2. **Behavior Extraction**: Auto-extract more ZIL patterns
-3. **Override Enhancements**: Add more override types (dialog trees, quests)
-4. **Performance**: Further optimize token usage
-5. **Documentation**: Improve game creation guides
-
-## License
-
-MIT License - See LICENSE file
-
----
-
-## Recent Updates
-
-### 2025-12-29: God Mode & Override System
-- ✅ God mode debugging (`/inspect`, `/state`, `/context`, `DM: <question>`)
-- ✅ Override system for manual enhancements (survives re-imports)
-- ✅ God mode works in interactive and single-step modes
-- ✅ Container nesting fixes (Trinity pocket → coin, credit_card)
-- ✅ ZIL flag detection improvements (`opened`, `container`, `transbit`)
-
-### 2025-12-18: ZIL Import Optimization
-- ✅ On-demand ZIL translation with persistent caching
-- ✅ Configurable ZIL field filtering (reduce token usage by 60%)
-- ✅ Trinity game type with proper intro and DM instructions
-- ✅ Start location filtering (skip pseudo-locations)
-
-### 2025-12-11: ZIL Converter
-- ✅ Full S-expression parser for ZIL
-- ✅ Entity extraction (rooms, items, NPCs, relationships)
-- ✅ Pattern matching for common ZIL structures
-- ✅ Multi-game support (Zork, Planetfall, Trinity)
-
-### 2025-11-27: Core Features
-- ✅ NPC personality-driven dialogue
-- ✅ Single-step testing mode
-- ✅ Token tracking and dry run mode
-- ✅ Implicit context caching optimization
-
----
-
-**Version**: 0.4.0 (Beta - ZIL Remastering Ready)
-**Last Updated**: 2025-12-29
-**Status**: Production Ready - Classic Game Import & Enhancement
+## The original Gemini harness
+
+The project began with its own game loop — `python -m src.main` (or `run.sh`) —
+using Gemini on Vertex AI in a three-step interpret → execute → narrate pipeline.
+It still runs and has features of its own: a god mode with `/inspect`, `/state` and
+`DM:` questions, runtime override files (`worlds/<game>_overrides.json`), D&D 5e
+combat, a wish system, lighting, single-step mode for testing, dry-run cost
+estimates, and a procedural "rogue" mode (`--game-mode rogue --genre … --plot …`).
+
+It needs `GCP_PROJECT` / `GCP_LOCATION` and `gcloud auth application-default
+login`. It does not have the DM layer described above — no clock or interrupts,
+no game code in the turn context, no condition evaluation, no DM brief — and
+its end-to-end tests need GCP. The architectural principles it was built on are
+in [`CLAUDE.md`](CLAUDE.md); older design notes are in `docs/` and the
+root-level `*.md` files.
