@@ -5,8 +5,8 @@ LLM as the Dungeon Master.** The game's logic stays faithful: the map, the objec
 the clock, the deadlines, the score and the puzzles all come from Infocom's code. A
 deterministic engine holds the state, runs the clock and the score, and evaluates
 the code's conditions; the LLM reads the routines and applies them. But the 1986
-parser is gone. Type what you
-mean, try things the authors never anticipated, and the DM plays them out.
+parser is gone: type what you mean, try things the authors never anticipated,
+and the DM plays them out.
 
 ![Trinity in the retro web terminal: the player throws the soccer ball at a swan on the Round Pond; the swan leans aside, and a small girl returns the ball with a look of grave reproach.](docs/images/trinity-web-terminal.png)
 
@@ -25,11 +25,12 @@ memory is the problem:
 | **Long games** | The context fills, and early facts drift or fall away | Each turn starts from fresh engine state; nothing depends on remembering the transcript |
 | **Checking it** | Trust | Regression tests and scripted evaluations of the game's logic |
 
-This isn't hypothetical. Working from memory alone, the DM described Palace
-Gate's glades as stretching "to the east" (the source says northeast), made up
-the wristwatch's time, and an earlier set of DM notes invented a "London Blitz"
-episode that Trinity doesn't have. With the source and the engine behind it,
-those errors went away. The LLM is still the storyteller, and it's free to be
+This isn't hypothetical. While this was being built, every gap the DM had to fill
+from memory went wrong: with a constant missing it described Palace Gate's
+glades as stretching "to the east" (the source says northeast); with no clock in
+the engine it made up the wristwatch's time; and an early set of DM notes
+invented a "London Blitz" episode that Trinity doesn't have. Closing those gaps
+with the source and the engine is what fixed them. The LLM is still the storyteller, and it's free to be
 creative, but the world it describes is the real one.
 
 ## Showcase: Trinity (Brian Moriarty, 1986)
