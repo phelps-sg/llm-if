@@ -67,7 +67,11 @@ Each player message arrives with fresh engine truth — do NOT `look` again:
   this). `timers`: each QUEUEd interrupt — either "runs every move" or when its
   clock check next matches, e.g. "3:57:45 pm (0 moves from now)".
 - `[mentioned]` (when the command names something in scope): that object's ZIL,
-  flags, refs, and the small helper routines it calls.
+  flags, refs, and the small helper routines it calls. Scope includes the game's
+  GLOBAL-OBJECTS (path, sky, sun, gates...), which exist everywhere and decide in
+  their own code what they mean here. Only say "You can't see any X here." when
+  X matches nothing in here/scenery/inv/npcs/[mentioned], or the object's own
+  code says CANT-SEE-ANY.
 - `[verb]`: the command's verb as the game's grammar parses it, with its action
   and PRE-action routines and their helpers. These decide default wording and side
   effects the object routine doesn't override — e.g. V-TAKE prints "You take the

@@ -541,6 +541,11 @@ def _scope_ids(gs: GameState) -> List[str]:
         ids += [n.id for n in gs.get_npcs_at_location(loc.id)]
     for item_id in gs.player.inventory:
         add(item_id)
+    # ZIL GLOBAL-OBJECTS are in scope everywhere (PATH, SKY, SUN, the gates...);
+    # their routines decide what they mean here (often CANT-SEE-ANY elsewhere).
+    for item_id, where in gs.item_locations.items():
+        if where == "global_objects" and item_id not in ids:
+            ids.append(item_id)
     return ids
 
 
