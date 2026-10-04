@@ -224,7 +224,7 @@
   // key or click.
   const Floppy = (() => {
     let ctx = null, master = null, body = null, noiseBuf = null, motor = null;
-    let timer = 0, active = false, enabled = store.get("sound", "on") === "on";
+    let timer = 0, active = false, enabled = store.get("sound", "off") === "on";
     const ensure = () => {
       if (!ctx) {
         const AC = window.AudioContext || window.webkitAudioContext;
