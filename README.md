@@ -130,6 +130,9 @@ the world lives somewhere else.
 - **A DM brief per game** (`worlds/<game>_DM_BRIEF.md`) sets out the structure, the
   clock and every deadline, text conventions, characters, the feelies, and a
   DM-only spoiler section used to judge whether an action succeeds.
+- **The architectural principles** behind the engine — state-driven updates,
+  mechanics separate from narration, the LLM as DM rather than game engine — are
+  in [`CLAUDE.md`](CLAUDE.md).
 
 ## Ways to run
 
@@ -149,9 +152,6 @@ original's mood, every fact unchanged — or `classic`, the original's economy),
 `--world` for a fresh game. Saves and transcripts live in
 `saves/`; a reload redraws the screen. The server starts a fresh DM conversation
 on the same game whenever the DM prompt changes.
-
-There is also the project's original harness, which uses Gemini — see
-[The original Gemini harness](#the-original-gemini-harness).
 
 ## Worlds
 
@@ -212,25 +212,9 @@ web/                      retro terminal: server.py, relay.py, dm_system.md, sta
 tools/zil_converter/      ZIL -> world JSON converter
 worlds/                   built worlds, DM briefs, hand-written contexts
 evals/                    eval specs (results git-ignored)
-src/                      engine models and rules; the original Gemini harness
+src/                      engine models, state updates and rules
 tests/                    test suite
 ```
-
-## The original Gemini harness
-
-The project began with its own game loop — `python -m src.main` (or `run.sh`) —
-using Gemini on Vertex AI in a three-step interpret → execute → narrate pipeline.
-It still runs and has features of its own: a god mode with `/inspect`, `/state` and
-`DM:` questions, runtime override files (`worlds/<game>_overrides.json`), D&D 5e
-combat, a wish system, lighting, single-step mode for testing, dry-run cost
-estimates, and a procedural "rogue" mode (`--game-mode rogue --genre … --plot …`).
-
-It needs `GCP_PROJECT` / `GCP_LOCATION` and `gcloud auth application-default
-login`. It does not have the DM layer described above — no clock or interrupts,
-no game code in the turn context, no condition evaluation, no DM brief — and
-its end-to-end tests need GCP. The architectural principles it was built on are
-in [`CLAUDE.md`](CLAUDE.md); older design notes are in `docs/` and the
-root-level `*.md` files.
 
 ## License
 
