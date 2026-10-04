@@ -62,3 +62,6 @@ dmypy.json
 
 # Save files (single-step mode)
 saves/
+
+# Original Infocom ZIL sources (no clear licence) — fetch from github.com/historicalsource/<game>
+resources/zil/

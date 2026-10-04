@@ -16,6 +16,20 @@ class ActionProcessor:
 
     def __init__(self, rule_engine: RuleEngine):
         self.rule_engine = rule_engine
+        # Problems with the last apply_state_updates call (unknown ids etc.), so a
+        # caller can report them instead of an update silently doing nothing.
+        self.last_errors: List[str] = []
+        self.last_warnings: List[str] = []
+
+    def _resolve_holder_id(self, target: str, game_state: GameState) -> Optional[str]:
+        """Where an item can be put: a location, a container/surface item, or an
+        NPC (ZIL objects can be IN any object; item_locations maps item -> holder)."""
+        location_id = self._resolve_location_id(target, game_state)
+        if location_id:
+            return location_id
+        if target in game_state.items or target in game_state.npcs:
+            return target
+        return None
 
     def _resolve_location_id(
         self, location_name_or_id: str, game_state: GameState
@@ -50,6 +64,8 @@ class ActionProcessor:
             updates: List of state update dictionaries
             game_state: Current game state to modify
         """
+        self.last_errors = []
+        self.last_warnings = []
         for update in updates:
             update_type = update.get("type")
             target = update.get("target")
@@ -60,7 +76,20 @@ class ActionProcessor:
                 if destination:
                     # Resolve location name to ID
                     location_id = self._resolve_location_id(destination, game_state)
-                    if location_id:
+                    if not location_id:
+                        self.last_errors.append(f"move_player: unknown location '{destination}'")
+                    else:
+                        here = game_state.get_player_location()
+                        exits = set((here.connections or {}).values()) if here else set()
+                        # Rooms whose exits are decided by code (PER routines) make
+                        # scripted moves normal; only warn where every exit is plain.
+                        has_cond = bool(here and (here.attributes or {}).get("zil_exits"))
+                        if (location_id not in exits and location_id != game_state.player_location
+                                and not has_cond):
+                            self.last_warnings.append(
+                                f"move_player: '{location_id}' is not a listed exit from "
+                                f"'{game_state.player_location}' (fine for conditional exits, "
+                                f"vehicles and scripted moves)")
                         game_state.move_player_to_location(location_id)
 
                         # Move all pet NPCs with the player
@@ -74,6 +103,8 @@ class ActionProcessor:
                 item_id = params.get("item_id")
                 if item_id and item_id in game_state.items:
                     game_state.move_item_to_player(item_id)
+                else:
+                    self.last_errors.append(f"add_to_inventory: unknown item '{item_id}'")
 
             elif update_type == "remove_from_inventory":
                 item_id = params.get("item_id")
@@ -87,10 +118,15 @@ class ActionProcessor:
                 item_id = params.get("item_id")
                 to_location = params.get("to_location")
                 if item_id and to_location:
-                    # Resolve location name to ID
-                    location_id = self._resolve_location_id(to_location, game_state)
-                    if location_id:
-                        game_state.move_item_to_location(item_id, location_id)
+                    holder = self._resolve_holder_id(to_location, game_state)
+                    if item_id not in game_state.items:
+                        self.last_errors.append(f"move_item: unknown item '{item_id}'")
+                    elif not holder:
+                        self.last_errors.append(f"move_item: unknown location/container/npc '{to_location}'")
+                    elif holder == item_id:
+                        self.last_errors.append(f"move_item: can't put '{item_id}' inside itself")
+                    else:
+                        game_state.move_item_to_location(item_id, holder)
 
             elif update_type == "modify_attribute":
                 entity_id = params.get("entity_id") or target
@@ -156,9 +192,13 @@ class ActionProcessor:
                 npc_id = str(params.get("npc_id") or target or "")
                 to_location = params.get("to_location")
                 if npc_id and to_location:
-                    location_id = self._resolve_location_id(to_location, game_state)
-                    if location_id:
-                        game_state.move_npc_to_location(npc_id, location_id)
+                    # Locations, or any object (ZIL: MOVE ,MEEP ,TS6 — the
+                    # roadrunner rides inside a toadstool).
+                    holder = self._resolve_holder_id(to_location, game_state)
+                    if holder:
+                        game_state.move_npc_to_location(npc_id, holder)
+                    else:
+                        self.last_errors.append(f"move_npc: unknown location/object '{to_location}'")
 
             elif update_type == "create_item":
                 # Dynamically create a new item in the game world

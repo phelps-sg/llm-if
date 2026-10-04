@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Infocom Terminal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --fg: #5cff7a;
+    --fg-dim: #2fa84a;
+    --glow: rgba(92, 255, 122, 0.55);
+    --bg: #021006;
+    --room: #17150f;
+    --case: #cfc6b0;
+    --case-shadow: #9d947d;
+    --case-dark: #2b2a26;
+    --font: "VT323", "Courier New", monospace;
+  }
+  :root[data-phosphor="amber"] { --fg: #ffb341; --fg-dim: #b5761a; --glow: rgba(255, 170, 50, 0.5); --bg: #110a02; }
+  :root[data-phosphor="white"] { --fg: #e6ecf2; --fg-dim: #8c96a0; --glow: rgba(220, 235, 255, 0.4); --bg: #07090c; }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    background: radial-gradient(ellipse at 50% 30%, #2a261c 0%, var(--room) 60%, #0b0a07 100%);
+    font-family: var(--font);
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+  }
+
+  /* ---- the monitor ---- */
+  .monitor {
+    width: min(1600px, calc(100vw - 20px));
+    height: calc(100vh - 20px);
+    display: flex; flex-direction: column;
+    background: linear-gradient(170deg, #ddd5c0 0%, var(--case) 45%, #bdb39b 100%);
+    border-radius: 18px;
+    padding: 22px 26px 0;
+    box-shadow: 0 30px 80px rgba(0,0,0,.7), inset 0 2px 0 rgba(255,255,255,.5), inset 0 -4px 10px var(--case-shadow);
+  }
+  .bezel {
+    flex: 1; min-height: 0;
+    background: var(--case-dark);
+    border-radius: 14px;
+    padding: 14px;
+    box-shadow: inset 0 0 0 2px #1a1916, inset 0 8px 24px rgba(0,0,0,.8);
+  }
+  .screen {
+    position: relative; height: 100%;
+    background: radial-gradient(ellipse at center, color-mix(in srgb, var(--bg) 80%, var(--fg) 6%) 0%, var(--bg) 70%, #000 100%);
+    border-radius: 22px / 28px;
+    overflow: hidden;
+    box-shadow: inset 0 0 60px rgba(0,0,0,.9), 0 0 0 3px #0c0c0b;
+    cursor: text;
+  }
+  .screen.off .crt { opacity: 0; }
+  .crt {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    color: var(--fg);
+    text-shadow: 0 0 2px var(--glow), 0 0 8px var(--glow);
+    font-size: clamp(18px, 1.7vw, 30px);
+    line-height: 1.12;
+    animation: flicker 6s infinite steps(1);
+    transition: opacity .4s;
+  }
+  .statusbar {
+    flex: none;
+    display: flex; justify-content: space-between; gap: 2ch;
+    margin: 18px 24px 0;
+    padding: 0 1ch;
+    background: var(--fg); color: var(--bg);
+    text-shadow: 0 0 6px var(--glow);
+    box-shadow: 0 0 10px var(--glow);
+    white-space: nowrap; overflow: hidden;
+  }
+  .statusbar:empty, .statusbar.hidden { visibility: hidden; }
+  .statusbar span:first-child { overflow: hidden; text-overflow: ellipsis; }
+  .scroll {
+    flex: 1; min-height: 0;
+    overflow-y: auto; overflow-x: hidden;
+    padding: 10px 24px 22px;
+    scrollbar-width: none;
+  }
+  .scroll::-webkit-scrollbar { display: none; }
+  #out { white-space: pre-wrap; overflow-wrap: anywhere; max-width: 88ch; }
+  #out .cmd { color: var(--fg-dim); margin-top: 1em; }
+  #out .turn { margin-top: .5em; }
+  #out .err { color: var(--fg-dim); font-style: normal; }
+  #out .title { text-align: left; }
+  .inputline { white-space: pre-wrap; overflow-wrap: anywhere; max-width: 88ch; margin-top: 1em; }
+  .inputline.hidden .prompt, .inputline.hidden #typed { display: none; }
+  .cursor {
+    display: inline-block; width: .6em; height: 1em; vertical-align: -0.12em;
+    background: var(--fg); box-shadow: 0 0 8px var(--glow);
+    animation: blink 1.06s steps(1) infinite;
+  }
+  .inputline.hidden .cursor { animation-duration: .5s; }
+
+  /* ---- CRT overlays ---- */
+  .scanlines, .vignette, .glare { position: absolute; inset: 0; pointer-events: none; }
+  .scanlines {
+    background: repeating-linear-gradient(to bottom, rgba(0,0,0,0) 0px, rgba(0,0,0,0) 2px, rgba(0,0,0,.28) 3px, rgba(0,0,0,0) 4px);
+    mix-blend-mode: multiply;
+  }
+  .vignette { background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,.55) 100%); }
+  .glare { background: radial-gradient(ellipse at 28% 18%, rgba(255,255,255,.07) 0%, transparent 40%); }
+
+  /* ---- bottom of the case ---- */
+  .chin {
+    flex: none; height: 46px;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 6px;
+    color: #5f584a; font-size: 18px; letter-spacing: .18em;
+  }
+  .badge { text-transform: uppercase; text-shadow: 0 1px 0 rgba(255,255,255,.45); }
+  .controls { display: flex; align-items: center; gap: 22px; }
+  .led { display: flex; align-items: center; gap: 8px; font-size: 14px; letter-spacing: .12em; }
+  .led i { width: 10px; height: 10px; border-radius: 50%; background: #3a3a33; box-shadow: inset 0 1px 2px rgba(0,0,0,.6); }
+  .led.on i.pwr { background: #49ff6a; box-shadow: 0 0 6px #49ff6a; }
+  .led i.disk.active { background: #ffb020; box-shadow: 0 0 6px #ffb020; animation: disk .18s steps(1) infinite; }
+  .knob {
+    font: inherit; font-size: 14px; letter-spacing: .12em; color: #5f584a;
+    background: linear-gradient(#e4dcc8, #b8ae95); border: 1px solid #8f866f; border-radius: 4px;
+    padding: 4px 10px; cursor: pointer; box-shadow: 0 2px 0 #8f866f;
+  }
+  .knob:active { transform: translateY(2px); box-shadow: none; }
+
+  #kbd { position: fixed; left: -1000px; top: 0; opacity: 0; width: 1px; height: 1px; }
+
+  @keyframes blink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+  @keyframes disk { 0% { opacity: 1; } 50% { opacity: .3; } }
+  @keyframes flicker { 0% { opacity: .985; } 30% { opacity: 1; } 31% { opacity: .97; } 32% { opacity: 1; } 70% { opacity: .99; } }
+  @media (prefers-reduced-motion: reduce) {
+    .crt { animation: none; }
+    .cursor { animation: none; }
+  }
+
+  /* phones: drop the case, keep the tube */
+  @media (max-width: 640px) {
+    body { align-items: stretch; }
+    .monitor { width: 100vw; height: 100dvh; border-radius: 0; padding: 10px 10px 0; }
+    .bezel { padding: 8px; border-radius: 10px; }
+    .screen { border-radius: 12px / 16px; }
+    .statusbar { margin: 10px 12px 0; }
+    .scroll { padding: 8px 12px 16px; }
+    .chin { height: 44px; font-size: 13px; }
+    .badge { display: none; }
+    .controls { width: 100%; justify-content: space-between; }
+  }
+</style>
+</head>
+<body>
+  <div class="monitor">
+    <div class="bezel">
+      <div class="screen off" id="screen">
+        <div class="crt">
+          <div class="statusbar hidden" id="status"><span id="st-loc"></span><span id="st-turn"></span></div>
+          <div class="scroll" id="scroll">
+            <div id="out" aria-live="polite"></div>
+            <div class="inputline hidden" id="inputline"><span class="prompt">&gt;</span><span id="typed"></span><span class="cursor"></span></div>
+          </div>
+        </div>
+        <div class="scanlines"></div>
+        <div class="vignette"></div>
+        <div class="glare"></div>
+      </div>
+    </div>
+    <div class="chin">
+      <span class="badge">Monochrome Display</span>
+      <div class="controls">
+        <button class="knob" id="phosphor" title="Change phosphor (F2)">PHOSPHOR</button>
+        <span class="led" id="pwr"><i class="pwr"></i>POWER</span>
+        <span class="led"><i class="disk" id="disk"></i>DISK</span>
+      </div>
+    </div>
+  </div>
+  <input id="kbd" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="send">
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const out = $("out"), scroll = $("scroll"), kbd = $("kbd"), typed = $("typed"),
+        inputline = $("inputline"), disk = $("disk"), screen = $("screen");
+
+  // ---------- per-viewer conveniences (storage may be unavailable) ----------
+  const store = {
+    get(k, d) { try { return localStorage.getItem(k) ?? d; } catch { return d; } },
+    set(k, v) { try { localStorage.setItem(k, v); } catch {} },
+    sget(k) { try { return sessionStorage.getItem(k); } catch { return null; } },
+    sset(k, v) { try { sessionStorage.setItem(k, v); } catch {} },
+  };
+  const PHOSPHORS = ["green", "amber", "white"];
+  let phosphor = store.get("phosphor", "green");
+  const applyPhosphor = () => {
+    if (phosphor === "green") document.documentElement.removeAttribute("data-phosphor");
+    else document.documentElement.setAttribute("data-phosphor", phosphor);
+  };
+  applyPhosphor();
+  const cyclePhosphor = () => {
+    phosphor = PHOSPHORS[(PHOSPHORS.indexOf(phosphor) + 1) % PHOSPHORS.length];
+    store.set("phosphor", phosphor); applyPhosphor();
+  };
+  $("phosphor").addEventListener("click", e => { e.stopPropagation(); cyclePhosphor(); kbd.focus(); });
+
+  // ---------- output ----------
+  const atBottom = () => scroll.scrollHeight - scroll.scrollTop - scroll.clientHeight < 40;
+  const toBottom = () => { scroll.scrollTop = scroll.scrollHeight; };
+  const clean = s => s
+    .replace(/\*\*(.+?)\*\*/g, "$1").replace(/__(.+?)__/g, "$1")
+    .replace(/^#{1,6}\s*/gm, "").replace(/`([^`]*)`/g, "$1")
+    .replace(/^\s*[-*_]{3,}\s*$/gm, "")
+    .replace(/\n{3,}/g, "\n\n").trim();
+
+  function line(text, cls) {
+    const d = document.createElement("div");
+    if (cls) d.className = cls;
+    d.textContent = text;
+    out.appendChild(d); toBottom();
+    return d;
+  }
+
+  // A typewriter that types a growing target string; the target can be replaced.
+  function Typer(el) {
+    let target = "", shown = 0, raf = 0, resolveIdle = null;
+    const tick = () => {
+      const remaining = target.length - shown;
+      if (remaining <= 0) { raf = 0; resolveIdle && resolveIdle(); resolveIdle = null; return; }
+      const follow = atBottom();
+      shown += Math.max(2, Math.ceil(remaining / 40));
+      el.textContent = target.slice(0, shown);
+      if (follow) toBottom();
+      raf = requestAnimationFrame(tick);
+    };
+    const kick = () => { if (!raf) raf = requestAnimationFrame(tick); };
+    return {
+      set(t) {
+        if (!t.startsWith(target.slice(0, shown))) { shown = 0; }
+        target = t; kick();
+      },
+      idle() { return target.length - shown <= 0 ? Promise.resolve() : new Promise(r => { resolveIdle = r; }); },
+      finish() { shown = target.length; el.textContent = target; },
+    };
+  }
+
+  // ---------- status bar ----------
+  function setStatus(s) {
+    if (!s) return;
+    $("st-loc").textContent = s.loc || "";
+    $("st-turn").textContent = `Turn: ${s.turn ?? 0}`;
+    $("status").classList.toggle("hidden", !s.loc);
+    document.title = s.title ? `${s.title}` : "Infocom Terminal";
+  }
+
+  // ---------- input ----------
+  let busy = true, history = [], hIdx = -1;
+  const setBusy = b => {
+    busy = b;
+    inputline.classList.toggle("hidden", b);
+    disk.classList.toggle("active", b);
+    if (!b) { typed.textContent = kbd.value; toBottom(); }
+  };
+  const focus = () => { if (document.activeElement !== kbd) kbd.focus({ preventScroll: true }); };
+  screen.addEventListener("click", () => { if (!getSelection().toString()) focus(); });
+  document.addEventListener("keydown", e => {
+    if (e.key === "F2") { e.preventDefault(); cyclePhosphor(); return; }
+    if (e.target !== kbd && !e.metaKey && !e.ctrlKey && e.key.length === 1) focus();
+  });
+  kbd.addEventListener("input", () => { typed.textContent = kbd.value; toBottom(); });
+  kbd.addEventListener("keydown", e => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      const cmd = kbd.value.trim();
+      if (busy || !cmd) return;
+      kbd.value = ""; typed.textContent = "";
+      history.unshift(cmd); hIdx = -1;
+      send(cmd);
+    } else if (e.key === "ArrowUp" && history.length) {
+      e.preventDefault(); hIdx = Math.min(hIdx + 1, history.length - 1);
+      kbd.value = history[hIdx]; typed.textContent = kbd.value;
+    } else if (e.key === "ArrowDown") {
+      e.preventDefault(); hIdx = Math.max(hIdx - 1, -1);
+      kbd.value = hIdx < 0 ? "" : history[hIdx]; typed.textContent = kbd.value;
+    }
+  });
+
+  // ---------- talking to the DM ----------
+  async function send(cmd, opening = false) {
+    setBusy(true);
+    if (!opening) line(`>${cmd}`, "cmd");
+    const el = line("", "turn");
+    const typer = Typer(el);
+    let streamed = "";
+    try {
+      const res = await fetch("/api/command", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(opening ? { opening: true } : { cmd }),
+      });
+      if (res.status === 409) throw new Error("The DM is still thinking about your last command.");
+      if (!res.ok || !res.body) throw new Error(`Terminal error ${res.status}.`);
+      const reader = res.body.getReader(), dec = new TextDecoder();
+      let buf = "";
+      for (;;) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buf += dec.decode(value, { stream: true });
+        let i;
+        while ((i = buf.indexOf("\n\n")) >= 0) {
+          const chunk = buf.slice(0, i); buf = buf.slice(i + 2);
+          if (!chunk.startsWith("data: ")) continue;
+          const ev = JSON.parse(chunk.slice(6));
+          if (ev.t === "text") { streamed += ev.d; typer.set(clean(streamed)); }
+          else if (ev.t === "retract") { streamed = ""; typer.set(""); }
+          else if (ev.t === "done") { typer.set(clean(ev.d)); setStatus(ev.status); }
+          else if (ev.t === "error") { typer.set(ev.d); el.className = "err"; }
+        }
+      }
+      await typer.idle();
+    } catch (err) {
+      typer.set(String(err.message || err)); el.className = "err";
+      await typer.idle();
+    }
+    setBusy(false); focus();
+  }
+
+  // ---------- boot ----------
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+  let skip = false;
+  const skipper = () => { skip = true; };
+  document.addEventListener("keydown", skipper);
+  screen.addEventListener("click", skipper);
+  const wait = async ms => { if (!skip) await sleep(ms); };
+
+  async function bootSequence() {
+    line("PC BIOS Version 1.10  (C) Copyright 1981-1986");
+    const mem = line("");
+    for (let k = 0; k <= 640 && !skip; k += 32) { mem.textContent = `Memory Test: ${k}K`; await sleep(28); }
+    mem.textContent = "Memory Test: 640K OK";
+    await wait(350);
+    line(""); line("Starting PC-DOS..."); await wait(700);
+    line(""); line("C:\\>cd \\INFOCOM"); await wait(300);
+    const cmd = line("C:\\INFOCOM>");
+    for (const ch of "play" ) { if (skip) break; cmd.textContent += ch; await sleep(90); }
+    cmd.textContent = "C:\\INFOCOM>play";
+    await wait(500);
+    out.textContent = "";
+  }
+
+  async function boot() {
+    let state = { history: [] };
+    try { state = await (await fetch("/api/state")).json(); } catch {}
+    screen.classList.remove("off");
+    $("pwr").classList.add("on");
+    if (!store.sget("booted")) { disk.classList.add("active"); await bootSequence(); store.sset("booted", "1"); }
+    document.removeEventListener("keydown", skipper);
+    screen.removeEventListener("click", skipper);
+
+    setStatus(state);
+    if (state.title) {
+      line(state.title.toUpperCase(), "title");
+      line("Interactive Fiction \u2014 with a Claude Dungeon Master", "title");
+      line("");
+    }
+    for (const h of state.history || []) {
+      if (h.cmd) { line(`>${h.cmd}`, "cmd"); history.unshift(h.cmd); }
+      line(clean(h.out), "turn");
+    }
+    if (!(state.history || []).length) await send("", true);
+    else { setBusy(false); focus(); }
+  }
+
+  boot();
+})();
+</script>
+</body>
+</html>

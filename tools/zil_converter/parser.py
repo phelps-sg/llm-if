@@ -9,6 +9,75 @@ import sexpdata
 from sexpdata import Symbol
 
 
+_OPEN = {"<": ">", "(": ")", "[": "]"}
+
+
+def _skip_string(text: str, i: int) -> int:
+    """i is at an opening quote; return the index just past the closing quote."""
+    i += 1
+    while i < len(text):
+        if text[i] == "\\":
+            i += 2
+            continue
+        if text[i] == '"':
+            return i + 1
+        i += 1
+    return i
+
+
+def _skip_form(text: str, i: int) -> int:
+    """Return the index just past the ZIL form starting at (or after whitespace from) i."""
+    while i < len(text) and text[i].isspace():
+        i += 1
+    if i >= len(text):
+        return i
+    c = text[i]
+    if c == '"':
+        return _skip_string(text, i)
+    if c in _OPEN:
+        depth = 0
+        while i < len(text):
+            ch = text[i]
+            if ch == '"':
+                i = _skip_string(text, i)
+                continue
+            if ch in _OPEN:
+                depth += 1
+            elif ch in _OPEN.values():
+                depth -= 1
+                if depth == 0:
+                    return i + 1
+            i += 1
+        return i
+    if c == ";":  # a comment commenting out a comment
+        return _skip_form(text, i + 1)
+    # atom: up to whitespace or a bracket
+    while i < len(text) and not text[i].isspace() and text[i] not in "<>()[]\"":
+        i += 1
+    return i
+
+
+def strip_zil_comments(text: str) -> str:
+    """Remove ZIL comments. In ZIL `;` comments out the NEXT FORM (an atom, a
+    string or a bracketed form) — not the rest of the line — so
+    `(FLAGS LIGHTED ; SHADOWY)` keeps its closing paren and `; SBUBBLE CHILDREN`
+    removes only SBUBBLE."""
+    out = []
+    i = 0
+    while i < len(text):
+        c = text[i]
+        if c == '"':
+            j = _skip_string(text, i)
+            out.append(text[i:j])
+            i = j
+        elif c == ";":
+            i = _skip_form(text, i + 1)
+        else:
+            out.append(c)
+            i += 1
+    return "".join(out)
+
+
 class ZILParser:
     """Parser for ZIL S-expressions."""
 
@@ -54,13 +123,22 @@ class ZILParser:
 
                     start_idx = min(valid_positions, key=lambda x: x[0])[0]
 
-                    # Find the matching closing >
+                    # Find the matching closing > (brackets inside strings don't count)
                     depth = 0
+                    in_str = False
                     i = start_idx
                     while i < len(content):
-                        if content[i] == '<':
+                        c = content[i]
+                        if in_str:
+                            if c == '\\':
+                                i += 1
+                            elif c == '"':
+                                in_str = False
+                        elif c == '"':
+                            in_str = True
+                        elif c == '<':
                             depth += 1
-                        elif content[i] == '>':
+                        elif c == '>':
                             depth -= 1
                             if depth == 0:
                                 # Found complete form
@@ -100,16 +178,7 @@ class ZILParser:
         elif first_paren >= 0:
             zil_content = zil_content[first_paren:]
 
-        # Remove comments (lines starting with ;)
-        # Comments in ZIL don't contain meaningful closing brackets - they're just documentation
-        lines = []
-        for line in zil_content.split('\n'):
-            stripped = line.lstrip()
-            # If line starts with ;, it's a comment - skip it entirely
-            if not stripped.startswith(';'):
-                lines.append(line)
-
-        content = '\n'.join(lines)
+        content = strip_zil_comments(zil_content)
 
         # Convert angle brackets to parentheses
         content = content.replace('<', '(')

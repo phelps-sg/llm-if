@@ -122,6 +122,12 @@ class GameState(BaseModel):
             location = self.locations[location_id]
             global_object_ids = location.attributes.get("zil_global_objects", [])
             for item_id in global_object_ids:
+                # A room-global is only "here" while it lives in the global pools
+                # (ZIL: IN LOCAL-GLOBALS / GLOBAL-OBJECTS); once something MOVEs it
+                # elsewhere (into an NPC's hands, a room...) it isn't present.
+                where = self.item_locations.get(item_id)
+                if where not in (None, "local_globals", "global_objects", location_id):
+                    continue
                 if item_id in self.items and item_id not in [i.id for i in items]:
                     items.append(self.items[item_id])
 

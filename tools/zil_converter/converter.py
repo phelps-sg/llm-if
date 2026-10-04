@@ -6,6 +6,27 @@ Converts extracted ZIL entities into the LLM-IF JSON world format.
 from typing import Dict, Any, List, Optional
 
 
+# Late-era Infocom games (Trinity, ...) name their flags differently from the
+# classic Zork set; map them so takeable/container/open/... survive conversion.
+FLAG_ALIASES = {
+    "TAKEABLE": "TAKEBIT",
+    "CONTAINER": "CONTBIT",
+    "OPENED": "OPENBIT",
+    "NODESC": "NDESCBIT",
+    "LOCKED": "LOCKEDBIT",
+    "DOORLIKE": "DOORBIT",
+    "SURFACE": "SURFACEBIT",
+    "READABLE": "READBIT",
+    "TRANSPARENT": "TRANSBIT",
+    "CLOTHING": "WEARBIT",
+}
+
+
+def with_flag_aliases(flags: List[str]) -> List[str]:
+    """Flags plus their classic-name equivalents."""
+    return list(flags) + [FLAG_ALIASES[f] for f in flags if f in FLAG_ALIASES]
+
+
 class LocationConverter:
     """Convert ZIL rooms to JSON locations."""
 
@@ -277,7 +298,7 @@ class ItemConverter:
     def _convert_type_specific(self, obj_data: Dict[str, Any]) -> Dict[str, Any]:
         """Convert type-specific ZIL properties to JSON attributes."""
         attrs = {}
-        flags = obj_data.get("flags", [])
+        flags = with_flag_aliases(obj_data.get("flags", []))
 
         # Visibility - CRITICAL for gameplay
         # INVISIBLE flag means hidden until revealed (e.g., trap door under carpet)
