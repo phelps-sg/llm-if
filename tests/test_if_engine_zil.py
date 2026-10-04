@@ -178,3 +178,16 @@ def test_objects_that_dont_exist_yet_cant_be_taken(save):
     r = apply(save, [{"type": "move_item", "params": {"item_id": "bag", "to_location": "bwoman"}},
                      {"type": "add_to_inventory", "params": {"item_id": "bag"}}])
     assert r["ok"]
+
+
+def test_flattened_updates_are_accepted_and_empty_ones_rejected(save):
+    # A DM wrote {"type": "move_player", "destination": ...} without "params"; the
+    # engine used to ignore it and report ok.
+    r = run("apply", "--state", save, "--brief", "--updates",
+            json.dumps([{"type": "move_player", "destination": "flower_walk"}]))
+    assert r["ok"] and r["situation"]["loc"]["id"] == "flower_walk"
+    r = run("apply", "--state", save, "--brief", "--updates",
+            json.dumps([{"type": "move_player", "to_location": "pal_gate"}]))
+    assert r["situation"]["loc"]["id"] == "pal_gate"
+    r = run("apply", "--state", save, "--brief", "--updates", json.dumps([{"type": "move_player"}]))
+    assert not r["ok"] and "missing 'destination'" in r["error"]

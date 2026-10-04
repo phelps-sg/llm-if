@@ -933,7 +933,52 @@ def _parse_updates(args: argparse.Namespace) -> List[Dict[str, Any]]:
         data = [data]
     if not isinstance(data, list):
         raise ValueError("updates must be a JSON list of update objects")
-    return data
+    return [_normalize_update(u) for u in data]
+
+
+# Required parameter per update type, and common aliases a DM may use for it.
+_REQUIRED = {
+    "move_player": ("destination", ("to_location", "location", "to", "target")),
+    "add_to_inventory": ("item_id", ("target", "item")),
+    "remove_from_inventory": ("item_id", ("target", "item")),
+    "move_item": ("item_id", ("target", "item")),
+    "move_npc": ("npc_id", ("target", "npc")),
+    "set_flag": ("flag_name", ("name", "flag")),
+}
+
+
+def _normalize_update(u: Any) -> Dict[str, Any]:
+    """Accept the flattened form ({"type": "move_player", "destination": "x"}) as well
+    as the nested one ({"type": ..., "params": {...}}), and common aliases, so a
+    well-meant update is never silently a no-op."""
+    if not isinstance(u, dict):
+        return {"type": None}
+    params = dict(u.get("params") or {})
+    for k, v in u.items():
+        if k not in ("type", "params", "target") and k not in params:
+            params[k] = v
+    req = _REQUIRED.get(u.get("type"))
+    if req and not params.get(req[0]):
+        for alias in req[1]:
+            val = params.get(alias) if alias != "target" else (params.get("target") or u.get("target"))
+            if val:
+                params[req[0]] = val
+                break
+    out = {"type": u.get("type"), "params": params}
+    if "target" in u:
+        out["target"] = u["target"]
+    return out
+
+
+def _missing_params(updates: List[Dict[str, Any]]) -> List[str]:
+    missing = []
+    for u in updates:
+        req = _REQUIRED.get(u.get("type"))
+        if req and not (u.get("params") or {}).get(req[0]):
+            missing.append(f"{u.get('type')}: missing '{req[0]}' (give it in \"params\")")
+        if u.get("type") == "move_item" and not (u.get("params") or {}).get("to_location"):
+            missing.append("move_item: missing 'to_location'")
+    return missing
 
 
 def cmd_apply(args: argparse.Namespace) -> Dict[str, Any]:
@@ -943,6 +988,10 @@ def cmd_apply(args: argparse.Namespace) -> Dict[str, Any]:
     except (ValueError, json.JSONDecodeError) as e:
         return {"ok": False, "error": f"Could not parse updates: {e}"}
 
+    missing = _missing_params(updates)
+    if missing:
+        return {"ok": False, "error": "Nothing applied — " + "; ".join(missing),
+                "example": {"type": "move_player", "params": {"destination": "flower_walk"}}}
     # Validate update types up front so the DM gets a clear vocabulary error
     # rather than a silently-ignored update.
     bad = [u.get("type") for u in updates if u.get("type") not in VALID_UPDATE_TYPES]
