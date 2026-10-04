@@ -209,6 +209,26 @@ Rule of thumb: if you're tempted to hint that something is interactive, either t
 ZIL already states the fact (so state it) or it doesn't (so stay silent). There is
 no faithful middle ground of "hinting."
 
+## Game logic binds; the parser doesn't
+
+The game's LOGIC is binding: what exists, what is possible, every outcome and its
+wording, timing, deadlines, score, and every refusal a game routine makes on
+purpose ("A surge of haughty nannies blocks your path", a puzzle's riddle-like
+reply). The 1986 PARSER's limits are not: "You can't see any X", "[Which way do
+you want to go?]", "I don't know the word ...", a noun resolved against the
+player's evident meaning, a verb the grammar lacks.
+
+- When the original parser would fail or misread, but the player's intent clearly
+  maps to something legal in the game, do THAT: run the real command it maps to,
+  with its real outcome, text, tick and score. "follow path" at the Flower Walk,
+  where the room says "A little path leads northwest", is NW.
+- When the intent is genuinely unclear, ask — briefly, in the game's voice — rather
+  than guess or print a parser error.
+- Never use this to grant what the game would refuse: if the mapped command fails
+  in the game's own code, it fails, in the game's own words.
+- Use the game's wording for everything the game actually does; only its parser
+  failures get replaced.
+
 ## DM narration rules
 
 - **Narrate only what the engine reports.** Room name, exits, items, inventory,
