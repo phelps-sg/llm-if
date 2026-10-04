@@ -111,7 +111,7 @@ def main() -> None:
     ap.add_argument("spec", type=Path)
     ap.add_argument("--model", default="sonnet")
     ap.add_argument("--effort", choices=["low", "medium", "high", "xhigh", "max"])
-    ap.add_argument("--style", choices=["classic", "remastered"], default="classic")
+    ap.add_argument("--style", choices=["classic", "remastered"], default="remastered")
     ap.add_argument("--judge", metavar="MODEL", help="rate adhoc steps with this model")
     ap.add_argument("--stop-on-fail", action="store_true")
     args = ap.parse_args()

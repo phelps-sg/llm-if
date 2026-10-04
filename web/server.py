@@ -257,7 +257,7 @@ class HeadlessDM(Game):
 
     def __init__(self, game: str, state: Path, model: str, new: bool,
                  brief_game: Optional[str] = None, effort: Optional[str] = None,
-                 style: str = "classic"):
+                 style: str = "remastered"):
         super().__init__(game, state, new)
         self.model, self.effort, self.style = model, effort, style
         self.proc: Optional[subprocess.Popen] = None
@@ -459,9 +459,9 @@ def main() -> None:
     ap.add_argument("--dm", choices=["headless", "relay"], default="headless",
                     help="headless: own claude -p process; relay: an interactive session DMs via web/relay.py")
     ap.add_argument("--model", default="opus", help="claude model alias for --dm headless (opus, sonnet, ...)")
-    ap.add_argument("--style", choices=sorted(STYLES), default="classic",
-                    help="classic: the original's economy; remastered: richer, sensory prose "
-                         "in the same mood — facts unchanged")
+    ap.add_argument("--style", choices=sorted(STYLES), default="remastered",
+                    help="remastered (default): richer, sensory prose in the original's mood, "
+                         "facts unchanged; classic: the original's economy")
     ap.add_argument("--effort", choices=["low", "medium", "high", "xhigh", "max"],
                     help="DM reasoning effort (default: the model's default); lower is faster")
     ap.add_argument("--port", type=int, default=8086)

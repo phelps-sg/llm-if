@@ -10,9 +10,9 @@ narration; the deterministic engine (`scripts/if_engine.py`) keeps the state.
 ```
 
 Open http://127.0.0.1:8086. Stdlib only; Claude runs on your normal `claude` login.
-The default style is `classic` (the original's economy of prose); add
-`--style remastered` for richer, sensory descriptions in the original's mood —
-the same facts, a fuller telling.
+The default style is `remastered`: richer, sensory descriptions in the original's
+mood — the same facts, a fuller telling. Add `--style classic` for the original's
+economy of prose.
 
 ## DM backends
 
