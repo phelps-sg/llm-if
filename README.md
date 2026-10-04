@@ -43,6 +43,11 @@ before the bombs fall.
 - **A DM at the table.** Ask for a hint, ask why, or say `god mode:` — you get an
   answer out of character, and the game clock doesn't move. The feelies you
   don't have (the sundial's symbols, the map) are supplied.
+- **Classic or remastered.** Classic (the default) keeps the original's economy of
+  prose. The remastered edition tells the same world more richly — fuller,
+  sensory descriptions in the original's mood ("their hoods bob and their wheels
+  creak like a slow parade of tiny carriages") — with every fact unchanged and
+  nothing added that you could interact with.
 
 ## Play
 
@@ -51,6 +56,9 @@ uv venv .venv && uv pip install --python .venv/bin/python pydantic pyyaml sexpda
 
 # play in the retro terminal at http://127.0.0.1:8086
 .venv/bin/python web/server.py --game trinity --world worlds/trinity.json --new --model sonnet
+
+# or the remastered edition (classic is the default)
+.venv/bin/python web/server.py --game trinity --world worlds/trinity.json --new --model sonnet --style remastered
 ```
 
 The DM runs on your Claude Code login — no API keys. `worlds/trinity.json` is
@@ -112,8 +120,8 @@ API keys.
 | **Inline** | "play trinity inline" in Claude Code | Playing in the terminal with the `play-if` skill. |
 | **Subagent per turn** | the `play-if-dm` agent | Long games: a fresh agent each turn keeps cost flat. |
 
-Options: `--style` (`classic`, the original's economy, or `remastered` — richer,
-sensory descriptions in the same mood, with every fact unchanged), `--model`
+Options: `--style` (`classic` — the default, the original's economy — or
+`remastered`: richer, sensory descriptions in the same mood, every fact unchanged), `--model`
 (opus, sonnet…), `--effort` (low…max; Sonnet's default is medium), `--new` with
 `--world` for a fresh game. Saves and transcripts live in
 `saves/`; a reload redraws the screen. The server starts a fresh DM conversation
