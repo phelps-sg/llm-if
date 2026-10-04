@@ -107,6 +107,7 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("spec", type=Path)
     ap.add_argument("--model", default="sonnet")
+    ap.add_argument("--effort", choices=["low", "medium", "high", "xhigh", "max"])
     ap.add_argument("--judge", metavar="MODEL", help="rate adhoc steps with this model")
     ap.add_argument("--stop-on-fail", action="store_true")
     args = ap.parse_args()
@@ -117,7 +118,7 @@ def main() -> None:
     res = server.engine("init", "--world", spec["world"], "--state", str(state), "--force")
     if not res.get("ok"):
         sys.exit(res.get("error"))
-    dm = server.HeadlessDM(game, state, args.model, True, brief_game=spec["game"])
+    dm = server.HeadlessDM(game, state, args.model, True, brief_game=spec["game"], effort=args.effort)
 
     rows: List[Dict[str, Any]] = []
     try:

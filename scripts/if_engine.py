@@ -867,6 +867,14 @@ def cmd_context(args: argparse.Namespace) -> Dict[str, Any]:
             if amb:
                 result["ambiguous"] = amb
         verb = verb_routines(gs, args.cmd)
+        if verb and verb.get("routines") and not result.get("mentioned") and \
+                all("OBJECT" in x.split("=")[0] for x in verb.get("syntax", [])):
+            # Every syntax for this verb needs an object and the command names none we
+            # know ("get me out of here", "yes i am"): the 1986 reading is a misparse.
+            verb = {"word": verb["word"], "verb": verb["verb"],
+                    "note": "no confident parse: this verb needs an object and the command "
+                            "names none in scope. Don't run the verb routine — work out what "
+                            "the player means (a direction? leaving? talking to you?)"}
         if verb:
             result["verb"] = verb
         dest = destination_preview(gs, args.cmd)

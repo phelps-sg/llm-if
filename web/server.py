@@ -22,7 +22,9 @@ Stdlib only. Auth comes from your normal `claude` login (subscription).
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
+import re
 import queue
 import subprocess
 import sys
@@ -84,7 +86,23 @@ def opening_intro(state: Path) -> Optional[str]:
     return (data.get("world_context") or {}).get("intro")
 
 
-def turn_message(state: Path, text: str, opening: bool = False, fresh: bool = False) -> str:
+HOW_TO_ANSWER = (
+    "Answer what the player MEANS, as a game master at the table would. The game's logic "
+    "(what exists, what's possible, outcomes, timing, score) binds; the 1986 parser and its "
+    "wording do not. Never reply with a parser error (\"I don't know the word...\", \"You can't "
+    "be serious.\", \"You can't see any...\"). If they're talking to you, answer them in "
+    "[brackets]. If the game really refuses something, say so in your own voice, with the reason."
+)
+
+# A reply that is just a 1986 parser failure, not an answer.
+PARSER_ERROR_RE = re.compile(
+    r"^\s*(I don't know the word|You can't see any|You can't be serious|What a ridiculous concept|"
+    r"That's impossible|\[Which way do you want|I don't understand|That sentence isn't one|"
+    r"You used the word|There was no verb)", re.I)
+
+
+def turn_message(state: Path, text: str, opening: bool = False, fresh: bool = False,
+                 recap: str = "") -> str:
     ctx = context(state, "" if opening else text, fresh)
     msg = ""
     intro = opening_intro(state) if opening else None
@@ -94,6 +112,9 @@ def turn_message(state: Path, text: str, opening: bool = False, fresh: bool = Fa
     for k in CONTEXT_BLOCKS:
         if ctx.get(k):
             msg += f"[{k}]\n{json.dumps(ctx[k])}\n\n"
+    if recap:
+        msg += f"[recent transcript — you are picking up this game mid-play]\n{recap}\n\n"
+    msg += f"[how to answer]\n{HOW_TO_ANSWER}\n\n"
     return msg + f"[player]\n{text}"
 
 
@@ -194,14 +215,12 @@ class HeadlessDM(Game):
     """One persistent Claude Code process; one turn at a time."""
 
     def __init__(self, game: str, state: Path, model: str, new: bool,
-                 brief_game: Optional[str] = None):
+                 brief_game: Optional[str] = None, effort: Optional[str] = None):
         super().__init__(game, state, new)
-        self.model = model
+        self.model, self.effort = model, effort
         self.proc: Optional[subprocess.Popen] = None
         self.events: "queue.Queue[Optional[dict]]" = queue.Queue()
         meta = json.loads(self.meta_path.read_text()) if self.meta_path.exists() else {}
-        self.session_id: str = meta.get("session_id") or str(uuid.uuid4())
-        self.resume = bool(meta.get("session_id"))
         info = world_notes(state)
         rel_state = str(state.relative_to(REPO))
         notes = info["notes"]
@@ -213,6 +232,14 @@ class HeadlessDM(Game):
             .replace("{STATE}", rel_state)
             .replace("{WORLD_NOTES}", notes)
         )
+        # A changed prompt gets a fresh DM conversation on the same game: resuming
+        # the old one lets its old answers outweigh the new rules.
+        self.prompt_hash = hashlib.sha256(self.system_prompt.encode()).hexdigest()[:12]
+        if meta.get("session_id") and meta.get("prompt") == self.prompt_hash:
+            self.session_id, self.resume = meta["session_id"], True
+        else:
+            self.session_id, self.resume = str(uuid.uuid4()), False
+        self.needs_recap = not self.resume and bool(self.history())
 
     # -- process management -------------------------------------------------
     def _spawn(self) -> None:
@@ -222,6 +249,7 @@ class HeadlessDM(Game):
             "--output-format", "stream-json",
             "--include-partial-messages", "--verbose",
             "--model", self.model,
+            *(["--effort", self.effort] if self.effort else []),
             "--system-prompt", self.system_prompt,
             "--tools", "Bash",
             "--allowedTools", "Bash(.venv/bin/python scripts/if_engine.py:*)",
@@ -236,7 +264,7 @@ class HeadlessDM(Game):
         self.events = queue.Queue()
         threading.Thread(target=self._pump, args=(self.proc, self.events), daemon=True).start()
         threading.Thread(target=self._drain_stderr, args=(self.proc,), daemon=True).start()
-        self.meta_path.write_text(json.dumps({"session_id": self.session_id}))
+        self.meta_path.write_text(json.dumps({"session_id": self.session_id, "prompt": self.prompt_hash}))
         self.resume = True  # any later respawn resumes this session
 
     @staticmethod
@@ -260,21 +288,41 @@ class HeadlessDM(Game):
 
     # -- a turn -----------------------------------------------------------------
     def turn(self, text: str, opening: bool = False) -> Iterator[Dict[str, Any]]:
-        """Yield UI events: text deltas, retract (drop pre-tool chatter), busy, done."""
+        """Yield UI events: text deltas, retract (drop text being replaced), busy, done."""
         fresh = not self._alive()
         if fresh:
             self._spawn()
-        msg = {"type": "user", "message": {"role": "user",
-               "content": turn_message(self.state, text, opening, fresh)}}
+        recap = ""
+        if self.needs_recap:
+            recap = "\n".join(f">{h['cmd']}\n{h['out']}" if h.get("cmd") else h["out"]
+                              for h in self.history()[-12:])
+            self.needs_recap = False
+        final = yield from self._exchange(turn_message(self.state, text, opening, fresh, recap))
+        if final is None:
+            return
+        if not opening and PARSER_ERROR_RE.match(final) and len(final) < 240:
+            # Guard: a bare 1986 parser error isn't an answer. Ask once for a real one.
+            yield {"t": "retract"}
+            again = yield from self._exchange(
+                f"[correction]\nYour reply \"{final.strip()}\" is a 1986 parser error, not an "
+                f"answer. The player typed: \"{text}\". {HOW_TO_ANSWER} Fix any state you "
+                f"changed for the wrong reading, then give your real reply — nothing else.")
+            if again is None:
+                return
+            final = again
+        yield {"t": "done", "d": final}
+
+    def _exchange(self, content: str):
+        """Send one user message; stream events; return the final text (None on error)."""
+        msg = {"type": "user", "message": {"role": "user", "content": content}}
         self.proc.stdin.write(json.dumps(msg) + "\n")  # type: ignore[union-attr]
         self.proc.stdin.flush()  # type: ignore[union-attr]
-
         streamed = ""
         while True:
             ev = self.events.get()
             if ev is None:
                 yield {"t": "error", "d": "The terminal has lost its connection to the DM."}
-                return
+                return None
             kind = ev.get("type")
             if kind == "stream_event":
                 se = ev["event"]
@@ -290,10 +338,8 @@ class HeadlessDM(Game):
                 final = ev.get("result") or ""
                 if ev.get("is_error"):
                     yield {"t": "error", "d": final or "The DM is unavailable."}
-                    return
-                yield {"t": "done", "d": final, "ms": ev.get("duration_ms")}
-                return
-
+                    return None
+                return final
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -368,6 +414,8 @@ def main() -> None:
     ap.add_argument("--dm", choices=["headless", "relay"], default="headless",
                     help="headless: own claude -p process; relay: an interactive session DMs via web/relay.py")
     ap.add_argument("--model", default="opus", help="claude model alias for --dm headless (opus, sonnet, ...)")
+    ap.add_argument("--effort", choices=["low", "medium", "high", "xhigh", "max"],
+                    help="DM reasoning effort (default: the model's default); lower is faster")
     ap.add_argument("--port", type=int, default=8086)
     args = ap.parse_args()
 
@@ -383,8 +431,8 @@ def main() -> None:
         Handler.dm = RelayDM(args.game, state, args.new)
         mode = "relay — DM with: .venv/bin/python web/relay.py wait"
     else:
-        Handler.dm = HeadlessDM(args.game, state, args.model, args.new)
-        mode = f"headless, model {args.model}"
+        Handler.dm = HeadlessDM(args.game, state, args.model, args.new, effort=args.effort)
+        mode = f"headless, model {args.model}" + (f", effort {args.effort}" if args.effort else "")
     srv = ThreadingHTTPServer(("127.0.0.1", args.port), Handler)
     print(f"{Handler.dm.title} — http://127.0.0.1:{args.port}  ({mode}; Ctrl-C to quit)", flush=True)
     try:

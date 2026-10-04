@@ -25,6 +25,14 @@
       }
     },
     {
+      "cmd": "x watch",
+      "expect": {
+        "contains": [
+          "3:30:30"
+        ]
+      }
+    },
+    {
       "cmd": "god mode: describe the symbols as they would have appeared in the package",
       "adhoc": true,
       "expect": {
@@ -80,10 +88,28 @@
       }
     },
     {
-      "cmd": "x watch",
+      "cmd": "e",
       "expect": {
-        "contains": [
-          "3:30:30"
+        "loc": "wabe"
+      },
+      "_note": "thicket really blocks: a legit game refusal"
+    },
+    {
+      "cmd": "get me out of here",
+      "adhoc": true,
+      "expect": {
+        "not_contains": [
+          "^\\s*You can't be serious",
+          "^\\s*I don't know the word"
+        ]
+      }
+    },
+    {
+      "cmd": "yes i am",
+      "adhoc": true,
+      "expect": {
+        "not_contains": [
+          "^\\s*I don't know the word"
         ]
       }
     }
