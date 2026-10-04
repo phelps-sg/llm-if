@@ -91,8 +91,11 @@ HOW_TO_ANSWER = (
     "(what exists, what's possible, outcomes, timing, score) binds; the 1986 parser and its "
     "wording do not. Never reply with a parser error (\"I don't know the word...\", \"You can't "
     "be serious.\", \"You can't see any...\"). If they're talking to you, answer them in "
-    "[brackets]. If the game refuses or nothing happens, the OUTCOME stands but the telling is "
-    "yours: play the attempt out with some flair and end the world exactly where the game does."
+    "[brackets]. Many game refusals are 1986 sleight of hand: if allowing the action changes "
+    "nothing the game reads later (place, objects, flags, timers, puzzles), let it happen "
+    "and play it out — colour only, world unchanged. If it would, the outcome binds but the "
+    "telling is yours. Puzzles: the game's solution always works; a player's own clever, "
+    "non-trivial solution can work too — land it where the intended one would."
 )
 
 # A reply that is just a 1986 parser failure, not an answer.

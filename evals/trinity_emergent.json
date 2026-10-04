@@ -1,0 +1,71 @@
+{
+  "game": "trinity",
+  "world": "worlds/trinity.json",
+  "_about": "Puzzle flexibility: trivial bypasses fail; clever unanticipated solutions may succeed, and must land where the intended solution would (umbrella in hand, +5).",
+  "steps": [
+    {
+      "cmd": "__open",
+      "expect": {
+        "loc": "pal_gate"
+      }
+    },
+    {
+      "cmd": "n",
+      "expect": {
+        "loc": "broad_walk"
+      }
+    },
+    {
+      "cmd": "e",
+      "expect": {
+        "loc": "round_pond"
+      }
+    },
+    {
+      "cmd": "ne",
+      "expect": {
+        "loc": "lan_gate"
+      }
+    },
+    {
+      "cmd": "wait",
+      "expect": {
+        "loc": "lan_gate"
+      }
+    },
+    {
+      "cmd": "take umbrella",
+      "adhoc": true,
+      "expect": {
+        "inv_lacks": [
+          "parasol"
+        ]
+      },
+      "_note": "trivial bypass: it's high in the tree"
+    },
+    {
+      "cmd": "climb the tree and work the umbrella loose from the branches",
+      "adhoc": true,
+      "expect": {
+        "loc": "lan_gate"
+      }
+    },
+    {
+      "cmd": "throw the credit card at the umbrella",
+      "adhoc": true,
+      "expect": {
+        "loc": "lan_gate"
+      }
+    },
+    {
+      "cmd": "look",
+      "adhoc": true,
+      "expect": {}
+    },
+    {
+      "cmd": "i",
+      "adhoc": true,
+      "expect": {}
+    }
+  ]
+}

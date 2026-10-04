@@ -1,0 +1,86 @@
+{
+  "game": "trinity",
+  "world": "worlds/trinity.json",
+  "_about": "Cosmetic refusals (1986 sleight of hand) should become play; the world must end unchanged. Load-bearing ones keep their outcome.",
+  "steps": [
+    {
+      "cmd": "__open",
+      "expect": {
+        "loc": "pal_gate"
+      }
+    },
+    {
+      "cmd": "n",
+      "expect": {
+        "loc": "broad_walk"
+      }
+    },
+    {
+      "cmd": "e",
+      "expect": {
+        "loc": "round_pond"
+      }
+    },
+    {
+      "cmd": "go for a swim",
+      "adhoc": true,
+      "expect": {
+        "loc": "round_pond",
+        "not_contains": [
+          "^\\s*Swimming in the Round Pond is strictly forbidden"
+        ],
+        "inv_has": [
+          "pocket",
+          "wristwatch"
+        ]
+      }
+    },
+    {
+      "cmd": "look at the children",
+      "adhoc": true,
+      "expect": {
+        "loc": "round_pond"
+      }
+    },
+    {
+      "cmd": "play with them",
+      "adhoc": true,
+      "expect": {
+        "loc": "round_pond",
+        "not_contains": [
+          "^\\s*Playing with the children would hardly"
+        ],
+        "inv_has": [
+          "pocket"
+        ]
+      }
+    },
+    {
+      "cmd": "climb a tree",
+      "adhoc": true,
+      "expect": {
+        "loc": "round_pond"
+      }
+    },
+    {
+      "cmd": "w",
+      "expect": {
+        "loc": "broad_walk"
+      }
+    },
+    {
+      "cmd": "s",
+      "expect": {
+        "loc": "pal_gate"
+      }
+    },
+    {
+      "cmd": "s",
+      "adhoc": true,
+      "expect": {
+        "loc": "pal_gate"
+      },
+      "_note": "load-bearing: the gate keeps you in the Gardens"
+    }
+  ]
+}
