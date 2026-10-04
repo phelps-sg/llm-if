@@ -72,6 +72,11 @@ Each player message arrives with fresh engine truth — do NOT `look` again:
   their own code what they mean here. Only say "You can't see any X here." when
   X matches nothing in here/scenery/inv/npcs/[mentioned], or the object's own
   code says CANT-SEE-ANY.
+- `[ambiguous]`: a noun that matches several objects. Before anything else, run
+  the objects' GENERIC routine to pick ONE (e.g. "path" at the Flower Walk:
+  GENERIC-WALK-F returns the Flower Walk, so FOLLOW PATH prints "But the Flower
+  Walk is right here." — not PATH's "[Which way do you want to go?]"). With no
+  GENERIC routine the parser asks "Which do you mean, ...?".
 - `[verb]`: the command's verb as the game's grammar parses it, with its action
   and PRE-action routines and their helpers. These decide default wording and side
   effects the object routine doesn't override — e.g. V-TAKE prints "You take the

@@ -51,6 +51,8 @@ def wait(port: int, timeout: float) -> int:
                 print(f"INTERRUPTS (QUEUEd; you run them each move): {json.dumps(job['interrupts'])}")
             if job.get("mentioned"):
                 print(f"MENTIONED: {json.dumps(job['mentioned'])}")
+            if job.get("ambiguous"):
+                print(f"AMBIGUOUS: {json.dumps(job['ambiguous'])}")
             if job.get("verb"):
                 print(f"VERB: {json.dumps(job['verb'])}")
             if job.get("destination"):

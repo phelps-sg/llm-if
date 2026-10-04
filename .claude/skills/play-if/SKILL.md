@@ -147,6 +147,8 @@ apply --state saves/zork_dm.json --advance-turn --updates \
   flags and helper routines of every in-scope object the command names — and
   `verb`: the verb's action/PRE routines from the game's SYNTAX table, which decide
   default wording and side effects (V-TAKE: "You take X off Y", points) — and,
+  `ambiguous` when a noun matches several objects, with their GENERIC tie-breaker
+  routine (run it first: it picks which object the parser uses) — and,
   for a move along a plain exit, `destination`: the room's ZIL, so arrival effects
   (M-ENTERED) go in the same `apply` as the move, before its tick.
 - **Score.** Taking an object with a VALUE scores automatically (`mechanics.score`

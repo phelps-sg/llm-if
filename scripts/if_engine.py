@@ -579,24 +579,69 @@ def mentioned_objects(gs: GameState, command: str) -> Dict[str, Any]:
         ent = gs.items.get(eid) or gs.npcs.get(eid)
         if ent is None or not (words & _words_for(ent)):
             continue
-        attrs = ent.attributes or {}
-        code = attrs.get("zil_action_code") or ""
-        entry: Dict[str, Any] = {"name": ent.name}
-        flags = attrs.get("zil_flags")
-        if flags:
-            entry["flags"] = flags
-        if code:
-            entry["zil"] = code[:CODE_CAP]
-            if len(code) > CODE_CAP:
-                entry["zil_truncated"] = f"{len(code)} chars; inspect {eid} for the rest"
-            refs = zil_refs(gs, code)
-            if refs:
-                entry["refs"] = refs
-            helpers = small_helpers(gs, code)
-            if helpers:
-                entry["helpers"] = helpers
-        out[eid] = entry
+        out[eid] = _object_entry(gs, eid, ent, routines)
     return out
+
+
+def ambiguities(gs: GameState, command: str, mentioned: Dict[str, Any]) -> List[Dict[str, Any]]:
+    """Nouns that match several objects in scope. The real parser resolves these
+    with the objects' GENERIC routine (e.g. "path" at the Flower Walk ->
+    GENERIC-WALK-F picks the Flower Walk, not PATH) before any action runs."""
+    routines = (gs.world_context or {}).get("global_routines") or {}
+    words = re.findall(r"[a-z]+", command.lower())
+    found = []
+    for w in dict.fromkeys(words):
+        cands = [eid for eid in mentioned
+                 if w in (_synonyms_of(gs.items.get(eid) or gs.npcs.get(eid)))]
+        if len(cands) < 2:
+            continue
+        entry: Dict[str, Any] = {"word": w, "candidates": cands}
+        resolvers: Dict[str, str] = {}
+        for eid in cands:
+            ent = gs.items.get(eid) or gs.npcs.get(eid)
+            g = (ent.attributes or {}).get("zil_generic") if ent else None
+            r = routines.get(g) if g else None
+            rc = (r.get("zil_code") if isinstance(r, dict) else r) or ""
+            if g and rc:
+                resolvers[g] = rc[:CODE_CAP]
+        if resolvers:
+            entry["generic"] = resolvers
+        else:
+            entry["note"] = "no GENERIC routine: the parser would ask which one you mean"
+        found.append(entry)
+    return found
+
+
+def _synonyms_of(ent) -> set:
+    """Nouns only (synonyms + name's last word) — adjectives don't make a match."""
+    if ent is None:
+        return set()
+    attrs = ent.attributes or {}
+    nouns = {w.lower() for w in (attrs.get("zil_synonyms") or [])}
+    name_words = re.findall(r"[a-z]+", (ent.name or "").lower())
+    if name_words:
+        nouns.add(name_words[-1])
+    return nouns
+
+
+def _object_entry(gs: GameState, eid: str, ent, routines: Dict[str, Any]) -> Dict[str, Any]:
+    attrs = ent.attributes or {}
+    code = attrs.get("zil_action_code") or ""
+    entry: Dict[str, Any] = {"name": ent.name}
+    flags = attrs.get("zil_flags")
+    if flags:
+        entry["flags"] = flags
+    if code:
+        entry["zil"] = code[:CODE_CAP]
+        if len(code) > CODE_CAP:
+            entry["zil_truncated"] = f"{len(code)} chars; inspect {eid} for the rest"
+        refs = zil_refs(gs, code)
+        if refs:
+            entry["refs"] = refs
+        helpers = small_helpers(gs, code)
+        if helpers:
+            entry["helpers"] = helpers
+    return entry
 
 
 def verb_routines(gs: GameState, command: str) -> Optional[Dict[str, Any]]:
@@ -689,6 +734,9 @@ def cmd_context(args: argparse.Namespace) -> Dict[str, Any]:
         found = mentioned_objects(gs, args.cmd)
         if found:
             result["mentioned"] = found
+            amb = ambiguities(gs, args.cmd, found)
+            if amb:
+                result["ambiguous"] = amb
         verb = verb_routines(gs, args.cmd)
         if verb:
             result["verb"] = verb

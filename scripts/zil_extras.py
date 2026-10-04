@@ -46,6 +46,7 @@ _DEF_RE = re.compile(
 _OBJ_RE = re.compile(r'^<(?:OBJECT|ROOM)\s+([A-Z0-9?!\-]+)(.*?)(?=^<)', re.S | re.M)
 _DESC_RE = re.compile(r'\(DESC\s+"((?:[^"\\]|\\.)*)"\)', re.S)
 _VALUE_RE = re.compile(r'\(VALUE\s+(\d+)\)')
+_GENERIC_RE = re.compile(r'\(GENERIC\s+([A-Z0-9?!$\-]+)\)')
 _SYNTAX_RE = re.compile(r'<SYNTAX\s+([^=>]+?)=\s*([A-Z0-9?!$\-]+)(?:\s+([A-Z0-9?!$\-]+))?\s*>', re.S)
 _DIRS = "NORTH|SOUTH|EAST|WEST|NE|NW|SE|SW|UP|DOWN|IN|OUT"
 _EXIT_RE = re.compile(r'\((' + _DIRS + r')\s+(PER\s+[A-Z0-9?!\-]+|SORRY\s+"(?:[^"\\]|\\.)*"'
@@ -68,6 +69,7 @@ def parse_source(src: Path) -> Dict[str, Dict[str, Any]]:
     globals_: Dict[str, Any] = {}
     descs: Dict[str, str] = {}
     values: Dict[str, int] = {}
+    generics: Dict[str, str] = {}
     syntax: Dict[str, List[Dict[str, Any]]] = {}
     exits: Dict[str, Dict[str, str]] = {}
     synonyms: Dict[str, str] = {}
@@ -79,6 +81,9 @@ def parse_source(src: Path) -> Dict[str, Dict[str, Any]]:
             m = _DESC_RE.search(body)
             if m:
                 descs[name] = zil_string(m.group(1))
+            g = _GENERIC_RE.search(body)
+            if g:
+                generics[name] = g.group(1)
             v = _VALUE_RE.search(body)
             if v and int(v.group(1)):
                 values[name] = int(v.group(1))
@@ -105,6 +110,7 @@ def parse_source(src: Path) -> Dict[str, Dict[str, Any]]:
             for w in syns.split():
                 synonyms[w] = verb
     return {"globals": globals_, "descs": descs, "values": values, "exits": exits,
+            "generics": generics,
             "syntax": syntax, "synonyms": synonyms}
 
 
@@ -251,6 +257,12 @@ def main() -> None:
         if loc is not None:
             loc.setdefault("attributes", {})["zil_exits"] = ex
             cond += len(ex)
+    # The parser's tie-breaker when a word matches several objects (GENERIC).
+    for name, routine in src["generics"].items():
+        ent = ((world.get("items") or {}).get(name.lower().replace("-", "_"))
+               or (world.get("npcs") or {}).get(name.lower().replace("-", "_")))
+        if ent is not None:
+            ent.setdefault("attributes", {})["zil_generic"] = routine
     # Points an object is worth when first taken (V-TAKE awards P?VALUE).
     valued = 0
     for name, v in src["values"].items():
@@ -290,6 +302,7 @@ def main() -> None:
         "boot_queue": wc["boot_queue"], "flag_attrs_set": n,
         "routines_added": len(added), "routines_added_sample": added[:12],
         "syntax_verbs": len(src["syntax"]), "valued_items": valued, "conditional_exits": cond,
+        "generics": len(src["generics"]),
         "values_unmatched": sorted(set(src["values"]) - {k.upper().replace("_", "-") for k in (world.get("items") or {})}),
         "intro": (wc.get("intro") or "")[:160],
     }, indent=2))

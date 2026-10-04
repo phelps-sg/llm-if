@@ -18425,7 +18425,8 @@
               ]
             }
           ]
-        }
+        },
+        "zil_generic": "GENERIC-GI-F"
       }
     },
     "wearing": {
@@ -19050,7 +19051,8 @@
               ]
             }
           ]
-        }
+        },
+        "zil_generic": "GENERIC-LONDON-F"
       }
     },
     "lcity": {
@@ -19134,7 +19136,8 @@
               ]
             }
           ]
-        }
+        },
+        "zil_generic": "GENERIC-LONDON-F"
       }
     },
     "path": {
@@ -19287,7 +19290,8 @@
               ]
             }
           ]
-        }
+        },
+        "zil_generic": "GENERIC-WALK-F"
       }
     },
     "meteor": {
@@ -20499,7 +20503,8 @@
           ]
         },
         "wearable": true,
-        "worn": true
+        "worn": true,
+        "zil_generic": "GENERIC-CLOCK-F"
       }
     },
     "coin": {
@@ -20900,7 +20905,8 @@
               ]
             }
           ]
-        }
+        },
+        "zil_generic": "GENERIC-BIRD-F"
       }
     },
     "flwalk": {
@@ -20973,7 +20979,8 @@
               ]
             }
           ]
-        }
+        },
+        "zil_generic": "GENERIC-WALK-F"
       }
     },
     "pgate": {
@@ -21038,7 +21045,8 @@
               ]
             }
           ]
-        }
+        },
+        "zil_generic": "GENERIC-GATE-F"
       }
     },
     "blgate": {
@@ -21104,7 +21112,8 @@
               ]
             }
           ]
-        }
+        },
+        "zil_generic": "GENERIC-GATE-F"
       }
     },
     "lgate": {
@@ -21169,7 +21178,8 @@
               ]
             }
           ]
-        }
+        },
+        "zil_generic": "GENERIC-GATE-F"
       }
     },
     "ifence": {
@@ -21384,7 +21394,8 @@
               ]
             }
           ]
-        }
+        },
+        "zil_generic": "GENERIC-WALK-F"
       }
     },
     "terrace": {
@@ -21850,7 +21861,8 @@
             }
           ]
         },
-        "surface": true
+        "surface": true,
+        "zil_generic": "GENERIC-WATER-F"
       }
     },
     "grpond": {
@@ -22043,7 +22055,8 @@
             }
           ]
         },
-        "surface": true
+        "surface": true,
+        "zil_generic": "GENERIC-WATER-F"
       }
     },
     "rpond": {
@@ -22255,7 +22268,8 @@
             }
           ]
         },
-        "surface": true
+        "surface": true,
+        "zil_generic": "GENERIC-WATER-F"
       }
     },
     "crane": {
@@ -22724,7 +22738,8 @@
             }
           ]
         },
-        "readable": true
+        "readable": true,
+        "zil_generic": "GENERIC-BIRD-F"
       }
     },
     "ocrane": {
@@ -22976,7 +22991,8 @@
             }
           ]
         },
-        "readable": true
+        "readable": true,
+        "zil_generic": "GENERIC-BIRD-F"
       }
     },
     "bad_crane": {
@@ -23230,7 +23246,8 @@
             }
           ]
         },
-        "readable": true
+        "readable": true,
+        "zil_generic": "GENERIC-BIRD-F"
       }
     },
     "pond_birds": {
@@ -23366,7 +23383,8 @@
               ]
             }
           ]
-        }
+        },
+        "zil_generic": "GENERIC-BIRD-F"
       }
     },
     "boat": {
@@ -26888,7 +26906,8 @@
             }
           ]
         },
-        "zil_value": 5
+        "zil_value": 5,
+        "zil_generic": "GENERIC-METAL-F"
       }
     },
     "lever": {
@@ -28051,7 +28070,8 @@
               ]
             }
           ]
-        }
+        },
+        "zil_generic": "GENERIC-WALK-F"
       }
     },
     "victoria": {
@@ -29002,7 +29022,8 @@
             }
           ]
         },
-        "openable": true
+        "openable": true,
+        "zil_generic": "GENERIC-BAG-F"
       }
     },
     "ebag": {
@@ -29167,7 +29188,8 @@
             }
           ]
         },
-        "openable": true
+        "openable": true,
+        "zil_generic": "GENERIC-BAG-F"
       }
     },
     "soggy": {
@@ -29330,7 +29352,8 @@
             }
           ]
         },
-        "openable": true
+        "openable": true,
+        "zil_generic": "GENERIC-BAG-F"
       }
     },
     "gbag": {
@@ -29498,7 +29521,8 @@
               ]
             }
           ]
-        }
+        },
+        "zil_generic": "GENERIC-BAG-F"
       }
     },
     "ruby": {
@@ -29765,7 +29789,8 @@
               ]
             }
           ]
-        }
+        },
+        "zil_generic": "GENERIC-PRAM-F"
       }
     },
     "pram": {
@@ -30631,7 +30656,8 @@
             }
           ]
         },
-        "openable": true
+        "openable": true,
+        "zil_generic": "GENERIC-PRAM-F"
       }
     },
     "bpram": {
@@ -34407,7 +34433,8 @@
               ]
             }
           ]
-        }
+        },
+        "zil_generic": "GENERIC-WIND-F"
       }
     },
     "wwind": {
@@ -34489,7 +34516,8 @@
               ]
             }
           ]
-        }
+        },
+        "zil_generic": "GENERIC-WIND-F"
       }
     },
     "stair": {
@@ -34715,7 +34743,8 @@
               ]
             }
           ]
-        }
+        },
+        "zil_generic": "GENERIC-TRIANGLE-F"
       }
     },
     "gplatform": {
@@ -35118,7 +35147,8 @@
               ]
             }
           ]
-        }
+        },
+        "zil_generic": "GENERIC-TRIANGLE-F"
       }
     },
     "outer_shadow": {
@@ -37203,7 +37233,8 @@
             }
           ]
         },
-        "surface": true
+        "surface": true,
+        "zil_generic": "GENERIC-TS-F"
       }
     },
     "hts": {
@@ -37354,7 +37385,8 @@
             }
           ]
         },
-        "surface": true
+        "surface": true,
+        "zil_generic": "GENERIC-TS-F"
       }
     },
     "ts6": {
@@ -38375,7 +38407,8 @@
             }
           ]
         },
-        "openable": true
+        "openable": true,
+        "zil_generic": "GENERIC-DOOR-F"
       }
     },
     "ts5_door": {
@@ -39881,7 +39914,8 @@
               ]
             }
           ]
-        }
+        },
+        "zil_generic": "GENERIC-TREE-F"
       }
     },
     "chasm": {
@@ -40967,7 +41001,8 @@
             }
           ]
         },
-        "zil_value": 1
+        "zil_value": 1,
+        "zil_generic": "GENERIC-BULB-F"
       }
     },
     "heap": {
@@ -42700,7 +42735,8 @@
               ]
             }
           ]
-        }
+        },
+        "zil_generic": "GENERIC-BUBBLE-F"
       }
     },
     "film": {
@@ -43164,7 +43200,8 @@
               ]
             }
           ]
-        }
+        },
+        "zil_generic": "GENERIC-BUBBLE-F"
       }
     },
     "lump": {
@@ -44049,7 +44086,8 @@
           ]
         },
         "zil_value": 1,
-        "surface": true
+        "surface": true,
+        "zil_generic": "GENERIC-METAL-F"
       }
     },
     "crater": {
@@ -44960,7 +44998,8 @@
               ]
             }
           ]
-        }
+        },
+        "zil_generic": "GENERIC-RIVER-F"
       }
     },
     "cave_hole": {
@@ -45518,7 +45557,8 @@
               ]
             }
           ]
-        }
+        },
+        "zil_generic": "GENERIC-RIVER-F"
       }
     },
     "ssteps": {
@@ -46592,7 +46632,8 @@
             }
           ]
         },
-        "readable": true
+        "readable": true,
+        "zil_generic": "GENERIC-TOMB-F"
       }
     },
     "crypt": {
@@ -47221,7 +47262,8 @@
           ]
         },
         "surface": true,
-        "readable": true
+        "readable": true,
+        "zil_generic": "GENERIC-TOMB-F"
       }
     },
     "lid": {
@@ -49361,7 +49403,8 @@
             }
           ]
         },
-        "wearable": true
+        "wearable": true,
+        "zil_generic": "GENERIC-BOOT-F"
       }
     },
     "gboot": {
@@ -49469,7 +49512,8 @@
             }
           ]
         },
-        "wearable": true
+        "wearable": true,
+        "zil_generic": "GENERIC-BOOT-F"
       }
     },
     "bcoin": {
@@ -50056,7 +50100,8 @@
               ]
             }
           ]
-        }
+        },
+        "zil_generic": "GENERIC-ICE-F"
       }
     },
     "ice": {
@@ -50259,7 +50304,8 @@
             }
           ]
         },
-        "zil_value": 1
+        "zil_value": 1,
+        "zil_generic": "GENERIC-ICE-F"
       }
     },
     "keyhole": {
@@ -51984,7 +52030,8 @@
             }
           ]
         },
-        "openable": true
+        "openable": true,
+        "zil_generic": "GENERIC-DOOR-F"
       }
     },
     "garden_door": {
@@ -52086,7 +52133,8 @@
             }
           ]
         },
-        "openable": true
+        "openable": true,
+        "zil_generic": "GENERIC-DOOR-F"
       }
     },
     "gfence": {
@@ -54029,7 +54077,8 @@
               ]
             }
           ]
-        }
+        },
+        "zil_generic": "GENERIC-LEMMINGS-F"
       }
     },
     "lemmings": {
@@ -54466,7 +54515,8 @@
               ]
             }
           ]
-        }
+        },
+        "zil_generic": "GENERIC-LEMMINGS-F"
       }
     },
     "fissure": {
@@ -55912,7 +55962,8 @@
               ]
             }
           ]
-        }
+        },
+        "zil_generic": "GENERIC-TREE-F"
       }
     },
     "alb": {
@@ -57108,7 +57159,8 @@
               ]
             }
           ]
-        }
+        },
+        "zil_generic": "GENERIC-ARBS-F"
       }
     },
     "hedge": {
@@ -57619,7 +57671,8 @@
               ]
             }
           ]
-        }
+        },
+        "zil_generic": "GENERIC-ARBS-F"
       }
     },
     "arbor": {
@@ -57965,7 +58018,8 @@
               ]
             }
           ]
-        }
+        },
+        "zil_generic": "GENERIC-ARBS-F"
       }
     },
     "miasma": {
@@ -59555,7 +59609,8 @@
               ]
             }
           ]
-        }
+        },
+        "zil_generic": "GENERIC-BEE-F"
       }
     },
     "bee": {
@@ -59848,7 +59903,8 @@
               ]
             }
           ]
-        }
+        },
+        "zil_generic": "GENERIC-BEE-F"
       }
     },
     "cavern": {
@@ -63372,7 +63428,8 @@
         },
         "zil_value": 1,
         "transparent": true,
-        "openable": true
+        "openable": true,
+        "zil_generic": "GENERIC-DOOR-F"
       }
     },
     "magpie": {
@@ -63665,7 +63722,8 @@
               ]
             }
           ]
-        }
+        },
+        "zil_generic": "GENERIC-BIRD-F"
       }
     },
     "cauldron": {
@@ -64661,7 +64719,8 @@
               ]
             }
           ]
-        }
+        },
+        "zil_generic": "GENERIC-LIQUID-F"
       }
     },
     "dory": {
@@ -65746,7 +65805,8 @@
               ]
             }
           ]
-        }
+        },
+        "zil_generic": "GENERIC-RIVER-F"
       }
     },
     "mbox": {
@@ -66446,7 +66506,8 @@
             }
           ]
         },
-        "readable": true
+        "readable": true,
+        "zil_generic": "GENERIC-BUTTON-F"
       }
     },
     "obutton": {
@@ -66655,7 +66716,8 @@
             }
           ]
         },
-        "readable": true
+        "readable": true,
+        "zil_generic": "GENERIC-BUTTON-F"
       }
     },
     "sdoors": {
@@ -68552,7 +68614,8 @@
               ]
             }
           ]
-        }
+        },
+        "zil_generic": "GENERIC-COCO-F"
       }
     },
     "coco": {
@@ -68958,7 +69021,8 @@
             }
           ]
         },
-        "zil_value": 3
+        "zil_value": 3,
+        "zil_generic": "GENERIC-COCO-F"
       }
     },
     "ococo": {
@@ -69433,7 +69497,8 @@
               ]
             }
           ]
-        }
+        },
+        "zil_generic": "GENERIC-COCO-F"
       }
     },
     "milk": {
@@ -69622,7 +69687,8 @@
               ]
             }
           ]
-        }
+        },
+        "zil_generic": "GENERIC-LIQUID-F"
       }
     },
     "fin": {
@@ -70330,7 +70396,8 @@
               ]
             }
           ]
-        }
+        },
+        "zil_generic": "GENERIC-CITY-F"
       }
     },
     "city": {
@@ -70652,7 +70719,8 @@
               ]
             }
           ]
-        }
+        },
+        "zil_generic": "GENERIC-CITY-F"
       }
     },
     "spile": {
@@ -71326,7 +71394,8 @@
               "args": []
             }
           ]
-        }
+        },
+        "zil_generic": "GENERIC-DIRT-F"
       }
     },
     "shelter": {
@@ -71448,7 +71517,8 @@
               ]
             }
           ]
-        }
+        },
+        "zil_generic": "GENERIC-DIRT-F"
       }
     },
     "shelhole": {
@@ -72256,7 +72326,8 @@
             }
           ]
         },
-        "readable": true
+        "readable": true,
+        "zil_generic": "GENERIC-CLOCK-F"
       }
     },
     "swings": {
@@ -74576,7 +74647,8 @@
             }
           ]
         },
-        "openable": true
+        "openable": true,
+        "zil_generic": "GENERIC-BULB-F"
       }
     },
     "rwire": {
@@ -74950,7 +75022,8 @@
               ]
             }
           ]
-        }
+        },
+        "zil_generic": "GENERIC-WIRE-F"
       }
     },
     "bwire": {
@@ -75324,7 +75397,8 @@
               ]
             }
           ]
-        }
+        },
+        "zil_generic": "GENERIC-WIRE-F"
       }
     },
     "swire": {
@@ -75700,7 +75774,8 @@
               ]
             }
           ]
-        }
+        },
+        "zil_generic": "GENERIC-WIRE-F"
       }
     },
     "wwire": {
@@ -76075,7 +76150,8 @@
               ]
             }
           ]
-        }
+        },
+        "zil_generic": "GENERIC-WIRE-F"
       }
     },
     "wires": {
@@ -77373,7 +77449,8 @@
             }
           ]
         },
-        "openable": true
+        "openable": true,
+        "zil_generic": "GENERIC-DOOR-F"
       }
     },
     "nroom_door": {
@@ -77467,7 +77544,8 @@
             }
           ]
         },
-        "openable": true
+        "openable": true,
+        "zil_generic": "GENERIC-DOOR-F"
       }
     },
     "left_door": {
@@ -77658,7 +77736,8 @@
             }
           ]
         },
-        "openable": true
+        "openable": true,
+        "zil_generic": "PORCH-DOOR-F"
       }
     },
     "right_door": {
@@ -77883,7 +77962,8 @@
           ]
         },
         "readable": true,
-        "openable": true
+        "openable": true,
+        "zil_generic": "PORCH-DOOR-F"
       }
     },
     "neroom_door": {
@@ -78025,7 +78105,8 @@
             }
           ]
         },
-        "openable": true
+        "openable": true,
+        "zil_generic": "GENERIC-DOOR-F"
       }
     },
     "seroom_door": {
@@ -78165,7 +78246,8 @@
             }
           ]
         },
-        "openable": true
+        "openable": true,
+        "zil_generic": "GENERIC-DOOR-F"
       }
     },
     "closet_door": {
@@ -78459,7 +78541,8 @@
           ]
         },
         "openable": true,
-        "open": true
+        "open": true,
+        "zil_generic": "GENERIC-DOOR-F"
       }
     },
     "swroom_door": {
@@ -78493,7 +78576,8 @@
           "openable",
           "vowel"
         ],
-        "openable": true
+        "openable": true,
+        "zil_generic": "GENERIC-DOOR-F"
       }
     },
     "closet": {
@@ -82449,7 +82533,8 @@
               ]
             }
           ]
-        }
+        },
+        "zil_generic": "GENERIC-LANDING-F"
       }
     },
     "landing": {
@@ -82623,7 +82708,8 @@
             }
           ]
         },
-        "surface": true
+        "surface": true,
+        "zil_generic": "GENERIC-LANDING-F"
       }
     },
     "mladder": {
@@ -88434,7 +88520,8 @@
               ]
             }
           ]
-        }
+        },
+        "zil_generic": "GENERIC-BIRD-F"
       }
     },
     "box": {
@@ -92914,7 +93001,8 @@
           ]
         },
         "zil_value": 1,
-        "surface": true
+        "surface": true,
+        "zil_generic": "GENERIC-RADIO-F"
       }
     },
     "antenna": {
@@ -95091,7 +95179,8 @@
               ]
             }
           ]
-        }
+        },
+        "zil_generic": "GENERIC-BUTTON-F"
       }
     },
     "jeeparts": {
@@ -96786,7 +96875,8 @@
           ]
         },
         "readable": true,
-        "surface": true
+        "surface": true,
+        "zil_generic": "GENERIC-PHOTO-F"
       }
     },
     "radio": {
@@ -96973,7 +97063,8 @@
             }
           ]
         },
-        "surface": true
+        "surface": true,
+        "zil_generic": "GENERIC-RADIO-F"
       }
     },
     "rswitch": {
@@ -100350,7 +100441,8 @@
             }
           ]
         },
-        "zil_value": 1
+        "zil_value": 1,
+        "zil_generic": "GENERIC-BULB-F"
       }
     },
     "feathers": {
@@ -104830,7 +104922,8 @@
               ]
             }
           ]
-        }
+        },
+        "zil_generic": "GENERIC-SHORE-F"
       }
     },
     "ggrass": {
@@ -110890,7 +110983,8 @@
           "shadowy",
           "trytake",
           "noall"
-        ]
+        ],
+        "zil_generic": "GENERIC-JAPS-F"
       }
     },
     "boy": {
@@ -111083,7 +111177,8 @@
           "living",
           "trytake",
           "noall"
-        ]
+        ],
+        "zil_generic": "GENERIC-KID-F"
       }
     },
     "giant": {
@@ -111362,7 +111457,8 @@
           "person",
           "trytake",
           "noall"
-        ]
+        ],
+        "zil_generic": "GENERIC-KID-F"
       }
     },
     "meep": {
@@ -113095,7 +113191,8 @@
           "trytake",
           "person",
           "noall"
-        ]
+        ],
+        "zil_generic": "GENERIC-BIRD-F"
       }
     },
     "dog": {
@@ -114402,7 +114499,8 @@
           "living",
           "person",
           "plural"
-        ]
+        ],
+        "zil_generic": "GENERIC-GI-F"
       }
     },
     "lem": {
@@ -115727,7 +115825,8 @@
           "person",
           "living",
           "nodesc"
-        ]
+        ],
+        "zil_generic": "GENERIC-JAPS-F"
       }
     },
     "kids": {
@@ -115928,7 +116027,8 @@
           "person",
           "living",
           "nodesc"
-        ]
+        ],
+        "zil_generic": "GENERIC-JAPS-F"
       }
     },
     "mcrane": {

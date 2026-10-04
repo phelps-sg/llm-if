@@ -66,6 +66,8 @@ def context(state: Path, cmd: str = "", fresh: bool = False) -> Dict[str, Any]:
         out["mentioned"] = res["mentioned"]
     if res.get("verb"):
         out["verb"] = res["verb"]
+    if res.get("ambiguous"):
+        out["ambiguous"] = res["ambiguous"]
     if res.get("destination"):
         out["destination"] = res["destination"]
     queue = sorted((out["situation"].get("timers") or {}).keys())
@@ -94,6 +96,8 @@ def turn_message(state: Path, text: str, opening: bool = False, fresh: bool = Fa
         msg += f"[interrupts — QUEUEd routines you run each move]\n{json.dumps(ctx['interrupts'])}\n\n"
     if ctx.get("mentioned"):
         msg += f"[mentioned]\n{json.dumps(ctx['mentioned'])}\n\n"
+    if ctx.get("ambiguous"):
+        msg += f"[ambiguous]\n{json.dumps(ctx['ambiguous'])}\n\n"
     if ctx.get("verb"):
         msg += f"[verb]\n{json.dumps(ctx['verb'])}\n\n"
     if ctx.get("destination"):
