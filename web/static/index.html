@@ -238,47 +238,65 @@
       g.gain.exponentialRampToValueAtTime(peak, t + attack);
       g.gain.exponentialRampToValueAtTime(0.0001, t + attack + decay);
     };
-    // One head step: a bright click (band-passed noise) over a small mechanical thump.
+    // Everything is filtered noise — no oscillators, nothing pitched — so it reads as
+    // plastic and metal, not beeps.
+    const burst = (t, { freq, type = "lowpass", q = 0.7, vol, attack = 0.001, decay }) => {
+      const n = noise(), f = ctx.createBiquadFilter(), g = ctx.createGain();
+      f.type = type; f.frequency.value = freq; f.Q.value = q;
+      env(g, t, vol, attack, decay);
+      n.connect(f).connect(g).connect(master);
+      n.start(t, Math.random() * 0.4); n.stop(t + attack + decay + 0.02);
+    };
+    // One head step: a dry tick on top of a dull thud through the chassis.
     const step = (t, vol = 1) => {
-      const n = noise(), bp = ctx.createBiquadFilter(), g = ctx.createGain();
-      bp.type = "bandpass"; bp.frequency.value = 1300 + Math.random() * 600; bp.Q.value = 2.5;
-      env(g, t, 0.3 * vol, 0.002, 0.022);
-      n.connect(bp).connect(g).connect(master); n.start(t, Math.random() * 0.4); n.stop(t + 0.03);
-      const o = ctx.createOscillator(), g2 = ctx.createGain();
-      o.frequency.setValueAtTime(150, t); o.frequency.exponentialRampToValueAtTime(70, t + 0.03);
-      env(g2, t, 0.22 * vol, 0.003, 0.035);
-      o.connect(g2).connect(master); o.start(t); o.stop(t + 0.05);
+      burst(t, { freq: 2500, type: "highpass", q: 0.5, vol: 0.18 * vol, decay: 0.006 });
+      burst(t, { freq: 320 + Math.random() * 120, vol: 0.55 * vol, attack: 0.002, decay: 0.03 });
     };
-    // A seek: a rapid train of steps — the classic "brrrt".
-    const seek = (steps, interval = 0.009, at = null) => {
-      const t0 = at ?? ctx.currentTime + 0.01;
-      for (let i = 0; i < steps; i++) step(t0 + i * interval, 0.7 + Math.random() * 0.3);
-      return t0 + steps * interval;
+    // The head-load solenoid / seek stop: a heavy plastic CHUNK.
+    const clunk = (t, vol = 1) => {
+      burst(t, { freq: 160, vol: 0.9 * vol, attack: 0.002, decay: 0.07 });
+      burst(t, { freq: 700, type: "bandpass", q: 0.6, vol: 0.35 * vol, decay: 0.035 });
+      burst(t + 0.012, { freq: 1800, type: "highpass", q: 0.5, vol: 0.12 * vol, decay: 0.01 });
     };
+    // A seek: an uneven rattle of steps that ends in a clunk — "grrrk-chunk".
+    const seek = (steps, interval = 0.011, at = null) => {
+      let t = at ?? ctx.currentTime + 0.01;
+      for (let i = 0; i < steps; i++) {
+        step(t, 0.55 + Math.random() * 0.45);
+        t += interval * (0.75 + Math.random() * 0.5);
+      }
+      clunk(t + 0.01, 0.6);
+      return t + 0.08;
+    };
+    // Spindle motor: a low, slightly wobbling rumble (filtered noise, gently
+    // amplitude-modulated) — felt more than heard.
     const motorOn = () => {
       if (motor) return;
-      const t = ctx.currentTime, o = ctx.createOscillator(), lp = ctx.createBiquadFilter();
-      const n = noise(), bp = ctx.createBiquadFilter(), ng = ctx.createGain(), g = ctx.createGain();
-      o.type = "sawtooth"; o.frequency.value = 50; lp.type = "lowpass"; lp.frequency.value = 170;
-      n.loop = true; bp.type = "bandpass"; bp.frequency.value = 900; bp.Q.value = 0.7; ng.gain.value = 0.25;
-      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.05, t + 0.3);
-      o.connect(lp).connect(g); n.connect(bp).connect(ng).connect(g); g.connect(master);
-      o.start(t); n.start(t);
-      motor = { o, n, g };
+      const t = ctx.currentTime, n = noise(), lp = ctx.createBiquadFilter(), g = ctx.createGain();
+      const wob = ctx.createOscillator(), wobAmt = ctx.createGain();
+      n.loop = true; lp.type = "lowpass"; lp.frequency.value = 140; lp.Q.value = 0.4;
+      wob.frequency.value = 5; wobAmt.gain.value = 0.02;
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.09, t + 0.35);
+      wob.connect(wobAmt).connect(g.gain);
+      n.connect(lp).connect(g).connect(master);
+      n.start(t); wob.start(t);
+      clunk(t + 0.05, 1);   // head loads
+      motor = { o: wob, n, g };
     };
     const motorOff = () => {
       if (!motor) return;
       const { o, n, g } = motor, t = ctx.currentTime;
       g.gain.cancelScheduledValues(t); g.gain.setValueAtTime(Math.max(g.gain.value, 0.0001), t);
-      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.6);
-      o.stop(t + 0.65); n.stop(t + 0.65); motor = null;
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.7);
+      o.stop(t + 0.75); n.stop(t + 0.75); motor = null;
     };
     const chatter = () => {
       if (!active || !ctx) return;
       const r = Math.random();
-      if (r < 0.45) seek(3 + Math.floor(Math.random() * 14), 0.008 + Math.random() * 0.004);
-      else if (r < 0.75) step(ctx.currentTime + 0.01, 0.8);
-      timer = setTimeout(chatter, 180 + Math.random() * 650);
+      if (r < 0.45) seek(4 + Math.floor(Math.random() * 18));
+      else if (r < 0.7) step(ctx.currentTime + 0.01, 0.9);
+      else if (r < 0.8) clunk(ctx.currentTime + 0.01, 0.5);
+      timer = setTimeout(chatter, 220 + Math.random() * 700);
     };
     return {
       get enabled() { return enabled; },
@@ -293,8 +311,8 @@
       calibrate() {   // boot: seek to track 0 and back out
         if (!enabled || !ensure()) return;
         motorOn();
-        const end = seek(40, 0.006);
-        seek(12, 0.009, end + 0.12);
+        const end = seek(40, 0.009, ctx.currentTime + 0.3);
+        seek(10, 0.012, end + 0.15);
       },
       toggle() {
         enabled = !enabled; store.set("sound", enabled ? "on" : "off");
