@@ -1,6 +1,69 @@
-# AI-Powered Interactive Fiction Engine
+# Infocom, with an AI Dungeon Master
 
-**Remaster classic Infocom games with genuine AI narration, or create entirely new worlds**—all while maintaining perfect consistency through retrieval-augmented generation.
+**Play the original Infocom games — built from their own ZIL source code — with an
+LLM as the Dungeon Master.** The game's logic stays faithful: the map, the objects,
+the clock, the deadlines, the score and the puzzles all come from Infocom's code. A
+deterministic engine holds the state, runs the clock and the score, and evaluates
+the code's conditions; the LLM reads the routines and applies them. But the 1986
+parser is gone. Type what you
+mean, try things the authors never anticipated, and the DM plays them out.
+
+![Trinity in the retro web terminal: the player throws the soccer ball at a swan on the Round Pond; the swan leans aside, and a small girl returns the ball with a look of grave reproach.](docs/images/trinity-web-terminal.png)
+
+## Showcase: Trinity (Brian Moriarty, 1986)
+
+Trinity is the showcase world: Moriarty's game about the atomic age, which opens
+on the last afternoon of a London holiday, in Kensington Gardens, half an hour
+before the bombs fall.
+
+**What stays as Infocom wrote it**
+
+- **The clock and its deadlines.** The wristwatch starts at 3:30:00 pm and gains
+  15 seconds a move; the air raid begins at 3:57:45 on the 112th move, as in the
+  original. Every timed event is driven by the game's own interrupt routines.
+- **The puzzles, the score and the map.** The intended solutions work; points
+  are awarded as the game awards them; exits, blocked paths and conditional
+  routes come from the source.
+- **The world's facts.** Each turn the DM gets the relevant room, object and verb
+  code, with its constants resolved and its conditions evaluated against live
+  state, so it narrates from the truth instead of guessing.
+
+**What the DM adds**
+
+- **No parser.** "follow the little path", "get me out of here", "who am I?" —
+  the DM works out what you mean.
+- **The sleight of hand is gone.** Many 1986 refusals ("Swimming in the Round
+  Pond is strictly forbidden") covered what the engine couldn't simulate. If an
+  action wouldn't change anything the game depends on, the DM lets it happen:
+  wade in until the parkkeeper's whistle, race toy boats with the children, throw
+  the ball at a swan.
+- **Your own solutions.** A clever, non-trivial solution the authors didn't
+  anticipate can work, landing where the intended one would. Trivial bypasses
+  don't.
+- **A DM at the table.** Ask for a hint, ask why, or say `god mode:` — you get an
+  answer out of character, and the game clock doesn't move. The feelies you
+  don't have (the sundial's symbols, the map) are supplied.
+
+## Play
+
+```bash
+# once: build the world from the original source (github.com/historicalsource/trinity
+# in resources/zil/trinity/; kept out of git)
+.venv/bin/python scripts/build_world.py trinity
+
+# play in the retro terminal at http://127.0.0.1:8086
+.venv/bin/python web/server.py --game trinity --world worlds/trinity.json --new --model sonnet
+```
+
+The DM runs on your Claude Code login (`claude -p`); no API keys. Or play inline in a
+Claude Code session with the `play-if` skill. Details, the DM backends and the test
+and evaluation tools are in [web/README.md](web/README.md). Zork I–III's source is
+MIT-licensed (Microsoft, 2025) and is the natural next world.
+
+---
+
+The rest of this README describes the original engine architecture, which the DM
+harness builds on.
 
 ## How It Works: LLM as Dungeon Master
 
